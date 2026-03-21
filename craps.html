@@ -43,9 +43,9 @@ body{background:#0a1a0a;font-family:'Georgia',serif;color:#ffd700;height:100vh;o
 .num-box .num{font-size:26px;font-weight:bold;line-height:1;}
 .num-box .place-odds{font-size:11px;color:#aaa;}
 .num-box.is-point{background:rgba(255,215,0,0.15);border-color:#ffd700;box-shadow:0 0 10px rgba(255,215,0,0.3);}
-.puck{width:32px;height:32px;border-radius:50%;border:2px solid #333;font-size:9px;font-weight:bold;line-height:32px;text-align:center;position:absolute;top:-4px;left:50%;transform:translateX(-50%);pointer-events:none;z-index:10;transition:all 0.3s;}
-.puck.on{background:#fff;color:#000;border-color:#ffd700;}
-.puck.off{background:#111;color:#555;border-color:#333;}
+.puck{width:36px;height:36px;border-radius:50%;border:3px solid #ffd700;font-size:11px;font-weight:bold;line-height:36px;text-align:center;position:absolute;top:-6px;left:50%;transform:translateX(-50%);pointer-events:none;z-index:10;transition:all 0.3s;display:none;}
+.puck.on{display:block;background:#fff;color:#000;border-color:#ffd700;box-shadow:0 0 12px rgba(255,215,0,0.8);}
+.puck.off{display:none;}
 
 /* Come/DontCome bet indicators on number boxes */
 .come-stack{position:absolute;top:2px;left:2px;right:2px;display:flex;flex-direction:column;gap:1px;pointer-events:none;}
@@ -172,7 +172,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
     <div style="flex:1;display:flex;gap:3px;">
       <!-- Each number box: puck + come stack (come bet, come odds, DC bet, DC odds) + number + place odds -->
       <div class="zone num-box" id="z-place4" onclick="placeBet('place4')">
-        <div class="puck off" id="puck4"></div>
+        <div class="puck off" id="puck4">ON</div>
         <div class="come-stack">
           <span class="come-indicator come-bet"  id="ci-come4"    onclick="event.stopPropagation();addComeOdds(4)"   title="Click to add Come odds on 4"></span>
           <span class="come-indicator come-odds"  id="ci-codds4"   onclick="event.stopPropagation();addComeOdds(4)"   title="Click to add more Come odds"></span>
@@ -184,6 +184,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
         <span class="bet-chip" id="chip-place4">0</span>
       </div>
       <div class="zone num-box" id="z-place5" onclick="placeBet('place5')">
+        <div class="puck off" id="puck5">ON</div>
         <div class="come-stack">
           <span class="come-indicator come-bet"  id="ci-come5"   onclick="event.stopPropagation();addComeOdds(5)"  title="Click to add Come odds on 5"></span>
           <span class="come-indicator come-odds" id="ci-codds5"  onclick="event.stopPropagation();addComeOdds(5)"  title="Add more Come odds"></span>
@@ -195,6 +196,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
         <span class="bet-chip" id="chip-place5">0</span>
       </div>
       <div class="zone num-box" id="z-place6" onclick="placeBet('place6')">
+        <div class="puck off" id="puck6">ON</div>
         <div class="come-stack">
           <span class="come-indicator come-bet"  id="ci-come6"   onclick="event.stopPropagation();addComeOdds(6)"  title="Click to add Come odds on 6"></span>
           <span class="come-indicator come-odds" id="ci-codds6"  onclick="event.stopPropagation();addComeOdds(6)"></span>
@@ -206,6 +208,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
         <span class="bet-chip" id="chip-place6">0</span>
       </div>
       <div class="zone num-box" id="z-place8" onclick="placeBet('place8')">
+        <div class="puck off" id="puck8">ON</div>
         <div class="come-stack">
           <span class="come-indicator come-bet"  id="ci-come8"   onclick="event.stopPropagation();addComeOdds(8)"></span>
           <span class="come-indicator come-odds" id="ci-codds8"  onclick="event.stopPropagation();addComeOdds(8)"></span>
@@ -217,6 +220,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
         <span class="bet-chip" id="chip-place8">0</span>
       </div>
       <div class="zone num-box" id="z-place9" onclick="placeBet('place9')">
+        <div class="puck off" id="puck9">ON</div>
         <div class="come-stack">
           <span class="come-indicator come-bet"  id="ci-come9"   onclick="event.stopPropagation();addComeOdds(9)"></span>
           <span class="come-indicator come-odds" id="ci-codds9"  onclick="event.stopPropagation();addComeOdds(9)"></span>
@@ -228,6 +232,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
         <span class="bet-chip" id="chip-place9">0</span>
       </div>
       <div class="zone num-box" id="z-place10" onclick="placeBet('place10')">
+        <div class="puck off" id="puck10">ON</div>
         <div class="come-stack">
           <span class="come-indicator come-bet"  id="ci-come10"   onclick="event.stopPropagation();addComeOdds(10)"></span>
           <span class="come-indicator come-odds" id="ci-codds10"  onclick="event.stopPropagation();addComeOdds(10)"></span>
