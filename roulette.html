@@ -501,6 +501,10 @@ const spinAudio = new Audio('./spin-sound.mp3');
 spinAudio.loop = true;
 spinAudio.volume = 0.8;
 
+const ballAudio = new Audio('./roulette-ball.mp3');
+ballAudio.loop = true;
+ballAudio.volume = 0.9;
+
 const clickAudio = new Audio('./click-sound.mp3');
 clickAudio.volume = 1.0;
 function playClick(){
@@ -588,6 +592,7 @@ function animate(){
   if(ballSpeed<0.005&&!spinDone){
     spinDone=true; ballBounce=0;
     spinAudio.pause(); spinAudio.currentTime=0;
+ballAudio.pause(); ballAudio.currentTime=0;
     const sliceAngle=(Math.PI*2)/SLOTS;
     let rel=((ballAngle-wheelAngle)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
     const slot=Math.floor(rel/sliceAngle)%SLOTS;
@@ -613,6 +618,7 @@ function spin(){
   wheelSpeed=0.05+Math.random()*0.03; ballSpeed=0.14+Math.random()*0.04;
   ballRadius=R*0.87; ballAngle=Math.random()*Math.PI*2;
   spinAudio.currentTime=0; spinAudio.play().catch(()=>{});
+ballAudio.currentTime=0; ballAudio.play().catch(()=>{});
   animId=requestAnimationFrame(animate);
 }
 
