@@ -113,13 +113,47 @@ body{background:#0a1a0a;font-family:'Georgia',serif;color:#ffd700;height:100vh;o
 
 /* ── Dice area ── */
 .dice-panel{
-  width:160px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:6px;
+  width:170px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:6px;overflow:visible;position:relative;
 }
-.dice-row{display:flex;gap:10px;}
-canvas.die{border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.7);}
+.dice-row{display:flex;gap:14px;position:relative;}
+.die-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:58px;height:58px;}
+.die-shadow{
+  position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
+  width:44px;height:10px;
+  background:radial-gradient(ellipse,rgba(0,0,0,0.55) 0%,transparent 70%);
+  border-radius:50%;opacity:0;transition:opacity 0.15s;
+}
+canvas.die{border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:block;position:relative;z-index:1;}
 .dice-total{font-size:22px;font-weight:bold;color:#ffd700;min-height:28px;text-align:center;}
 .point-display{font-size:11px;color:#aaa;text-align:center;min-height:16px;}
+
+/* Throw animation */
+@keyframes throwDie1{
+  0%  {transform:translate(140px,180px) rotate(0deg) scale(1.4);opacity:0.7;}
+  15% {transform:translate(90px,100px)  rotate(200deg) scale(1.3);opacity:1;}
+  45% {transform:translate(12px,8px)    rotate(600deg) scale(1.15);}
+  62% {transform:translate(-6px,-12px)  rotate(680deg) scale(0.88);}
+  74% {transform:translate(3px,6px)     rotate(710deg) scale(1.06);}
+  84% {transform:translate(-2px,-4px)   rotate(725deg) scale(0.97);}
+  92% {transform:translate(1px,2px)     rotate(732deg) scale(1.02);}
+  100%{transform:translate(0,0)         rotate(var(--rot1,720deg)) scale(1);}
+}
+@keyframes throwDie2{
+  0%  {transform:translate(100px,200px) rotate(0deg) scale(1.4);opacity:0.7;}
+  15% {transform:translate(60px,120px)  rotate(-180deg) scale(1.25);opacity:1;}
+  45% {transform:translate(-8px,6px)    rotate(-520deg) scale(1.1);}
+  62% {transform:translate(5px,-10px)   rotate(-600deg) scale(0.9);}
+  74% {transform:translate(-3px,5px)    rotate(-625deg) scale(1.05);}
+  84% {transform:translate(2px,-3px)    rotate(-638deg) scale(0.98);}
+  92% {transform:translate(-1px,1px)    rotate(-644deg) scale(1.01);}
+  100%{transform:translate(0,0)         rotate(var(--rot2,-630deg)) scale(1);}
+}
+.die-wrap.throwing1{animation:throwDie1 0.65s cubic-bezier(0.22,0.61,0.36,1) forwards;}
+.die-wrap.throwing2{animation:throwDie2 0.65s cubic-bezier(0.22,0.61,0.36,1) forwards;}
+@keyframes shadowAppear{0%{opacity:0;}80%{opacity:0;}100%{opacity:1;}}
+.die-wrap.throwing1 .die-shadow,
+.die-wrap.throwing2 .die-shadow{animation:shadowAppear 0.65s forwards;}
 
 /* ── Message ── */
 .msg-box{
@@ -155,16 +189,7 @@ canvas.die{border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.7);}
 .btn-clear:hover:not(:disabled){background:rgba(150,30,30,0.7);}
 .btn-clear:disabled{opacity:0.4;cursor:not-allowed;}
 
-/* ── Animations ── */
-@keyframes rollShake{
-  0%{transform:rotate(0deg) scale(1);}
-  20%{transform:rotate(-15deg) scale(1.1);}
-  40%{transform:rotate(12deg) scale(1.05);}
-  60%{transform:rotate(-10deg) scale(1.1);}
-  80%{transform:rotate(8deg) scale(1.05);}
-  100%{transform:rotate(0deg) scale(1);}
-}
-.rolling .die{animation:rollShake 0.5s ease-out;}
+/* ── Flash animations ── */
 @keyframes flashWin{0%,100%{color:#4aff7a;}50%{color:#fff;text-shadow:0 0 12px #4aff7a;}}
 @keyframes flashLose{0%,100%{color:#ff4a4a;}50%{color:#fff;text-shadow:0 0 12px #ff4a4a;}}
 .msg-box.win{animation:flashWin 0.6s ease-out;}
@@ -250,8 +275,14 @@ canvas.die{border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.7);}
     <!-- Dice panel -->
     <div class="dice-panel">
       <div class="dice-row" id="diceRow">
-        <canvas class="die" id="die1" width="54" height="54"></canvas>
-        <canvas class="die" id="die2" width="54" height="54"></canvas>
+        <div class="die-wrap" id="dieWrap1">
+          <div class="die-shadow" id="dieShadow1"></div>
+          <canvas class="die" id="die1" width="54" height="54"></canvas>
+        </div>
+        <div class="die-wrap" id="dieWrap2">
+          <div class="die-shadow" id="dieShadow2"></div>
+          <canvas class="die" id="die2" width="54" height="54"></canvas>
+        </div>
       </div>
       <div class="dice-total" id="diceTotal"></div>
       <div class="point-display" id="pointDisplay">COME-OUT ROLL</div>
@@ -477,30 +508,50 @@ function rollDice(){
   rolling=true;
   document.getElementById('btnRoll').disabled=true;
   document.getElementById('btnClear').disabled=true;
+  document.getElementById('diceTotal').textContent='';
+  document.getElementById('dieShadow1').style.opacity='0';
+  document.getElementById('dieShadow2').style.opacity='0';
 
-  // Animate dice
-  const diceRow=document.getElementById('diceRow');
-  diceRow.classList.add('rolling');
-  playDiceRoll();
+  // Pick final values
+  dice[0]=Math.floor(Math.random()*6)+1;
+  dice[1]=Math.floor(Math.random()*6)+1;
 
-  // Randomize visuals during roll
-  let frames=0;
-  const animInterval=setInterval(()=>{
-    drawDie('die1', Math.floor(Math.random()*6)+1);
-    drawDie('die2', Math.floor(Math.random()*6)+1);
-    frames++;
-    if(frames>10){
-      clearInterval(animInterval);
-      diceRow.classList.remove('rolling');
-      // Final result
-      dice[0]=Math.floor(Math.random()*6)+1;
-      dice[1]=Math.floor(Math.random()*6)+1;
-      drawDie('die1',dice[0]);
-      drawDie('die2',dice[1]);
-      document.getElementById('diceTotal').textContent = dice[0]+dice[1];
-      setTimeout(()=>{ resolveRoll(); }, 250);
-    }
-  },50);
+  // Draw final values on canvases (hidden under animation until landing)
+  drawDie('die1', dice[0]);
+  drawDie('die2', dice[1]);
+
+  // Random final rotation per die (multiples of 90 so die looks natural)
+  const rot1 = 360*(3+Math.floor(Math.random()*3)) + Math.floor(Math.random()*4)*90;
+  const rot2 = -(360*(2+Math.floor(Math.random()*3)) + Math.floor(Math.random()*4)*90);
+
+  const w1=document.getElementById('dieWrap1');
+  const w2=document.getElementById('dieWrap2');
+
+  // Set CSS vars for final rotation
+  w1.style.setProperty('--rot1', rot1+'deg');
+  w2.style.setProperty('--rot2', rot2+'deg');
+
+  // Reset any previous animation
+  w1.classList.remove('throwing1','throwing2');
+  w2.classList.remove('throwing1','throwing2');
+  void w1.offsetWidth; // reflow
+
+  // Play sound slightly before visual impact
+  setTimeout(()=>{ playDiceRoll(); }, 380);
+
+  // Trigger throw animations
+  w1.classList.add('throwing1');
+  w2.classList.add('throwing2');
+
+  // Show total and resolve after animation lands
+  setTimeout(()=>{
+    document.getElementById('diceTotal').textContent = dice[0]+dice[1];
+    // Show shadows
+    document.getElementById('dieShadow1').style.opacity='1';
+    document.getElementById('dieShadow2').style.opacity='1';
+  }, 620);
+
+  setTimeout(()=>{ resolveRoll(); }, 820);
 }
 
 // ── RESOLVE ROLL ──
