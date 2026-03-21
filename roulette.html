@@ -15,13 +15,29 @@ html,body{ width:100%; height:100%; overflow:hidden; font-family:Georgia,serif; 
   --table-x: -58px;
   --table-y: 342px;
   --chip-size: 10.9vh;
-  --bar-x: 0px;
-  --bar-y: 0px;
+  --bar-x: 123px;
+  --bar-y: 171px;
+  --bar-width: 110%;
+  --bar-ml: -5%;
+  --chip-gap: 0.35vw;
+  --bar-font: 2.05vw;
+  --btn-font: 1.75vw;
+  --btn-pad-v: 2.4vh;
+  --chips-x: -9px;
+  --bet-x: 16px;
+  --spin-x: -27px;
+  --rebet-x: -27px;
+  --clear-x: -27px;
+  --bal-x: -82px;
+  --btn-pad-h: 2.05vw;
+  --bal-gap: 0.8vw;
+  --bal-ml: 0px;
+  --btn-ml: 0px;
 }
 
 body{
   display:flex; align-items:center; justify-content:center;
-  background: url('https://drive.google.com/thumbnail?id=1YqLzKVIWx2neB4K4l7U0JK1l-KRS0Lyu&sz=w1600') center center / auto 100% no-repeat;
+  background: #000 url('https://drive.google.com/thumbnail?id=1YqLzKVIWx2neB4K4l7U0JK1l-KRS0Lyu&sz=w1600') center center / auto 100% no-repeat;
   zoom: 0.75;
 }
 
@@ -57,13 +73,7 @@ body{
   margin: 0 auto;
 }
 #felt{
-  background: linear-gradient(160deg, #1e6b2e 0%, #155224 60%, #0e3d1a 100%);
-  border: 6px solid #5a2d0c;
-  border-radius: 12px;
-  box-shadow: 0 0 0 3px #8b4513, inset 0 2px 8px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.6);
-  padding: 10px 12px 8px;
-  display:flex; flex-direction:column; gap:4px;
-  width: fit-content; margin: 0 auto;
+  display:none !important;
 }
 
 /* NUMBER GRID */
@@ -120,15 +130,21 @@ body{
 
 /* BOTTOM BAR */
 #bottomBar{
-  width:120%; margin-left:-10%; display:flex; align-items:center; justify-content:space-between;
-  background:rgba(0,0,0,0.6); border-radius:8px; padding:0.8vh 1.5vw;
+  width:var(--bar-width); margin-left:var(--bar-ml); display:flex; align-items:center;
+  justify-content:space-between;
+  background:rgba(0,0,0,0.6); border-radius:8px; padding:0.8vh 1.8vw;
   border:1px solid rgba(255,255,255,0.1);
   transform: translate(var(--bar-x), var(--bar-y));
   margin-top:6px; flex-shrink:0;
+  overflow:visible;
 }
-#chipRow{ display:flex; gap:0.8vw; align-items:center; }
+#chipRow{ display:flex; gap:4px; align-items:center; }
+.chip-slot{
+  width:10.9vh; height:10.9vh;
+  flex-shrink:0; display:flex; align-items:center; justify-content:center;
+}
 .chip{
-  width:var(--chip-size); height:var(--chip-size); border-radius:50%; cursor:pointer;
+  width:100%; height:100%; border-radius:50%; cursor:pointer;
   border:3px solid transparent; transition:all 0.15s; user-select:none;
   overflow:hidden; flex-shrink:0;
 }
@@ -136,56 +152,187 @@ body{
 .chip:hover{ transform:scale(1.1); }
 .chip.selected{ border-color:#fff; box-shadow:0 0 14px rgba(255,215,0,0.8); transform:scale(1.15); }
 
-#actionBtns{ display:flex; gap:0.8vw; align-items:center; }
+#balSection{ font-size:var(--bar-font); color:#ccc; white-space:nowrap; transform:translateX(var(--bal-x)); flex-shrink:0; width:16ch; }
+#balSection b{ color:#ffd700; font-variant-numeric:tabular-nums; display:inline-block; min-width:9ch; text-align:right; }
+#betSection{ font-size:var(--bar-font); color:#ccc; white-space:nowrap; transform:translateX(var(--bet-x)); flex-shrink:0; width:13ch; }
+#betSection b{ color:#ffd700; font-variant-numeric:tabular-nums; display:inline-block; min-width:7ch; text-align:right; }
+#chipRow{ transform:translateX(var(--chips-x)); flex-shrink:0; }
+
+#actionBtns{ display:flex; gap:0.8vw; align-items:center; flex-shrink:0; }
 .aBtn{
-  padding:0.8vh 1.4vw; border-radius:6px; cursor:pointer; font-family:Georgia,serif;
-  font-size:1vw; font-weight:bold; border:2px solid; transition:all 0.15s; letter-spacing:1px;
+  padding:var(--btn-pad-v) var(--btn-pad-h); border-radius:6px; cursor:pointer; font-family:Georgia,serif;
+  font-size:var(--btn-font); font-weight:bold; border:2px solid; transition:all 0.15s; letter-spacing:1px;
 }
-#spinBtn{ background:rgba(20,80,20,0.9); border-color:#4aff7a; color:#4aff7a; }
+#spinBtn{ background:rgba(20,80,20,0.9); border-color:#4aff7a; color:#4aff7a; transform:translateX(var(--spin-x)); }
 #spinBtn:hover:not(:disabled){ box-shadow:0 0 12px rgba(74,255,122,0.4); }
 #spinBtn:disabled{ opacity:0.4; cursor:not-allowed; }
-#clearBtn{ background:rgba(60,20,20,0.8); border-color:#ff6060; color:#ff6060; }
-#rebetBtn{ background:rgba(36,26,8,0.9); border-color:#8a5a10; color:#e8a030; display:none; }
+#clearBtn{ background:rgba(60,20,20,0.8); border-color:#ff6060; color:#ff6060; transform:translateX(var(--clear-x)); }
+#rebetBtn{ background:rgba(36,26,8,0.9); border-color:#8a5a10; color:#e8a030; visibility:hidden; transform:translateX(var(--rebet-x)); }
 .aBtn:hover{ filter:brightness(1.15); }
-#balArea{ font-size:1vw; color:#ccc; display:flex; gap:2vw; }
-#balArea b{ color:#ffd700; }
 
-/* RESULT */
-#resultBanner{
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  background:rgba(0,0,0,0.95); border:2px solid #ffd700; border-radius:10px;
-  padding:3vh 5vw; text-align:center; display:none; z-index:100;
-  box-shadow:0 0 40px rgba(255,215,0,0.4);
-}
-.rtitle{ font-size:3.5vh; font-weight:bold; margin-bottom:1vh; }
-.rnum{ font-size:6vh; font-weight:bold; margin:0.5vh 0; }
-.rpay{ font-size:2vh; color:#ffd700; }
-.rBtn{ margin-top:2vh; padding:1vh 3vw; border-radius:6px; cursor:pointer; font-family:Georgia,serif;
-  font-size:1.4vh; font-weight:bold; border:2px solid #ffd700; color:#ffd700; background:rgba(0,0,0,0.8); }
-.rBtn:hover{ box-shadow:0 0 10px rgba(255,215,0,0.4); }
-
-/* DEBUG */
-#debugPanel{
-  display:none; position:fixed; top:10px; right:10px; z-index:9999;
+/* PROBE PANEL */
+#probePanel{
+  position:fixed; top:10px; right:10px; z-index:9999;
   background:rgba(0,0,0,0.93); border:1px solid #ffd700; border-radius:8px;
-  padding:12px 16px; width:300px; max-height:90vh; overflow-y:auto;
+  padding:12px 16px; width:270px; max-height:90vh; overflow-y:auto;
   font-family:monospace; font-size:12px; color:#fff;
 }
-#debugPanel.open{ display:block; }
-#debugPanel h3{ color:#ffd700; margin-bottom:8px; font-size:13px; letter-spacing:2px; }
-.dbg-section{ margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:8px; }
-.dbg-section > b{ color:#aaa; font-size:11px; display:block; margin-bottom:4px; letter-spacing:1px; }
-.dbg-row{ display:flex; align-items:center; gap:6px; margin-bottom:3px; }
-.dbg-row .lbl{ color:#ccc; min-width:46px; font-size:11px; }
-.dbg-row input[type=range]{ flex:1; accent-color:#ffd700; }
-.dbg-row .val{ color:#ffd700; min-width:48px; text-align:right; font-size:11px; }
-.dbg-btn{ width:100%; margin-top:4px; padding:5px; font-family:monospace; font-size:11px;
-  cursor:pointer; border-radius:3px; }
-.dbg-test{ background:#1a1a4a; border:1px solid #88aaff; color:#88aaff; }
-.dbg-copy{ background:#2a1a00; border:1px solid #ffd700; color:#ffd700; margin-top:6px; }
-.dbg-btn:hover{ filter:brightness(1.2); }
-#dbgHint{ position:fixed; bottom:10px; right:10px; color:#ffd70055;
-  font-size:11px; font-family:monospace; pointer-events:none; z-index:9998; }
+#probePanel .ph{ color:#ffd700; font-size:13px; letter-spacing:2px; margin-bottom:8px; display:block; }
+.probe-row{ display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:4px; }
+.probe-lbl{ font-weight:bold; min-width:52px; }
+.probe-val{ color:#ffd700; font-size:10px; }
+.pcopy{ width:100%; margin-top:8px; padding:5px; font-family:monospace; font-size:11px;
+  cursor:pointer; border-radius:3px; background:#2a1a00; border:1px solid #ffd700; color:#ffd700; }
+.pcopy:hover{ filter:brightness(1.2); }
+.phint{ font-size:10px; color:#555; margin-top:6px; }
+
+/* RESULT */
+:root{
+  --result-size: 288px;
+  --result-x: 55.5%;
+  --result-y: 28%;
+}
+#resultBanner{
+  position:fixed;
+  left: var(--result-x); top: var(--result-y);
+  transform: translate(-50%,-50%);
+  width: var(--result-size); height: var(--result-size);
+  border-radius: 50%;
+  background:rgba(0,0,0,0.95); border:3px solid #ffd700;
+  display:none; z-index:100;
+  box-shadow:0 0 50px rgba(255,215,0,0.5);
+  flex-direction:column; align-items:center; justify-content:center; text-align:center;
+}
+.rtitle{ font-size:3.2vh; font-weight:bold; margin-bottom:0.6vh; }
+.rnum{ font-size:6.5vh; font-weight:bold; margin:0.3vh 0; }
+.rpay{ font-size:1.8vh; color:#ffd700; }
+#resultBanner{ cursor:pointer; }
+#resultBanner:hover{ box-shadow:0 0 60px rgba(255,215,0,0.7); }
+
+
+
+
+/* CANDLES */
+#candleLayer{
+  position:fixed; top:0; left:0; width:100vw; height:100vh;
+  pointer-events:none; z-index:480;
+  zoom:1.3333;
+}
+.candle-wrap{
+  position:absolute; transform:translate(-50%,-100%);
+  display:flex; flex-direction:column; align-items:center;
+  pointer-events:none;
+}
+.candle-glow{
+  position:absolute; bottom:0; left:50%;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,200,80,0.18) 0%, transparent 70%);
+  pointer-events:none;
+}
+.candle-flame-wrap{
+  position:relative; display:flex; flex-direction:column; align-items:center;
+}
+.candle-flame{
+  width:7px; height:13px;
+  background:radial-gradient(ellipse at 50% 80%, #fff700 0%, #ff9900 45%, #ff4400 80%, transparent 100%);
+  border-radius:50% 50% 30% 30% / 60% 60% 40% 40%;
+  transform-origin:50% 100%;
+  animation:flicker 0.35s ease-in-out infinite alternate;
+  filter:blur(0.4px);
+}
+.candle-flame-inner{
+  position:absolute; bottom:2px; left:50%; transform:translateX(-50%);
+  width:3px; height:7px;
+  background:radial-gradient(ellipse at 50% 80%, #ffffff 0%, #ffff88 60%, transparent 100%);
+  border-radius:50% 50% 30% 30% / 60% 60% 40% 40%;
+  animation:flicker2 0.28s ease-in-out infinite alternate;
+}
+.candle-wick{
+  width:1.5px; height:4px;
+  background:#333;
+}
+.candle-body{
+  width:10px;
+  background:linear-gradient(to right, #f5e8b0 0%, #fffde0 30%, #e8d470 70%, #c9b840 100%);
+  border-radius:1px 1px 2px 2px;
+  border:1px solid rgba(0,0,0,0.15);
+  position:relative;
+}
+.candle-body::after{
+  content:''; position:absolute; top:0; left:1px; right:1px; height:3px;
+  background:rgba(255,255,255,0.3); border-radius:1px;
+}
+.candle-drip{
+  position:absolute; top:0; left:2px;
+  width:3px; height:6px;
+  background:#f5e8b0;
+  border-radius:0 0 3px 3px;
+}
+@keyframes flicker{
+  0%  { transform:scaleX(1)   scaleY(1)    rotate(-2deg); opacity:1;   }
+  30% { transform:scaleX(0.88) scaleY(1.08) rotate(2deg);  opacity:0.92; }
+  60% { transform:scaleX(1.08) scaleY(0.94) rotate(-1deg); opacity:1;   }
+  100%{ transform:scaleX(0.93) scaleY(1.06) rotate(3deg);  opacity:0.95; }
+}
+@keyframes flicker2{
+  0%  { transform:translateX(-50%) scaleX(1)    scaleY(1);    opacity:0.9; }
+  50% { transform:translateX(-50%) scaleX(1.2)  scaleY(0.9);  opacity:1;   }
+  100%{ transform:translateX(-50%) scaleX(0.85) scaleY(1.1);  opacity:0.85;}
+}
+
+
+
+
+
+/* PARTICLE FLAME */
+#flameCanvas{ position:fixed; pointer-events:none; z-index:481; }
+#torchDebug{
+  position:fixed; bottom:70px; right:10px; z-index:9999;
+  background:rgba(0,0,0,0.93); border:1px solid #ff9900; border-radius:8px;
+  padding:12px 18px; width:300px; font-family:monospace; font-size:12px; color:#fff;
+}
+#torchDebug .ph{ color:#ff9900; font-size:12px; letter-spacing:2px; margin-bottom:8px; display:block; }
+.td-row{ display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+.td-lbl{ color:#aaa; min-width:36px; font-size:11px; font-weight:bold; }
+.td-row input[type=range]{ flex:1; accent-color:#ff9900; height:18px; cursor:pointer; }
+.td-val{ color:#ff9900; min-width:46px; font-size:11px; text-align:right; }
+.tdcopy{ width:100%; margin-top:8px; padding:5px; font-family:monospace; font-size:11px;
+  cursor:pointer; border-radius:3px; background:#1a0a00; border:1px solid #ff9900; color:#ff9900; }
+.tdcopy:hover{ filter:brightness(1.2); }
+
+/* MUSIC TOGGLE */
+#musicBtn{
+  position:fixed; bottom:18px; right:18px; z-index:9999;
+  width:44px; height:44px; border-radius:50%;
+  background:rgba(0,0,0,0.7); border:2px solid rgba(255,215,0,0.5);
+  color:#ffd700; font-size:20px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s; user-select:none;
+}
+#musicBtn:hover{ border-color:#ffd700; box-shadow:0 0 12px rgba(255,215,0,0.4); }
+
+/* PROBE LAYER - counter-zoom so circles aren't affected by body zoom */
+#probeLayer{
+  position:fixed; top:0; left:0; width:100vw; height:100vh;
+  pointer-events:none; z-index:500;
+  zoom: 1.3333;
+}
+.probe-circle{
+  position:absolute; border-radius:50%; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-family:Georgia,serif; font-weight:bold; user-select:none;
+  transform:translate(-50%,-50%);
+  pointer-events:all;
+  flex-shrink:0; box-sizing:content-box;
+}
+.probe-bet{
+  position:absolute; top:-8px; right:-4px;
+  font-size:10px; color:#ffd700; font-weight:bold;
+  background:rgba(0,0,0,0.85); border-radius:3px;
+  padding:0 3px; pointer-events:none; display:none;
+}
+
 </style>
 </head>
 <body>
@@ -216,24 +363,19 @@ body{
     </div>
     <div id="bottomBar">
       <div id="chipRow"></div>
-      <div id="balArea">
-        <span>Balance: <b id="balDisp">100,000g</b></span>
-        <span>Win: <b id="winDisp">-</b></span>
-        <span>Bet: <b id="betDisp">0g</b></span>
-      </div>
+      <div id="betSection">Bet: <b id="betDisp">0g</b></div>
       <div id="actionBtns">
-        <button class="aBtn" id="clearBtn" onclick="clearBets()">CLEAR</button>
+        <button class="aBtn" id="spinBtn"  onclick="spin()">SPIN</button>
         <button class="aBtn" id="rebetBtn" onclick="rebet()">REBET</button>
-        <button class="aBtn" id="spinBtn" onclick="spin()">SPIN</button>
+        <button class="aBtn" id="clearBtn" onclick="clearBets()">CLEAR</button>
       </div>
+      <div id="balSection">Balance: <b id="balDisp">100,000g</b></div>
     </div>
   </div>
 
-  <div id="resultBanner">
+  <div id="resultBanner" onclick="newRound()">
     <div class="rtitle" id="rTitle">-</div>
     <div class="rnum"   id="rNum">-</div>
-    <div class="rpay"   id="rPay">-</div>
-    <button class="rBtn" onclick="newRound()">PLAY AGAIN</button>
   </div>
 </div>
 
@@ -242,8 +384,22 @@ body{
   <canvas id="wheelCanvas"></canvas>
 </div>
 
-<div id="debugPanel"></div>
-<div id="dbgHint">Press D for debug</div>
+<audio id="bgMusic" loop src="./bg-music.mp3"></audio>
+
+<button id="musicBtn" onclick="toggleMusic()" title="Toggle music">🔊</button>
+
+<div id="probeLayer"></div>
+
+
+<div id="candleLayer"></div>
+<canvas id="flameCanvas"></canvas>
+
+<div id="probePanel" style="display:none">
+  <span class="ph">BET ZONES</span>
+  <div id="probeRows"></div>
+  <button class="pcopy" onclick="copyProbes()">📋 COPY ALL</button>
+  <div class="phint">Drag to move &bull; Scroll to resize</div>
+</div>
 
 <script>
 // ---- CONSTANTS ----
@@ -285,15 +441,18 @@ let selectedChip=100;
 function buildChips(){
   const row=document.getElementById('chipRow'); row.innerHTML='';
   CHIP_DEFS.forEach(ch=>{
+    const slot=document.createElement('div');
+    slot.className='chip-slot';
     const d=document.createElement('div');
     d.className=`chip${ch.val===selectedChip?' selected':''}`;
     d.title=ch.label;
     d.innerHTML=`<img src="${ch.img}" alt="${ch.label}">`;
     d.onclick=()=>selectChip(ch.val);
-    row.appendChild(d);
+    slot.appendChild(d);
+    row.appendChild(slot);
   });
 }
-function selectChip(v){ selectedChip=v; buildChips(); }
+function selectChip(v){ playClick(); selectedChip=v; buildChips(); }
 
 // ---- STATE ----
 let balance=100000, bets={}, lastBets={}, spinning=false, winNumber=null;
@@ -301,27 +460,27 @@ function totalBet(){ return Object.values(bets).reduce((a,b)=>a+b,0); }
 
 function placeBet(key){
   if(spinning||balance<selectedChip) return;
+  playClick();
   bets[key]=(bets[key]||0)+selectedChip; balance-=selectedChip; updateUI();
 }
 function clearBets(){
   if(spinning) return;
+  playClick();
   Object.values(bets).forEach(v=>balance+=v); bets={}; updateUI();
 }
 function rebet(){
   if(!Object.keys(lastBets).length) return;
+  playClick();
   clearBets();
   const tot=Object.values(lastBets).reduce((a,b)=>a+b,0);
   if(balance<tot) return;
   bets={...lastBets}; balance-=tot; updateUI();
 }
+
 function updateUI(){
   document.getElementById('balDisp').textContent=balance.toLocaleString()+'g';
   document.getElementById('betDisp').textContent=totalBet().toLocaleString()+'g';
-  document.querySelectorAll('[data-key]').forEach(el=>{
-    const k=el.dataset.key, amt=bets[k]||0;
-    if(amt>0){ el.classList.add('has-bet'); el.dataset.chips=amt>=1000?(amt/1000)+'K':amt; }
-    else{ el.classList.remove('has-bet'); el.dataset.chips=''; }
-  });
+  updateProbeIndicators();
 }
 
 // ---- CANVAS WHEEL ----
@@ -334,6 +493,19 @@ let spinDone=false;
 let ballRadiusFactor=0.615;
 let ballAngleOffset=-0.072;
 let ballBaseAngle=0;
+let ballBounce=0;
+
+// ---- SOUNDS ----
+const spinAudio = new Audio('./spin-sound.mp3');
+spinAudio.loop = true;
+spinAudio.volume = 0.8;
+
+const clickAudio = new Audio('./click-sound.mp3');
+clickAudio.volume = 1.0;
+function playClick(){
+  clickAudio.currentTime = 0;
+  clickAudio.play().catch(()=>{});
+}
 
 function syncCanvasSize(){
   const vh=window.innerHeight/100;
@@ -376,7 +548,9 @@ function drawWheel(){
 
   // Ball
   if(ballRadius>0){
-    const bx=cx+ballRadius*Math.cos(ballAngle), by=cy+ballRadius*Math.sin(ballAngle), br=R*0.04;
+    const br=R*0.04;
+    const dispR=ballRadius+ballBounce;
+    const bx=cx+dispR*Math.cos(ballAngle), by=cy+dispR*Math.sin(ballAngle);
     ctx.beginPath(); ctx.arc(bx,by,br,0,Math.PI*2);
     const bg=ctx.createRadialGradient(bx-br*0.4,by-br*0.4,0,bx,by,br);
     bg.addColorStop(0,'#fff'); bg.addColorStop(1,'#aaa');
@@ -398,13 +572,21 @@ function drawWheel(){
 function animate(){
   if(!spinning){ drawWheel(); return; }
   wheelAngle+=wheelSpeed; ballAngle-=ballSpeed;
-  ballSpeed*=0.994; wheelSpeed*=0.998;
+  ballSpeed*=0.9945; wheelSpeed*=0.998;
   const W=canvas.width, R=W/2;
   const maxR=R*0.87, minR=R*ballRadiusFactor;
   const t=Math.max(0,(ballSpeed-0.005)/(0.08-0.005));
   ballRadius=minR+(maxR-minR)*t;
+  // Bounce effect in last ~1s: ballSpeed roughly 0.005-0.018 range
+  if(ballSpeed<0.022&&!spinDone){
+    const bounceT=(0.022-ballSpeed)/0.017; // 0→1 as speed approaches stop
+    ballBounce=Math.sin(Date.now()*0.03)*R*0.018*bounceT;
+  } else {
+    ballBounce=0;
+  }
   if(ballSpeed<0.005&&!spinDone){
-    spinDone=true;
+    spinDone=true; ballBounce=0;
+    spinAudio.pause(); spinAudio.currentTime=0;
     const sliceAngle=(Math.PI*2)/SLOTS;
     let rel=((ballAngle-wheelAngle)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
     const slot=Math.floor(rel/sliceAngle)%SLOTS;
@@ -420,15 +602,16 @@ function animate(){
 
 function spin(){
   if(spinning||totalBet()===0) return;
+  playClick();
   syncCanvasSize();
   lastBets={...bets}; spinning=true; spinDone=false;
   document.getElementById('spinBtn').disabled=true;
   document.getElementById('resultBanner').style.display='none';
-  document.getElementById('rebetBtn').style.display='none';
-  document.getElementById('winDisp').textContent='-';
+  document.getElementById('rebetBtn').style.visibility='hidden';
   const R=canvas.width/2;
-  wheelSpeed=0.04+Math.random()*0.03; ballSpeed=0.10+Math.random()*0.04;
+  wheelSpeed=0.05+Math.random()*0.03; ballSpeed=0.14+Math.random()*0.04;
   ballRadius=R*0.87; ballAngle=Math.random()*Math.PI*2;
+  spinAudio.currentTime=0; spinAudio.play().catch(()=>{});
   animId=requestAnimationFrame(animate);
 }
 
@@ -458,127 +641,451 @@ function showResult(){
   balance+=payout;
   const net=payout-totalBet();
   const col=colorOf(winNumber);
-  document.getElementById('rTitle').textContent=payout>0?'WINNER!':'NO WIN';
+  document.getElementById('rTitle').textContent=payout>0?'WINNER!':'You Lost';
   document.getElementById('rTitle').style.color=payout>0?'#4aff7a':'#ff4444';
   document.getElementById('rNum').textContent=winNumber;
   document.getElementById('rNum').style.color=col==='red'?'#ff5555':col==='green'?'#4aff7a':'#ccc';
-  document.getElementById('rPay').textContent=payout>0?'+'+net.toLocaleString()+'g profit':'Lost '+totalBet().toLocaleString()+'g';
-  document.getElementById('winDisp').textContent=payout>0?'+'+net.toLocaleString()+'g':'-';
-  document.getElementById('resultBanner').style.display='block';
+  document.getElementById('resultBanner').style.display='flex';
   document.getElementById('spinBtn').disabled=false;
+  document.getElementById('rebetBtn').style.visibility='visible';
   bets={}; updateUI();
 }
 
 function newRound(){
+  playClick();
   document.getElementById('resultBanner').style.display='none';
-  document.getElementById('rebetBtn').style.display='inline-block';
   winNumber=null; ballRadius=0; drawWheel();
 }
 
-// ---- DEBUG ----
-const DBG = {
-  wheel:[
-    {lbl:'Size',  prop:'--wheel-size', min:10, max:100, step:0.5, unit:'vh'},
-    {lbl:'Left',  prop:'--wheel-left', min:0,  max:100, step:0.5, unit:'%'},
-    {lbl:'Top',   prop:'--wheel-top',  min:0,  max:100, step:0.5, unit:'%'},
-  ],
-  table:[
-    {lbl:'Scale', prop:'--table-scale',min:0.3, max:2,   step:0.01,unit:''},
-    {lbl:'X',     prop:'--table-x',    min:-500,max:500, step:1,  unit:'px'},
-    {lbl:'Y',     prop:'--table-y',    min:-500,max:500, step:1,  unit:'px'},
-  ],
-};
+// ---- HIT ZONES: numbers 1-36 (invisible, locked) ----
+const HIT_ZONES = [
+  { id:1,  x:36.32, y:66.15, w:57, h:39, betKey:'1'  },
+  { id:2,  x:36.32, y:61.76, w:57, h:30, betKey:'2'  },
+  { id:3,  x:36.74, y:57.7,  w:53, h:35, betKey:'3'  },
+  { id:4,  x:39.35, y:66.04, w:57, h:39, betKey:'4'  },
+  { id:5,  x:39.61, y:61.98, w:57, h:30, betKey:'5'  },
+  { id:6,  x:39.92, y:57.81, w:53, h:35, betKey:'6'  },
+  { id:7,  x:42.58, y:66.04, w:57, h:39, betKey:'7'  },
+  { id:8,  x:42.79, y:61.87, w:57, h:30, betKey:'8'  },
+  { id:9,  x:43.0,  y:57.92, w:53, h:35, betKey:'9'  },
+  { id:10, x:45.82, y:65.93, w:57, h:39, betKey:'10' },
+  { id:11, x:46.03, y:61.87, w:57, h:30, betKey:'11' },
+  { id:12, x:46.13, y:57.92, w:53, h:35, betKey:'12' },
+  { id:13, x:49.26, y:65.93, w:57, h:39, betKey:'13' },
+  { id:14, x:49.31, y:61.76, w:57, h:30, betKey:'14' },
+  { id:15, x:49.21, y:57.59, w:53, h:35, betKey:'15' },
+  { id:16, x:52.55, y:66.15, w:57, h:39, betKey:'16' },
+  { id:17, x:52.39, y:61.76, w:57, h:30, betKey:'17' },
+  { id:18, x:52.6,  y:57.92, w:53, h:35, betKey:'18' },
+  { id:19, x:55.78, y:66.04, w:57, h:39, betKey:'19' },
+  { id:20, x:55.68, y:61.98, w:57, h:30, betKey:'20' },
+  { id:21, x:55.68, y:57.92, w:53, h:35, betKey:'21' },
+  { id:22, x:59.12, y:66.15, w:57, h:39, betKey:'22' },
+  { id:23, x:58.97, y:61.76, w:57, h:30, betKey:'23' },
+  { id:24, x:58.71, y:57.92, w:53, h:35, betKey:'24' },
+  { id:25, x:62.52, y:66.04, w:57, h:39, betKey:'25' },
+  { id:26, x:62.05, y:61.76, w:57, h:30, betKey:'26' },
+  { id:27, x:61.73, y:57.81, w:53, h:35, betKey:'27' },
+  { id:28, x:65.59, y:66.04, w:57, h:39, betKey:'28' },
+  { id:29, x:65.23, y:61.76, w:57, h:30, betKey:'29' },
+  { id:30, x:65.02, y:57.81, w:53, h:35, betKey:'30' },
+  { id:31, x:68.88, y:65.93, w:57, h:39, betKey:'31' },
+  { id:32, x:68.41, y:61.65, w:57, h:30, betKey:'32' },
+  { id:33, x:67.94, y:57.81, w:53, h:35, betKey:'33' },
+  { id:34, x:72.17, y:65.71, w:57, h:39, betKey:'34' },
+  { id:35, x:71.49, y:61.87, w:57, h:30, betKey:'35' },
+  { id:36, x:71.08, y:57.92, w:53, h:35, betKey:'36' },
+];
 
-function getVar(prop){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue(prop))||0; }
-function setVar(prop,unit,val,display){
-  document.documentElement.style.setProperty(prop, unit?val+unit:val);
-  display.textContent=parseFloat(val)+(unit||'');
-  if(prop==='--wheel-size'){ syncCanvasSize(); drawWheel(); }
-}
-
-function sliderRow(cfg){
-  const cur=getVar(cfg.prop);
-  return `<div class="dbg-row">
-    <span class="lbl">${cfg.lbl}</span>
-    <input type="range" min="${cfg.min}" max="${cfg.max}" step="${cfg.step}" value="${cur}"
-      oninput="setVar('${cfg.prop}','${cfg.unit}',this.value,this.nextElementSibling)">
-    <span class="val">${cur}${cfg.unit}</span>
-  </div>`;
-}
-
-function buildDebugPanel(){
-  const sliceAngle=(Math.PI*2)/SLOTS;
-  const maxOff=+(sliceAngle*0.5).toFixed(4);
-  let html=`<h3>DEBUG (D)</h3>
-  <div class="dbg-section"><b>WHEEL IMAGE</b>${DBG.wheel.map(sliderRow).join('')}</div>
-  <div class="dbg-section"><b>TABLE</b>${DBG.table.map(sliderRow).join('')}</div>
-  <div class="dbg-section"><b>BALL POSITION</b>
-    <div class="dbg-row">
-      <span class="lbl">Radius</span>
-      <input type="range" min="0.3" max="0.95" step="0.005" value="${ballRadiusFactor}"
-        oninput="setBallRadius(parseFloat(this.value),this.nextElementSibling)">
-      <span class="val">${ballRadiusFactor}</span>
-    </div>
-    <div class="dbg-row">
-      <span class="lbl">L / R</span>
-      <input type="range" min="${-maxOff}" max="${maxOff}" step="0.001" value="${ballAngleOffset.toFixed(3)}"
-        oninput="setBallOffset(parseFloat(this.value),this.nextElementSibling)">
-      <span class="val">${ballAngleOffset.toFixed(3)}</span>
-    </div>
-    <button class="dbg-btn dbg-test" onclick="testBallLand()">TEST LAND</button>
-  </div>
-  <button class="dbg-btn dbg-copy" id="copyBtn" onclick="copyValues()">COPY VALUES</button>`;
-  document.getElementById('debugPanel').innerHTML=html;
-}
-
-function setBallRadius(v,display){
-  ballRadiusFactor=v; display.textContent=v;
-  if(ballRadius>0){ ballRadius=canvas.width/2*v; drawWheel(); }
-}
-function setBallOffset(v,display){
-  ballAngleOffset=v; display.textContent=v.toFixed(3);
-  if(ballRadius>0){ ballAngle=ballBaseAngle+ballAngleOffset; drawWheel(); }
-}
-function testBallLand(){
-  syncCanvasSize();
-  const R=canvas.width/2, sliceAngle=(Math.PI*2)/SLOTS;
-  spinning=false; spinDone=true;
-  ballBaseAngle=wheelAngle+sliceAngle/2;
-  ballAngle=ballBaseAngle+ballAngleOffset;
-  ballRadius=R*ballRadiusFactor;
-  drawWheel();
-}
-function copyValues(){
-  const lines=[
-    `--wheel-size: ${getComputedStyle(document.documentElement).getPropertyValue('--wheel-size').trim()};`,
-    `--wheel-left: ${getComputedStyle(document.documentElement).getPropertyValue('--wheel-left').trim()};`,
-    `--wheel-top: ${getComputedStyle(document.documentElement).getPropertyValue('--wheel-top').trim()};`,
-    `--table-scale: ${getComputedStyle(document.documentElement).getPropertyValue('--table-scale').trim()};`,
-    `--table-x: ${getComputedStyle(document.documentElement).getPropertyValue('--table-x').trim()};`,
-    `--table-y: ${getComputedStyle(document.documentElement).getPropertyValue('--table-y').trim()};`,
-    `ballRadiusFactor: ${ballRadiusFactor};`,
-    `ballAngleOffset: ${ballAngleOffset.toFixed(3)};`,
-  ];
-  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
-    const btn=document.getElementById('copyBtn');
-    btn.textContent='COPIED!'; setTimeout(()=>btn.textContent='COPY VALUES',1500);
+// ---- PROBES: visible draggable rectangles for 0, 00, outside bets ----
+const PROBES = [
+  { id:'00',    x:32.77, y:63.84, w:57,  h:35,  color:'#44ff88', betKey:'00',    label:'00'       },
+  { id:'0',     x:33.19, y:60.23, w:57,  h:26,  color:'#44ff88', betKey:'0',     label:'0'        },
+  { id:'1st12', x:40.47, y:70.0,  w:248, h:38,  color:'#c8a840', betKey:'1st12', label:'1st 12'   },
+  { id:'2nd12', x:53.73, y:70.66, w:248, h:38,  color:'#c8a840', betKey:'2nd12', label:'2nd 12'   },
+  { id:'3rd12', x:67.67, y:70.22, w:242, h:38,  color:'#c8a840', betKey:'3rd12', label:'3rd 12'   },
+  { id:'1-18',  x:37.06, y:75.05, w:124, h:38,  color:'#888888', betKey:'1-18',  label:'1 to 18'  },
+  { id:'even',  x:44.14, y:74.72, w:124, h:38,  color:'#888888', betKey:'even',  label:'EVEN'     },
+  { id:'red',   x:50.84, y:75.38, w:124, h:38,  color:'#cc2200', betKey:'red',   label:'RED'      },
+  { id:'black', x:57.29, y:75.27, w:124, h:38,  color:'#555555', betKey:'black', label:'BLACK'    },
+  { id:'odd',   x:64.47, y:75.16, w:124, h:38,  color:'#888888', betKey:'odd',   label:'ODD'      },
+  { id:'19-36', x:71.75, y:74.94, w:124, h:38,  color:'#888888', betKey:'19-36', label:'19 to 36' },
+];
+function createHitZones(){
+  const layer = document.getElementById('probeLayer');
+  HIT_ZONES.forEach(p => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = `position:absolute;left:${p.x}%;top:${p.y}%;width:${p.w}px;height:${p.h}px;transform:translate(-50%,-50%);border-radius:50%;cursor:pointer;pointer-events:all;z-index:450;`;
+    const ind = document.createElement('div');
+    ind.id = `hz-bet-${p.id}`; ind.className = 'probe-bet';
+    wrap.appendChild(ind);
+    wrap.addEventListener('click', () => { placeBet(p.betKey); });
+    layer.appendChild(wrap);
   });
 }
 
-let debugOpen=false;
-document.addEventListener('keydown',e=>{
-  if(e.key.toLowerCase()==='d'&&e.target.tagName!=='INPUT'){
-    debugOpen=!debugOpen;
-    const panel=document.getElementById('debugPanel');
-    if(debugOpen){ buildDebugPanel(); panel.classList.add('open'); }
-    else panel.classList.remove('open');
+let activeProbe = null, didDrag = false, dragData = {};
+
+function createProbes(){
+  const layer = document.getElementById('probeLayer');
+  PROBES.forEach(p => {
+    const el = document.createElement('div');
+    el.id = `probe-${p.id}`;
+    el.className = 'probe-circle';
+    el.style.cssText = `border-radius:6px;cursor:grab;`;
+    applyProbeStyle(el, p);
+    const ind = document.createElement('div');
+    ind.className = 'probe-bet'; ind.id = `probe-bet-${p.id}`;
+    el.appendChild(ind);
+    el.addEventListener('mousedown', e => { e.preventDefault(); startProbeDrag(e, p); });
+    el.addEventListener('wheel', e => { e.preventDefault(); resizeProbe(p, e.deltaY < 0 ? 4 : -4); }, {passive:false});
+    el.addEventListener('click', () => { if(!didDrag) placeBet(p.betKey); });
+    layer.appendChild(el);
+  });
+  updateProbePanel();
+}
+
+function applyProbeStyle(el, p){
+  el.style.left       = p.x + '%';
+  el.style.top        = p.y + '%';
+  el.style.width      = p.w + 'px';
+  el.style.height     = p.h + 'px';
+  el.style.background = 'transparent';
+  el.style.border     = 'none';
+  el.style.color      = 'transparent';
+}
+
+function startProbeDrag(e, p){
+  activeProbe = p; didDrag = false;
+  const el = document.getElementById(`probe-${p.id}`);
+  const rect = el.getBoundingClientRect();
+  const vcx = rect.left + rect.width / 2;
+  const vcy = rect.top  + rect.height / 2;
+  dragData = {
+    startX: e.clientX, startY: e.clientY,
+    offsetX: e.clientX - vcx, offsetY: e.clientY - vcy,
+    ratioX: vcx > 0 ? p.x / (vcx / window.innerWidth)  : 1,
+    ratioY: vcy > 0 ? p.y / (vcy / window.innerHeight) : 1,
+  };
+  document.addEventListener('mousemove', onProbeDrag);
+  document.addEventListener('mouseup',   stopProbeDrag);
+}
+function onProbeDrag(e){
+  if(!activeProbe) return;
+  if(Math.abs(e.clientX - dragData.startX) > 3 || Math.abs(e.clientY - dragData.startY) > 3) didDrag = true;
+  if(!didDrag) return;
+  const tx = e.clientX - dragData.offsetX;
+  const ty = e.clientY - dragData.offsetY;
+  activeProbe.x = parseFloat(((tx / window.innerWidth)  * dragData.ratioX).toFixed(2));
+  activeProbe.y = parseFloat(((ty / window.innerHeight) * dragData.ratioY).toFixed(2));
+  const el = document.getElementById(`probe-${activeProbe.id}`);
+  el.style.left = activeProbe.x + '%';
+  el.style.top  = activeProbe.y + '%';
+  updateProbePanel();
+}
+function stopProbeDrag(){
+  activeProbe = null;
+  document.removeEventListener('mousemove', onProbeDrag);
+  document.removeEventListener('mouseup',   stopProbeDrag);
+}
+function resizeProbe(p, delta){
+  p.w = Math.max(10, Math.min(500, p.w + delta));
+  p.h = Math.max(10, Math.min(200, p.h + Math.round(delta/2)));
+  const el = document.getElementById(`probe-${p.id}`);
+  applyProbeStyle(el, p);
+  updateProbePanel();
+}
+function updateProbePanel(){
+  const rows = document.getElementById('probeRows');
+  if(!rows) return;
+  rows.innerHTML = PROBES.map(p =>
+    `<div class="probe-row">
+      <span class="probe-lbl" style="color:${p.color}">${p.label||p.id}</span>
+      <span class="probe-val">x:${p.x}% y:${p.y}% ${p.w}×${p.h}</span>
+    </div>`
+  ).join('');
+}
+function copyProbes(){
+  const txt = PROBES.map(p => `{ id:'${p.id}', x:${p.x}, y:${p.y}, w:${p.w}, h:${p.h}, color:'${p.color}', betKey:'${p.betKey}', label:'${p.label}' },`).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn = document.querySelector('.pcopy');
+    btn.textContent='COPIED!'; setTimeout(()=>btn.textContent='📋 COPY ALL',1500);
+  });
+}
+
+function updateProbeIndicators(){
+  // Invisible hit zones (numbers 1-36)
+  HIT_ZONES.forEach(p => {
+    const ind = document.getElementById(`hz-bet-${p.id}`);
+    if(!ind) return;
+    const amt = bets[p.betKey] || 0;
+    if(amt > 0){ ind.textContent = amt>=1000?(amt/1000)+'K':amt; ind.style.display='block'; }
+    else ind.style.display='none';
+  });
+  // Visible rectangle probes (0, 00, outside bets)
+  PROBES.forEach(p => {
+    const el  = document.getElementById(`probe-${p.id}`);
+    const ind = document.getElementById(`probe-bet-${p.id}`);
+    if(!ind) return;
+    const amt = bets[p.betKey] || 0;
+    if(amt > 0){
+      ind.textContent = amt>=1000?(amt/1000)+'K':amt;
+      ind.style.display = 'block';
+    } else {
+      ind.style.display = 'none';
+    }
+  });
+}
+// ---- BACKGROUND MUSIC ----
+const bgMusic = document.getElementById('bgMusic');
+let musicOn = true;
+bgMusic.volume = 0.45;
+
+function toggleMusic(){
+  musicOn = !musicOn;
+  bgMusic.muted = !musicOn;
+  document.getElementById('musicBtn').textContent = musicOn ? '🔊' : '🔇';
+}
+
+// Start on first user interaction (browsers block autoplay)
+function startBgMusic(){
+  bgMusic.play().catch(()=>{});
+  document.removeEventListener('click', startBgMusic);
+  document.removeEventListener('keydown', startBgMusic);
+}
+document.addEventListener('click', startBgMusic);
+document.addEventListener('keydown', startBgMusic);
+
+// ---- CANDLES ----
+const CANDLES = [
+  { id:1, x:20.25, y:38.8,  scale:1.00, h:30 },
+  { id:2, x:19.65, y:38.95, scale:0.70, h:30 },
+  { id:3, x:18.8,  y:36.7,  scale:1.00, h:30 },
+  { id:4, x:32,    y:28.6,  scale:1.00, h:30 },
+  { id:5, x:29.7,  y:8.6,   scale:1.00, h:30 },
+  { id:6, x:31.15, y:7.5,   scale:0.90, h:30 },
+  { id:7, x:32.95, y:8.15,  scale:1.00, h:30 },
+];
+
+function buildCandles(){
+  const layer = document.getElementById('candleLayer');
+  layer.innerHTML = '';
+  CANDLES.forEach(c => {
+    const wrap = document.createElement('div');
+    wrap.className = 'candle-wrap';
+    wrap.id = `candle-${c.id}`;
+    const glowSize = 60 * c.scale;
+    wrap.innerHTML = `
+      <div class="candle-glow" style="width:${glowSize}px;height:${glowSize}px;bottom:${c.h*c.scale*0.3}px"></div>
+      <div class="candle-flame-wrap" style="transform:scale(${c.scale})">
+        <div class="candle-flame" style="animation-delay:${(c.id*0.07).toFixed(2)}s"></div>
+        <div class="candle-flame-inner" style="animation-delay:${(c.id*0.05).toFixed(2)}s"></div>
+        <div class="candle-wick"></div>
+      </div>
+      <div class="candle-body" style="height:${c.h*c.scale}px;width:${10*c.scale}px">
+        <div class="candle-drip"></div>
+      </div>`;
+    applyCandle(wrap, c);
+    layer.appendChild(wrap);
+  });
+  buildCandlePanel();
+}
+
+function applyCandle(el, c){
+  el.style.left  = c.x + '%';
+  el.style.top   = c.y + '%';
+}
+
+function setCandleX(id, val, display){
+  const c = CANDLES.find(x=>x.id===id);
+  c.x = parseFloat(val);
+  display.textContent = val + '%';
+  document.getElementById(`candle-${id}`).style.left = c.x + '%';
+}
+function setCandleY(id, val, display){
+  const c = CANDLES.find(x=>x.id===id);
+  c.y = parseFloat(val);
+  display.textContent = val + '%';
+  document.getElementById(`candle-${id}`).style.top = c.y + '%';
+}
+function setCandleS(id, val, display){
+  const c = CANDLES.find(x=>x.id===id);
+  c.scale = parseFloat(val);
+  display.textContent = parseFloat(val).toFixed(1);
+  // rebuild this candle
+  const layer = document.getElementById('candleLayer');
+  const old = document.getElementById(`candle-${id}`);
+  const wrap = document.createElement('div');
+  wrap.className = 'candle-wrap';
+  wrap.id = `candle-${id}`;
+  const glowSize = 60 * c.scale;
+  wrap.innerHTML = `
+    <div class="candle-glow" style="width:${glowSize}px;height:${glowSize}px;bottom:${c.h*c.scale*0.3}px"></div>
+    <div class="candle-flame-wrap" style="transform:scale(${c.scale})">
+      <div class="candle-flame" style="animation-delay:${(c.id*0.07).toFixed(2)}s"></div>
+      <div class="candle-flame-inner" style="animation-delay:${(c.id*0.05).toFixed(2)}s"></div>
+      <div class="candle-wick"></div>
+    </div>
+    <div class="candle-body" style="height:${c.h*c.scale}px;width:${10*c.scale}px">
+      <div class="candle-drip"></div>
+    </div>`;
+  applyCandle(wrap, c);
+  layer.replaceChild(wrap, old);
+}
+
+function buildCandlePanel(){
+  const rows = document.getElementById('candleRows');
+  if(!rows) return;
+  rows.innerHTML = CANDLES.map(c => `
+    <div class="cd-group">
+      <div class="cd-title">Candle ${c.id}</div>
+      <div class="cd-row"><span class="cd-lbl">X</span>
+        <input type="range" min="${(c.x-5).toFixed(1)}" max="${(c.x+5).toFixed(1)}" step="0.05" value="${c.x}"
+          oninput="setCandleX(${c.id},this.value,this.nextElementSibling)">
+        <span class="cd-val">${c.x}%</span></div>
+      <div class="cd-row"><span class="cd-lbl">Y</span>
+        <input type="range" min="${(c.y-5).toFixed(1)}" max="${(c.y+5).toFixed(1)}" step="0.05" value="${c.y}"
+          oninput="setCandleY(${c.id},this.value,this.nextElementSibling)">
+        <span class="cd-val">${c.y}%</span></div>
+      <div class="cd-row"><span class="cd-lbl">S</span>
+        <input type="range" min="${Math.max(0.1,c.scale-0.5).toFixed(2)}" max="${(c.scale+0.5).toFixed(2)}" step="0.01" value="${c.scale}"
+          oninput="setCandleS(${c.id},this.value,this.nextElementSibling)">
+        <span class="cd-val">${c.scale.toFixed(2)}</span></div>
+    </div>`).join('');
+}
+
+function copyCandles(){
+  const txt = CANDLES.map(c =>
+    `  { id:${c.id}, x:${c.x}, y:${c.y}, scale:${c.scale.toFixed(1)}, h:${c.h} },`
+  ).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn = document.querySelector('.cdcopy');
+    btn.textContent='COPIED!'; setTimeout(()=>btn.textContent='📋 COPY ALL',1500);
+  });
+}
+
+// ---- PARTICLE FLAME ----
+const TORCH = { x:92.5, y:19.9, size:30 };
+const flameCanvas = document.getElementById('flameCanvas');
+const fctx = flameCanvas.getContext('2d');
+const particles = [];
+
+function resizeFlameCanvas(){
+  const s = TORCH.size;
+  const W = s * 5, H = s * 8;
+  flameCanvas.width  = W;
+  flameCanvas.height = H;
+  flameCanvas.style.width  = W + 'px';
+  flameCanvas.style.height = H + 'px';
+  flameCanvas.style.left = (window.innerWidth  * TORCH.x/100 - W/2) + 'px';
+  flameCanvas.style.top  = (window.innerHeight * TORCH.y/100 - H)   + 'px';
+}
+
+function spawnParticle(){
+  const s = TORCH.size;
+  const spread = s * 0.8;
+  particles.push({
+    x:  flameCanvas.width/2 + (Math.random()-0.5)*spread*0.6,
+    y:  flameCanvas.height,
+    vx: (Math.random()-0.5) * s * 0.018,
+    vy: -(Math.random()*s*0.05 + s*0.035),
+    life: 0,
+    maxLife: 70 + Math.random()*50,
+    r: s*0.5 + Math.random()*s*0.4,
+  });
+}
+
+function tickParticles(){
+  const W = flameCanvas.width, H = flameCanvas.height;
+  fctx.clearRect(0,0,W,H);
+
+  // spawn 3-6 per frame
+  const count = 2 + Math.random()*2|0;
+  for(let i=0;i<count;i++) spawnParticle();
+
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.x  += p.vx + Math.sin(p.life*0.15)*(0.2);
+    p.y  += p.vy;
+    p.vy *= 0.97;
+    p.r  *= 0.978;
+    p.life++;
+    if(p.life>p.maxLife||p.r<0.5){ particles.splice(i,1); continue; }
+
+    const t = p.life/p.maxLife; // 0=birth 1=death
+    // colour: white-yellow → orange → red → transparent
+    let r,g,b,a;
+    if(t<0.2){       r=255; g=255-(t/0.2)*100|0; b=200-(t/0.2)*200|0; a=t/0.2; }
+    else if(t<0.55){ const q=(t-0.2)/0.35; r=255; g=155-q*100|0; b=0; a=1; }
+    else if(t<0.8){  const q=(t-0.55)/0.25; r=255-q*80|0; g=55-q*55|0; b=0; a=1-q*0.3; }
+    else {           const q=(t-0.8)/0.2; r=175; g=0; b=0; a=0.7-q*0.7; }
+
+    const grad = fctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+    grad.addColorStop(0,   `rgba(${r},${g},${b},${a})`);
+    grad.addColorStop(0.4, `rgba(${r},${g},${b},${a*0.6})`);
+    grad.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+    fctx.beginPath();
+    fctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    fctx.fillStyle=grad;
+    fctx.fill();
   }
-});
+  requestAnimationFrame(tickParticles);
+}
+
+function buildTorch(){ resizeFlameCanvas(); }
+function setTorch(prop, val, display){
+  TORCH[prop] = parseFloat(val);
+  display.textContent = prop==='size' ? val : parseFloat(val).toFixed(1)+'%';
+  resizeFlameCanvas();
+}
+function copyTorch(){
+  const txt = `{ x:${TORCH.x}, y:${TORCH.y}, size:${TORCH.size} }`;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.querySelector('.tdcopy');
+    btn.textContent='COPIED!'; setTimeout(()=>btn.textContent='📋 COPY VALUES',1500);
+  });
+}
+
+resizeFlameCanvas();
+tickParticles();
+window.addEventListener('resize', resizeFlameCanvas);
+
+function setBX(prop, val, display){
+  document.documentElement.style.setProperty(prop, val + 'px');
+  display.textContent = val + 'px';
+}
+function copyBtnLayout(){
+  const props = ['--spin-x','--rebet-x','--clear-x','--bal-x'];
+  const cs = getComputedStyle(document.documentElement);
+  const txt = props.map(p => `  ${p}: ${cs.getPropertyValue(p).trim() || '0px'};`).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn = document.querySelector('.bdcopy');
+    btn.textContent='COPIED!'; setTimeout(()=>btn.textContent='📋 COPY VALUES',1500);
+  });
+}
+function copyBarLayout(){
+  const props = ['--chips-x','--bet-x','--spin-x','--rebet-x','--clear-x','--bal-x'];
+  const cs = getComputedStyle(document.documentElement);
+  const txt = props.map(p => `  ${p}: ${cs.getPropertyValue(p).trim() || '0px'};`).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn = document.querySelector('.bdcopy');
+    btn.textContent='COPIED!'; setTimeout(()=>btn.textContent='📋 COPY VALUES',1500);
+  });
+}
+
+function setRV(prop, val, unit, display){
+  document.documentElement.style.setProperty(prop, parseFloat(val) + unit);
+  if(display) display.textContent = parseFloat(val) + unit;
+}
 
 // ---- INIT ----
 buildGrid();
 buildChips();
+buildCandles();
 updateUI();
+document.getElementById('felt').style.display = 'none';
+createHitZones();
+createProbes();
 window.addEventListener('load', ()=>{ syncCanvasSize(); drawWheel(); });
 window.addEventListener('resize', ()=>{ syncCanvasSize(); drawWheel(); });
 </script>
