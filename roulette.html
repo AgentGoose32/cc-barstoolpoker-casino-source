@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Roulette - PL Casino</title>
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ width:100%; height:100%; overflow:hidden; font-family:Georgia,serif; color:#fff; }
+
+:root{
+  --wheel-size: 70.5vh;
+  --wheel-left: 55.5%;
+  --wheel-top: 28.5%;
+  --table-scale: 0.75;
+  --table-x: -58px;
+  --table-y: 342px;
+  --chip-size: 10.9vh;
+  --bar-x: 0px;
+  --bar-y: 0px;
+}
+
+body{
+  display:flex; align-items:center; justify-content:center;
+  background: url('https://drive.google.com/thumbnail?id=1YqLzKVIWx2neB4K4l7U0JK1l-KRS0Lyu&sz=w1600') center center / auto 100% no-repeat;
+  zoom: 0.75;
+}
+
+.game{
+  width:100vw; height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding: 1vh 2vw 1vh;
+  position:relative;
+  overflow: visible;
+}
+
+/* WHEEL */
+#wheelArea{
+  position: fixed;
+  left: var(--wheel-left);
+  top: var(--wheel-top);
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  pointer-events: none;
+}
+#wheelCanvas{
+  display:block;
+  filter: drop-shadow(0 8px 32px rgba(0,0,0,0.9));
+}
+
+/* TABLE */
+#tableWrap{
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  transform: translate(var(--table-x), var(--table-y)) scale(var(--table-scale));
+  transform-origin: center center;
+  width: fit-content;
+  margin: 0 auto;
+}
+#felt{
+  background: linear-gradient(160deg, #1e6b2e 0%, #155224 60%, #0e3d1a 100%);
+  border: 6px solid #5a2d0c;
+  border-radius: 12px;
+  box-shadow: 0 0 0 3px #8b4513, inset 0 2px 8px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.6);
+  padding: 10px 12px 8px;
+  display:flex; flex-direction:column; gap:4px;
+  width: fit-content; margin: 0 auto;
+}
+
+/* NUMBER GRID */
+#numArea{ display:flex; gap:4px; align-items:stretch; }
+#zeroCol{ display:flex; align-items:center; justify-content:center; }
+.zero-cell{
+  width:3.2vw; display:flex; align-items:center; justify-content:center;
+  background:#1a6e2e; border:2px solid rgba(255,255,255,0.3); border-radius:6px;
+  font-size:1.4vw; font-weight:bold; cursor:pointer; user-select:none;
+  transition:all 0.15s; position:relative;
+}
+.zero-cell:hover{ border-color:#ffd700; box-shadow:0 0 10px rgba(255,215,0,0.5); }
+#gridCols{ display:flex; gap:3px; flex:1; }
+.grid-col{ display:flex; flex-direction:column; gap:3px; }
+.num-cell{
+  width:4.2vw; height:4.2vh; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:1.1vw; font-weight:bold; cursor:pointer; user-select:none;
+  border:2px solid rgba(255,255,255,0.2); transition:all 0.12s; position:relative;
+  text-shadow:0 1px 2px rgba(0,0,0,0.8);
+}
+.num-cell.red{ background:radial-gradient(circle at 35% 30%, #e84040, #9a1010); }
+.num-cell.black{ background:radial-gradient(circle at 35% 30%, #444, #111); }
+.num-cell:hover{ border-color:#ffd700; transform:scale(1.12); box-shadow:0 0 10px rgba(255,215,0,0.5); z-index:5; }
+.num-cell.has-bet::after, .zero-cell.has-bet::after, .out-cell.has-bet::after, .doz-cell.has-bet::after{
+  content:attr(data-chips); position:absolute; top:-4px; right:-2px;
+  font-size:0.7vw; color:#ffd700; font-weight:bold; background:rgba(0,0,0,0.7);
+  border-radius:3px; padding:0 2px; pointer-events:none;
+}
+
+/* DOZENS */
+#dozenRow{ display:flex; gap:4px; padding-left: calc(3.2vw + 8px); }
+.doz-cell{
+  flex:1; padding:0.6vh 0; text-align:center; font-size:1vw; font-weight:bold;
+  background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:4px;
+  cursor:pointer; user-select:none; transition:all 0.12s; position:relative;
+}
+.doz-cell:hover{ border-color:#ffd700; background:rgba(255,215,0,0.1); }
+
+/* OUTSIDE BETS */
+#outsideRow{ display:flex; gap:4px; padding-left: calc(3.2vw + 8px); }
+.out-cell{
+  flex:1; padding:0.7vh 0; text-align:center; font-size:1vw; font-weight:bold;
+  border:1px solid rgba(255,255,255,0.2); border-radius:4px; cursor:pointer;
+  user-select:none; transition:all 0.12s; position:relative;
+  display:flex; align-items:center; justify-content:center;
+}
+.out-cell:hover{ border-color:#ffd700; box-shadow:0 0 8px rgba(255,215,0,0.3); }
+.out-cell.red-bg{ background:radial-gradient(circle at 40% 40%, #cc2200, #7a0e00); }
+.out-cell.blk-bg{ background:radial-gradient(circle at 40% 40%, #333, #111); }
+.out-cell.neutral{ background:rgba(0,0,0,0.2); color:#ddd; }
+.diamond{ width:1.4vw; height:1.4vw; transform:rotate(45deg); display:inline-block; }
+.diamond.red{ background:#cc0000; }
+.diamond.blk{ background:#111; border:1px solid #444; }
+
+/* BOTTOM BAR */
+#bottomBar{
+  width:120%; margin-left:-10%; display:flex; align-items:center; justify-content:space-between;
+  background:rgba(0,0,0,0.6); border-radius:8px; padding:0.8vh 1.5vw;
+  border:1px solid rgba(255,255,255,0.1);
+  transform: translate(var(--bar-x), var(--bar-y));
+  margin-top:6px; flex-shrink:0;
+}
+#chipRow{ display:flex; gap:0.8vw; align-items:center; }
+.chip{
+  width:var(--chip-size); height:var(--chip-size); border-radius:50%; cursor:pointer;
+  border:3px solid transparent; transition:all 0.15s; user-select:none;
+  overflow:hidden; flex-shrink:0;
+}
+.chip img{ width:100%; height:100%; display:block; border-radius:50%; pointer-events:none; }
+.chip:hover{ transform:scale(1.1); }
+.chip.selected{ border-color:#fff; box-shadow:0 0 14px rgba(255,215,0,0.8); transform:scale(1.15); }
+
+#actionBtns{ display:flex; gap:0.8vw; align-items:center; }
+.aBtn{
+  padding:0.8vh 1.4vw; border-radius:6px; cursor:pointer; font-family:Georgia,serif;
+  font-size:1vw; font-weight:bold; border:2px solid; transition:all 0.15s; letter-spacing:1px;
+}
+#spinBtn{ background:rgba(20,80,20,0.9); border-color:#4aff7a; color:#4aff7a; }
+#spinBtn:hover:not(:disabled){ box-shadow:0 0 12px rgba(74,255,122,0.4); }
+#spinBtn:disabled{ opacity:0.4; cursor:not-allowed; }
+#clearBtn{ background:rgba(60,20,20,0.8); border-color:#ff6060; color:#ff6060; }
+#rebetBtn{ background:rgba(36,26,8,0.9); border-color:#8a5a10; color:#e8a030; display:none; }
+.aBtn:hover{ filter:brightness(1.15); }
+#balArea{ font-size:1vw; color:#ccc; display:flex; gap:2vw; }
+#balArea b{ color:#ffd700; }
+
+/* RESULT */
+#resultBanner{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  background:rgba(0,0,0,0.95); border:2px solid #ffd700; border-radius:10px;
+  padding:3vh 5vw; text-align:center; display:none; z-index:100;
+  box-shadow:0 0 40px rgba(255,215,0,0.4);
+}
+.rtitle{ font-size:3.5vh; font-weight:bold; margin-bottom:1vh; }
+.rnum{ font-size:6vh; font-weight:bold; margin:0.5vh 0; }
+.rpay{ font-size:2vh; color:#ffd700; }
+.rBtn{ margin-top:2vh; padding:1vh 3vw; border-radius:6px; cursor:pointer; font-family:Georgia,serif;
+  font-size:1.4vh; font-weight:bold; border:2px solid #ffd700; color:#ffd700; background:rgba(0,0,0,0.8); }
+.rBtn:hover{ box-shadow:0 0 10px rgba(255,215,0,0.4); }
+
+/* DEBUG */
+#debugPanel{
+  display:none; position:fixed; top:10px; right:10px; z-index:9999;
+  background:rgba(0,0,0,0.93); border:1px solid #ffd700; border-radius:8px;
+  padding:12px 16px; width:300px; max-height:90vh; overflow-y:auto;
+  font-family:monospace; font-size:12px; color:#fff;
+}
+#debugPanel.open{ display:block; }
+#debugPanel h3{ color:#ffd700; margin-bottom:8px; font-size:13px; letter-spacing:2px; }
+.dbg-section{ margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:8px; }
+.dbg-section > b{ color:#aaa; font-size:11px; display:block; margin-bottom:4px; letter-spacing:1px; }
+.dbg-row{ display:flex; align-items:center; gap:6px; margin-bottom:3px; }
+.dbg-row .lbl{ color:#ccc; min-width:46px; font-size:11px; }
+.dbg-row input[type=range]{ flex:1; accent-color:#ffd700; }
+.dbg-row .val{ color:#ffd700; min-width:48px; text-align:right; font-size:11px; }
+.dbg-btn{ width:100%; margin-top:4px; padding:5px; font-family:monospace; font-size:11px;
+  cursor:pointer; border-radius:3px; }
+.dbg-test{ background:#1a1a4a; border:1px solid #88aaff; color:#88aaff; }
+.dbg-copy{ background:#2a1a00; border:1px solid #ffd700; color:#ffd700; margin-top:6px; }
+.dbg-btn:hover{ filter:brightness(1.2); }
+#dbgHint{ position:fixed; bottom:10px; right:10px; color:#ffd70055;
+  font-size:11px; font-family:monospace; pointer-events:none; z-index:9998; }
+</style>
+</head>
+<body>
+<div class="game">
+
+  <!-- TABLE -->
+  <div id="tableWrap">
+    <div id="felt">
+      <div id="numArea">
+        <div id="zeroCol">
+          <div class="zero-cell" data-key="0" onclick="placeBet('0')" id="cell-0">0<br>00</div>
+        </div>
+        <div id="gridCols"></div>
+      </div>
+      <div id="dozenRow">
+        <div class="doz-cell" data-key="1st12" onclick="placeBet('1st12')">1st 12</div>
+        <div class="doz-cell" data-key="2nd12" onclick="placeBet('2nd12')">2nd 12</div>
+        <div class="doz-cell" data-key="3rd12" onclick="placeBet('3rd12')">3rd 12</div>
+      </div>
+      <div id="outsideRow">
+        <div class="out-cell neutral" data-key="1-18"  onclick="placeBet('1-18')">1 to 18</div>
+        <div class="out-cell neutral" data-key="even"  onclick="placeBet('even')">EVEN</div>
+        <div class="out-cell red-bg" data-key="red"   onclick="placeBet('red')"><span class="diamond red"></span></div>
+        <div class="out-cell blk-bg" data-key="black" onclick="placeBet('black')"><span class="diamond blk"></span></div>
+        <div class="out-cell neutral" data-key="odd"   onclick="placeBet('odd')">ODD</div>
+        <div class="out-cell neutral" data-key="19-36" onclick="placeBet('19-36')">19 to 36</div>
+      </div>
+    </div>
+    <div id="bottomBar">
+      <div id="chipRow"></div>
+      <div id="balArea">
+        <span>Balance: <b id="balDisp">100,000g</b></span>
+        <span>Win: <b id="winDisp">-</b></span>
+        <span>Bet: <b id="betDisp">0g</b></span>
+      </div>
+      <div id="actionBtns">
+        <button class="aBtn" id="clearBtn" onclick="clearBets()">CLEAR</button>
+        <button class="aBtn" id="rebetBtn" onclick="rebet()">REBET</button>
+        <button class="aBtn" id="spinBtn" onclick="spin()">SPIN</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultBanner">
+    <div class="rtitle" id="rTitle">-</div>
+    <div class="rnum"   id="rNum">-</div>
+    <div class="rpay"   id="rPay">-</div>
+    <button class="rBtn" onclick="newRound()">PLAY AGAIN</button>
+  </div>
+</div>
+
+<!-- WHEEL lives outside .game so nothing clips it -->
+<div id="wheelArea">
+  <canvas id="wheelCanvas"></canvas>
+</div>
+
+<div id="debugPanel"></div>
+<div id="dbgHint">Press D for debug</div>
+
+<script>
+// ---- CONSTANTS ----
+const WHEEL_ORDER = [0,28,9,26,30,11,7,20,32,17,5,22,34,15,3,24,36,13,1,'00',27,10,25,29,12,8,19,31,18,6,21,33,16,4,23,35,14,2];
+const SLOTS = WHEEL_ORDER.length;
+const RED_NUMS = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+
+function colorOf(n){
+  if(n===0||n==='00'||n==='0') return 'green';
+  return RED_NUMS.has(Number(n)) ? 'red' : 'black';
+}
+
+// ---- GRID ----
+const COLS = 12;
+function buildGrid(){
+  const gc = document.getElementById('gridCols'); gc.innerHTML='';
+  for(let col=0;col<COLS;col++){
+    const div=document.createElement('div'); div.className='grid-col';
+    for(let row=0;row<3;row++){
+      const n=col*3+(3-row);
+      const c=document.createElement('div');
+      c.className=`num-cell ${colorOf(n)}`; c.textContent=n;
+      c.dataset.key=String(n); c.id=`cell-${n}`;
+      c.onclick=()=>placeBet(String(n)); div.appendChild(c);
+    }
+    gc.appendChild(div);
+  }
+}
+
+// ---- CHIPS ----
+const CHIP_DEFS = [
+  {val:100,   label:'100', img:'https://drive.google.com/thumbnail?id=1hx7VaQG7UFHtdOE_uGJ64cOuedd81n-x&sz=w200'},
+  {val:500,   label:'500', img:'https://drive.google.com/thumbnail?id=1IJ7Lp03TQ7rJjetXNoUGq9TB5b8sJmTs&sz=w200'},
+  {val:1000,  label:'1K',  img:'https://drive.google.com/thumbnail?id=1gN38szt9JExdAZrVipnRKahg9zLwGtOq&sz=w200'},
+  {val:5000,  label:'5K',  img:'https://drive.google.com/thumbnail?id=11cxGHjfNZFIJgTXnQGmFDSFK-1fUhVup&sz=w200'},
+  {val:10000, label:'10K', img:'https://drive.google.com/thumbnail?id=10SkRQCPz-BckF4jBUS0noiSmThGsyx47&sz=w200'},
+];
+let selectedChip=100;
+function buildChips(){
+  const row=document.getElementById('chipRow'); row.innerHTML='';
+  CHIP_DEFS.forEach(ch=>{
+    const d=document.createElement('div');
+    d.className=`chip${ch.val===selectedChip?' selected':''}`;
+    d.title=ch.label;
+    d.innerHTML=`<img src="${ch.img}" alt="${ch.label}">`;
+    d.onclick=()=>selectChip(ch.val);
+    row.appendChild(d);
+  });
+}
+function selectChip(v){ selectedChip=v; buildChips(); }
+
+// ---- STATE ----
+let balance=100000, bets={}, lastBets={}, spinning=false, winNumber=null;
+function totalBet(){ return Object.values(bets).reduce((a,b)=>a+b,0); }
+
+function placeBet(key){
+  if(spinning||balance<selectedChip) return;
+  bets[key]=(bets[key]||0)+selectedChip; balance-=selectedChip; updateUI();
+}
+function clearBets(){
+  if(spinning) return;
+  Object.values(bets).forEach(v=>balance+=v); bets={}; updateUI();
+}
+function rebet(){
+  if(!Object.keys(lastBets).length) return;
+  clearBets();
+  const tot=Object.values(lastBets).reduce((a,b)=>a+b,0);
+  if(balance<tot) return;
+  bets={...lastBets}; balance-=tot; updateUI();
+}
+function updateUI(){
+  document.getElementById('balDisp').textContent=balance.toLocaleString()+'g';
+  document.getElementById('betDisp').textContent=totalBet().toLocaleString()+'g';
+  document.querySelectorAll('[data-key]').forEach(el=>{
+    const k=el.dataset.key, amt=bets[k]||0;
+    if(amt>0){ el.classList.add('has-bet'); el.dataset.chips=amt>=1000?(amt/1000)+'K':amt; }
+    else{ el.classList.remove('has-bet'); el.dataset.chips=''; }
+  });
+}
+
+// ---- CANVAS WHEEL ----
+const canvas = document.getElementById('wheelCanvas');
+const ctx    = canvas.getContext('2d');
+
+let wheelAngle=0, ballAngle=0, ballRadius=0;
+let wheelSpeed=0, ballSpeed=0, animId=null;
+let spinDone=false;
+let ballRadiusFactor=0.615;
+let ballAngleOffset=-0.072;
+let ballBaseAngle=0;
+
+function syncCanvasSize(){
+  const vh=window.innerHeight/100;
+  const sz=Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--wheel-size'))*vh);
+  canvas.width=sz; canvas.height=sz;
+}
+
+function drawWheel(){
+  const W=canvas.width, cx=W/2, cy=W/2, R=W/2;
+  ctx.clearRect(0,0,W,W);
+
+  // Outer rim
+  const rimGrad=ctx.createRadialGradient(cx,cy,R*0.88,cx,cy,R);
+  rimGrad.addColorStop(0,'#5a2d0c'); rimGrad.addColorStop(0.5,'#8b4513'); rimGrad.addColorStop(1,'#3a1a00');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle=rimGrad; ctx.fill();
+
+  const sliceAngle=(Math.PI*2)/SLOTS;
+  for(let i=0;i<SLOTS;i++){
+    const a=wheelAngle+i*sliceAngle-sliceAngle/2;
+    const num=WHEEL_ORDER[i], col=colorOf(num);
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,R*0.86,a,a+sliceAngle); ctx.closePath();
+    ctx.fillStyle=col==='green'?'#1a6e2e':col==='red'?'#cc2200':'#111';
+    ctx.fill();
+    ctx.strokeStyle='rgba(200,160,80,0.3)'; ctx.lineWidth=0.5; ctx.stroke();
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(a+sliceAngle/2);
+    ctx.translate(R*0.70,0); ctx.rotate(Math.PI/2);
+    ctx.fillStyle='#fff'; ctx.font=`bold ${Math.round(R*0.055)}px Arial`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(String(num),0,0); ctx.restore();
+  }
+
+  // Inner gold hub
+  const innerGrad=ctx.createRadialGradient(cx*0.9,cy*0.9,0,cx,cy,R*0.38);
+  innerGrad.addColorStop(0,'#d4a843'); innerGrad.addColorStop(0.4,'#8b6914');
+  innerGrad.addColorStop(0.8,'#5a3d00'); innerGrad.addColorStop(1,'#2a1800');
+  ctx.beginPath(); ctx.arc(cx,cy,R*0.38,0,Math.PI*2); ctx.fillStyle=innerGrad; ctx.fill();
+  [0.87,0.89,0.91].forEach(r=>{ ctx.beginPath(); ctx.arc(cx,cy,R*r,0,Math.PI*2); ctx.strokeStyle='rgba(210,170,80,0.4)'; ctx.lineWidth=1; ctx.stroke(); });
+  [0.37,0.39].forEach(r=>{ ctx.beginPath(); ctx.arc(cx,cy,R*r,0,Math.PI*2); ctx.strokeStyle='rgba(210,170,80,0.5)'; ctx.lineWidth=1.5; ctx.stroke(); });
+
+  // Ball
+  if(ballRadius>0){
+    const bx=cx+ballRadius*Math.cos(ballAngle), by=cy+ballRadius*Math.sin(ballAngle), br=R*0.04;
+    ctx.beginPath(); ctx.arc(bx,by,br,0,Math.PI*2);
+    const bg=ctx.createRadialGradient(bx-br*0.4,by-br*0.4,0,bx,by,br);
+    bg.addColorStop(0,'#fff'); bg.addColorStop(1,'#aaa');
+    ctx.fillStyle=bg; ctx.fill(); ctx.strokeStyle='#888'; ctx.lineWidth=1; ctx.stroke();
+  }
+
+  // Center cap
+  const capG=ctx.createRadialGradient(cx*0.96,cy*0.96,0,cx,cy,R*0.07);
+  capG.addColorStop(0,'#ffe066'); capG.addColorStop(1,'#8b6914');
+  ctx.beginPath(); ctx.arc(cx,cy,R*0.07,0,Math.PI*2); ctx.fillStyle=capG; ctx.fill();
+  ctx.strokeStyle='rgba(210,170,80,0.8)'; ctx.lineWidth=2; ctx.stroke();
+
+  // Pointer
+  ctx.save(); ctx.translate(cx,R*0.13);
+  ctx.beginPath(); ctx.moveTo(0,-R*0.05); ctx.lineTo(-R*0.03,R*0.05); ctx.lineTo(R*0.03,R*0.05);
+  ctx.closePath(); ctx.fillStyle='#ffd700'; ctx.fill(); ctx.restore();
+}
+
+function animate(){
+  if(!spinning){ drawWheel(); return; }
+  wheelAngle+=wheelSpeed; ballAngle-=ballSpeed;
+  ballSpeed*=0.994; wheelSpeed*=0.998;
+  const W=canvas.width, R=W/2;
+  const maxR=R*0.87, minR=R*ballRadiusFactor;
+  const t=Math.max(0,(ballSpeed-0.005)/(0.08-0.005));
+  ballRadius=minR+(maxR-minR)*t;
+  if(ballSpeed<0.005&&!spinDone){
+    spinDone=true;
+    const sliceAngle=(Math.PI*2)/SLOTS;
+    let rel=((ballAngle-wheelAngle)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+    const slot=Math.floor(rel/sliceAngle)%SLOTS;
+    winNumber=WHEEL_ORDER[slot];
+    ballBaseAngle=wheelAngle+slot*sliceAngle+sliceAngle/2;
+    ballAngle=ballBaseAngle+ballAngleOffset;
+    ballRadius=R*ballRadiusFactor;
+    drawWheel(); spinning=false; cancelAnimationFrame(animId);
+    setTimeout(showResult,700); return;
+  }
+  drawWheel(); animId=requestAnimationFrame(animate);
+}
+
+function spin(){
+  if(spinning||totalBet()===0) return;
+  syncCanvasSize();
+  lastBets={...bets}; spinning=true; spinDone=false;
+  document.getElementById('spinBtn').disabled=true;
+  document.getElementById('resultBanner').style.display='none';
+  document.getElementById('rebetBtn').style.display='none';
+  document.getElementById('winDisp').textContent='-';
+  const R=canvas.width/2;
+  wheelSpeed=0.04+Math.random()*0.03; ballSpeed=0.10+Math.random()*0.04;
+  ballRadius=R*0.87; ballAngle=Math.random()*Math.PI*2;
+  animId=requestAnimationFrame(animate);
+}
+
+// ---- PAYOUT ----
+function calcPayout(wn){
+  let total=0;
+  const nNum=wn==='00'?-1:Number(wn);
+  Object.entries(bets).forEach(([k,amt])=>{
+    let win=0;
+    if(k===String(wn)||k===wn)            { win=amt*36; }
+    else if(k==='red'   &&colorOf(wn)==='red')  { win=amt*2; }
+    else if(k==='black' &&colorOf(wn)==='black'){ win=amt*2; }
+    else if(k==='odd'   &&nNum>0&&nNum%2!==0)   { win=amt*2; }
+    else if(k==='even'  &&nNum>0&&nNum%2===0)   { win=amt*2; }
+    else if(k==='1-18'  &&nNum>=1&&nNum<=18)    { win=amt*2; }
+    else if(k==='19-36' &&nNum>=19&&nNum<=36)   { win=amt*2; }
+    else if(k==='1st12' &&nNum>=1&&nNum<=12)    { win=amt*3; }
+    else if(k==='2nd12' &&nNum>=13&&nNum<=24)   { win=amt*3; }
+    else if(k==='3rd12' &&nNum>=25&&nNum<=36)   { win=amt*3; }
+    total+=win;
+  });
+  return total;
+}
+
+function showResult(){
+  const payout=calcPayout(winNumber);
+  balance+=payout;
+  const net=payout-totalBet();
+  const col=colorOf(winNumber);
+  document.getElementById('rTitle').textContent=payout>0?'WINNER!':'NO WIN';
+  document.getElementById('rTitle').style.color=payout>0?'#4aff7a':'#ff4444';
+  document.getElementById('rNum').textContent=winNumber;
+  document.getElementById('rNum').style.color=col==='red'?'#ff5555':col==='green'?'#4aff7a':'#ccc';
+  document.getElementById('rPay').textContent=payout>0?'+'+net.toLocaleString()+'g profit':'Lost '+totalBet().toLocaleString()+'g';
+  document.getElementById('winDisp').textContent=payout>0?'+'+net.toLocaleString()+'g':'-';
+  document.getElementById('resultBanner').style.display='block';
+  document.getElementById('spinBtn').disabled=false;
+  bets={}; updateUI();
+}
+
+function newRound(){
+  document.getElementById('resultBanner').style.display='none';
+  document.getElementById('rebetBtn').style.display='inline-block';
+  winNumber=null; ballRadius=0; drawWheel();
+}
+
+// ---- DEBUG ----
+const DBG = {
+  wheel:[
+    {lbl:'Size',  prop:'--wheel-size', min:10, max:100, step:0.5, unit:'vh'},
+    {lbl:'Left',  prop:'--wheel-left', min:0,  max:100, step:0.5, unit:'%'},
+    {lbl:'Top',   prop:'--wheel-top',  min:0,  max:100, step:0.5, unit:'%'},
+  ],
+  table:[
+    {lbl:'Scale', prop:'--table-scale',min:0.3, max:2,   step:0.01,unit:''},
+    {lbl:'X',     prop:'--table-x',    min:-500,max:500, step:1,  unit:'px'},
+    {lbl:'Y',     prop:'--table-y',    min:-500,max:500, step:1,  unit:'px'},
+  ],
+};
+
+function getVar(prop){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue(prop))||0; }
+function setVar(prop,unit,val,display){
+  document.documentElement.style.setProperty(prop, unit?val+unit:val);
+  display.textContent=parseFloat(val)+(unit||'');
+  if(prop==='--wheel-size'){ syncCanvasSize(); drawWheel(); }
+}
+
+function sliderRow(cfg){
+  const cur=getVar(cfg.prop);
+  return `<div class="dbg-row">
+    <span class="lbl">${cfg.lbl}</span>
+    <input type="range" min="${cfg.min}" max="${cfg.max}" step="${cfg.step}" value="${cur}"
+      oninput="setVar('${cfg.prop}','${cfg.unit}',this.value,this.nextElementSibling)">
+    <span class="val">${cur}${cfg.unit}</span>
+  </div>`;
+}
+
+function buildDebugPanel(){
+  const sliceAngle=(Math.PI*2)/SLOTS;
+  const maxOff=+(sliceAngle*0.5).toFixed(4);
+  let html=`<h3>DEBUG (D)</h3>
+  <div class="dbg-section"><b>WHEEL IMAGE</b>${DBG.wheel.map(sliderRow).join('')}</div>
+  <div class="dbg-section"><b>TABLE</b>${DBG.table.map(sliderRow).join('')}</div>
+  <div class="dbg-section"><b>BALL POSITION</b>
+    <div class="dbg-row">
+      <span class="lbl">Radius</span>
+      <input type="range" min="0.3" max="0.95" step="0.005" value="${ballRadiusFactor}"
+        oninput="setBallRadius(parseFloat(this.value),this.nextElementSibling)">
+      <span class="val">${ballRadiusFactor}</span>
+    </div>
+    <div class="dbg-row">
+      <span class="lbl">L / R</span>
+      <input type="range" min="${-maxOff}" max="${maxOff}" step="0.001" value="${ballAngleOffset.toFixed(3)}"
+        oninput="setBallOffset(parseFloat(this.value),this.nextElementSibling)">
+      <span class="val">${ballAngleOffset.toFixed(3)}</span>
+    </div>
+    <button class="dbg-btn dbg-test" onclick="testBallLand()">TEST LAND</button>
+  </div>
+  <button class="dbg-btn dbg-copy" id="copyBtn" onclick="copyValues()">COPY VALUES</button>`;
+  document.getElementById('debugPanel').innerHTML=html;
+}
+
+function setBallRadius(v,display){
+  ballRadiusFactor=v; display.textContent=v;
+  if(ballRadius>0){ ballRadius=canvas.width/2*v; drawWheel(); }
+}
+function setBallOffset(v,display){
+  ballAngleOffset=v; display.textContent=v.toFixed(3);
+  if(ballRadius>0){ ballAngle=ballBaseAngle+ballAngleOffset; drawWheel(); }
+}
+function testBallLand(){
+  syncCanvasSize();
+  const R=canvas.width/2, sliceAngle=(Math.PI*2)/SLOTS;
+  spinning=false; spinDone=true;
+  ballBaseAngle=wheelAngle+sliceAngle/2;
+  ballAngle=ballBaseAngle+ballAngleOffset;
+  ballRadius=R*ballRadiusFactor;
+  drawWheel();
+}
+function copyValues(){
+  const lines=[
+    `--wheel-size: ${getComputedStyle(document.documentElement).getPropertyValue('--wheel-size').trim()};`,
+    `--wheel-left: ${getComputedStyle(document.documentElement).getPropertyValue('--wheel-left').trim()};`,
+    `--wheel-top: ${getComputedStyle(document.documentElement).getPropertyValue('--wheel-top').trim()};`,
+    `--table-scale: ${getComputedStyle(document.documentElement).getPropertyValue('--table-scale').trim()};`,
+    `--table-x: ${getComputedStyle(document.documentElement).getPropertyValue('--table-x').trim()};`,
+    `--table-y: ${getComputedStyle(document.documentElement).getPropertyValue('--table-y').trim()};`,
+    `ballRadiusFactor: ${ballRadiusFactor};`,
+    `ballAngleOffset: ${ballAngleOffset.toFixed(3)};`,
+  ];
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    btn.textContent='COPIED!'; setTimeout(()=>btn.textContent='COPY VALUES',1500);
+  });
+}
+
+let debugOpen=false;
+document.addEventListener('keydown',e=>{
+  if(e.key.toLowerCase()==='d'&&e.target.tagName!=='INPUT'){
+    debugOpen=!debugOpen;
+    const panel=document.getElementById('debugPanel');
+    if(debugOpen){ buildDebugPanel(); panel.classList.add('open'); }
+    else panel.classList.remove('open');
+  }
+});
+
+// ---- INIT ----
+buildGrid();
+buildChips();
+updateUI();
+window.addEventListener('load', ()=>{ syncCanvasSize(); drawWheel(); });
+window.addEventListener('resize', ()=>{ syncCanvasSize(); drawWheel(); });
+</script>
+</body>
+</html>
