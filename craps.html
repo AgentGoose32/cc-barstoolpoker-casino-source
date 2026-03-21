@@ -125,6 +125,12 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 .btn-clear{padding:7px 14px;font-size:11px;font-family:Georgia,serif;background:rgba(100,20,20,0.6);color:#ff8888;border:1px solid #ff4a4a66;border-radius:6px;cursor:pointer;}
 .btn-clear:hover:not(:disabled){background:rgba(150,30,30,0.7);}
 .btn-clear:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-remove{padding:7px 14px;font-size:11px;font-family:Georgia,serif;background:rgba(60,20,80,0.6);color:#cc88ff;border:1px solid #aa44ff66;border-radius:6px;cursor:pointer;transition:all 0.15s;}
+.btn-remove:hover{background:rgba(90,30,120,0.7);}
+.btn-remove.active{background:rgba(140,40,200,0.85);color:#fff;border-color:#cc88ff;box-shadow:0 0 10px rgba(180,80,255,0.5);}
+.btn-off{padding:7px 14px;font-size:11px;font-family:Georgia,serif;background:rgba(80,60,0,0.6);color:#ffcc44;border:1px solid #ffcc4466;border-radius:6px;cursor:pointer;transition:all 0.15s;}
+.btn-off:hover{background:rgba(110,80,0,0.7);}
+.btn-off.active{background:rgba(180,130,0,0.85);color:#000;border-color:#ffcc44;box-shadow:0 0 10px rgba(255,200,50,0.5);}
 
 /* Dice throw */
 @keyframes throwDie1{0%{transform:translate(140px,180px) rotate(0deg) scale(1.4);opacity:0.7;}15%{transform:translate(90px,100px) rotate(200deg) scale(1.3);opacity:1;}45%{transform:translate(12px,8px) rotate(600deg) scale(1.15);}62%{transform:translate(-6px,-12px) rotate(680deg) scale(0.88);}74%{transform:translate(3px,6px) rotate(710deg) scale(1.06);}84%{transform:translate(-2px,-4px) rotate(725deg) scale(0.97);}92%{transform:translate(1px,2px) rotate(732deg) scale(1.01);}100%{transform:translate(0,0) rotate(var(--rot1,720deg)) scale(1);}}
@@ -328,8 +334,10 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
     <button class="chip-btn"          id="chip-sel-5k"   onclick="selectChip(5000)"><img src="https://drive.google.com/thumbnail?id=11cxGHjfNZFIJgTXnQGmFDSFK-1fUhVup&sz=w120" alt="5K"></button>
     <button class="chip-btn"          id="chip-sel-10k"  onclick="selectChip(10000)"><img src="https://drive.google.com/thumbnail?id=10SkRQCPz-BckF4jBUS0noiSmThGsyx47&sz=w120" alt="10K"></button>
   </div>
-  <button class="btn-clear" id="btnClear" onclick="clearBets()">CLEAR</button>
-  <button class="btn-roll"  id="btnRoll"  onclick="rollDice()">ROLL</button>
+  <button class="btn-clear"    id="btnClear"   onclick="clearBets()">CLEAR</button>
+  <button class="btn-remove"   id="btnRemove"  onclick="toggleRemove()">TAKE DOWN</button>
+  <button class="btn-off"      id="btnOff"     onclick="togglePlaceOff()">BETS OFF</button>
+  <button class="btn-roll"     id="btnRoll"    onclick="rollDice()">ROLL</button>
 </div>
 
 <script>
@@ -337,6 +345,8 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 let balance = 100000, selectedChip = 100, rolling = false;
 let phase = 'comeout', point = null;
 let dice = [1,6];
+let removeMode = false;   // when true: clicking a bet removes it
+let placeOff = false;     // when true: place bets are off for next roll
 
 // Flat bets
 const bets = {
@@ -380,9 +390,24 @@ function playLose(){ try{ const ctx=getAC(); [[300,0],[200,0.14],[150,0.28]].for
 // ── CHIP SELECT ──
 function selectChip(v){ selectedChip=v; document.querySelectorAll('.chip-btn').forEach(b=>b.classList.remove('selected')); ({100:'chip-sel-100',500:'chip-sel-500',1000:'chip-sel-1k',5000:'chip-sel-5k',10000:'chip-sel-10k'})[v] && document.getElementById(({100:'chip-sel-100',500:'chip-sel-500',1000:'chip-sel-1k',5000:'chip-sel-5k',10000:'chip-sel-10k'})[v])?.classList.add('selected'); updateUI(); }
 
+// ── TOGGLE MODES ──
+function toggleRemove(){
+  removeMode=!removeMode;
+  document.getElementById('btnRemove').classList.toggle('active',removeMode);
+  if(removeMode) showMsg('TAKE DOWN mode — click any bet to remove it','neutral');
+  else showMsg('Bet mode restored','neutral');
+}
+function togglePlaceOff(){
+  placeOff=!placeOff;
+  document.getElementById('btnOff').classList.toggle('active',placeOff);
+  showMsg(placeOff?'Place bets OFF for next roll — they will not win or lose':'Place bets back ON','neutral');
+  updateZoneStates();
+}
+
 // ── PLACE BET ──
 function placeBet(id){
   if(rolling) return;
+  if(removeMode){ removeBet(id); return; }
   if((id==='passline'||id==='dontpass') && phase==='point'){ showMsg("Pass/Don't Pass: come-out only",'neutral'); return; }
   if((id==='come'||id==='dontcome') && phase==='comeout'){ showMsg("Come bets: after point is set only",'neutral'); return; }
   if(id==='passodds'){
@@ -402,9 +427,27 @@ function placeBet(id){
   updateUI(); updateZoneStates();
 }
 
+// ── REMOVE BET ──
+function removeBet(id){
+  // Pass Line cannot be taken down after point is established (house rule)
+  if(id==='passline' && phase==='point'){ showMsg("Pass Line can't be taken down after point is set",'neutral'); return; }
+  // Come bets on numbers can't be taken down
+  if(id.startsWith('place') || id==='passodds' || id==='dontodds' || id==='passline' || id==='dontpass' || id==='come' || id==='dontcome' || id.startsWith('hard') || id==='field' || id==='any7' || id==='anycraps' || id==='yo' || id==='two' || id==='three' || id==='twelve'){
+    const b=bets[id]||0; if(!b){ showMsg('No bet to remove','neutral'); return; }
+    balance+=b; bets[id]=0;
+    updateUI(); updateZoneStates();
+    showMsg(`${id} removed — ${fmt(b)}g returned`,'neutral');
+  }
+}
+function removeComeOdds(num){ if(!comeOdds[num]) return; balance+=comeOdds[num]; delete comeOdds[num]; updateUI(); updateZoneStates(); showMsg(`Come ${num} odds removed`,'neutral'); }
+function removeDCOdds(num)  { if(!dontComeOdds[num]) return; balance+=dontComeOdds[num]; delete dontComeOdds[num]; updateUI(); updateZoneStates(); showMsg(`DC ${num} lay odds removed`,'neutral'); }
+function removeComeBet(num) { if(!comeBets[num]) return; balance+=comeBets[num]+(comeOdds[num]||0); delete comeBets[num]; delete comeOdds[num]; updateUI(); updateZoneStates(); showMsg(`Come ${num} removed`,'neutral'); }
+function removeDCBet(num)   { if(!dontCome[num]) return; balance+=dontCome[num]+(dontComeOdds[num]||0); delete dontCome[num]; delete dontComeOdds[num]; updateUI(); updateZoneStates(); showMsg(`DC ${num} removed`,'neutral'); }
+
 // ── COME ODDS (click the come-bet indicator on a number box) ──
 function addComeOdds(num){
   if(rolling) return;
+  if(removeMode){ removeMode ? (comeOdds[num] ? removeComeOdds(num) : removeComeBet(num)) : null; return; }
   if(!comeBets[num]){ showMsg(`No Come bet on ${num}`,'neutral'); return; }
   const maxO = comeBets[num] * MAX_ODDS_MULT[num];
   const cur = comeOdds[num]||0;
@@ -419,6 +462,7 @@ function addComeOdds(num){
 // ── DON'T COME LAY ODDS (click the DC indicator on a number box) ──
 function addDCOdds(num){
   if(rolling) return;
+  if(removeMode){ dontComeOdds[num] ? removeDCOdds(num) : removeDCBet(num); return; }
   if(!dontCome[num]){ showMsg(`No Don't Come bet on ${num}`,'neutral'); return; }
   const maxO = maxLayBet(dontCome[num], num);
   const cur = dontComeOdds[num]||0;
@@ -492,14 +536,17 @@ function resolveRoll(){
     else if(total===7||(total===n&&!isHard)) lose(k,'Hard '+n);
   });
 
-  // ── Place bets (OFF during come-out) ──
-  if(phase==='point'){
+  // ── Place bets (OFF during come-out OR manual placeOff) ──
+  if(phase==='point' && !placeOff){
     const pp={4:[9,5],5:[7,5],6:[7,6],8:[7,6],9:[7,5],10:[9,5]};
     [4,5,6,8,9,10].forEach(n=>{
       const k='place'+n; if(!bets[k]) return;
       if(total===n){ const [p,q]=pp[n]; collect(k,p/q,'Place '+n); }
       else if(total===7) lose(k,'Place '+n);
     });
+  } else if(phase==='point' && placeOff && total===7){
+    // Bets OFF: place bets don't win or lose, but refund them on 7 (shooter still out)
+    [4,5,6,8,9,10].forEach(n=>{ const b=bets['place'+n]||0; if(b){ balance+=b; bets['place'+n]=0; payouts.push(`Place ${n} OFF — refunded`); } });
   }
 
   // ── Travelling Come bets + Come Odds ──
@@ -590,6 +637,9 @@ function resolveRoll(){
 
   if(winTotal>0) playWin(); else if(lostTotal>0) playLose();
   showPayouts(payouts,losses,winTotal,lostTotal,'');
+  // Reset one-shot flags
+  if(placeOff){ placeOff=false; document.getElementById('btnOff').classList.remove('active'); }
+  if(removeMode){ removeMode=false; document.getElementById('btnRemove').classList.remove('active'); }
   updatePuck(); updateZoneStates(); updateUI(); rolling=false;
   document.getElementById('btnRoll').disabled=false; document.getElementById('btnClear').disabled=false;
 }
@@ -680,7 +730,7 @@ function updateZoneStates(){
   setDisabled('z-passodds',!po); setDisabled('z-dontodds',!dpo);
   document.getElementById('z-passodds')?.classList.toggle('available',po&&!bets.passodds);
   document.getElementById('z-dontodds')?.classList.toggle('available',dpo&&!bets.dontodds);
-  [4,5,6,8,9,10].forEach(n=>{ const o=document.getElementById('off'+n); if(o) o.style.display=!isPoint?'block':'none'; });
+  [4,5,6,8,9,10].forEach(n=>{ const o=document.getElementById('off'+n); if(o) o.style.display=(!isPoint||placeOff)?'block':'none'; });
 }
 
 function updatePuck(){
