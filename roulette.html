@@ -642,13 +642,14 @@ function showResult(){
   balance+=payout;
   const net=payout-totalBet();
   const col=colorOf(winNumber);
-  document.getElementById('rTitle').textContent=payout>0?'WINNER!':'You Lost';
-  document.getElementById('rTitle').style.color=payout>0?'#4aff7a':'#ff4444';
+  const won = net > 0;
+  document.getElementById('rTitle').textContent=won?'WINNER!':'You Lost';
+  document.getElementById('rTitle').style.color=won?'#4aff7a':'#ff4444';
   document.getElementById('rNum').textContent=winNumber;
   document.getElementById('rNum').style.color=col==='red'?'#ff5555':col==='green'?'#4aff7a':'#ccc';
   const rPay = document.getElementById('rPay');
-  if(payout>0){ rPay.textContent='+'+net.toLocaleString()+'g'; rPay.style.color='#4aff7a'; }
-  else { rPay.textContent='Lost '+totalBet().toLocaleString()+'g'; rPay.style.color='#ff5555'; }
+  if(won){ rPay.textContent='+'+net.toLocaleString()+'g'; rPay.style.color='#4aff7a'; }
+  else { rPay.textContent=net.toLocaleString()+'g'; rPay.style.color='#ff5555'; }
   document.getElementById('resultBanner').style.display='flex';
   document.getElementById('spinBtn').disabled=false;
   document.getElementById('rebetBtn').style.visibility='visible';
