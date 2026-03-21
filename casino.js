@@ -39,8 +39,8 @@ const ZONES = [
   {
     id: 'roulette',
     label: 'Roulette',
-    x: 220, y: 355,
-    w: 170, h: 100,
+    x: 222, y: 300,
+    w: 163, h: 78,
     type: 'game',
     url: './roulette.html'
   },
@@ -48,8 +48,8 @@ const ZONES = [
   {
     id: 'blackjack1',
     label: 'Blackjack',
-    x: 185, y: 555,
-    w: 140, h: 80,
+    x: 215, y: 457,
+    w: 119, h: 48,
     type: 'game',
     url: './blackjack.html'
   },
@@ -66,8 +66,8 @@ const ZONES = [
   {
     id: 'kong',
     label: "Dragon's Lair",
-    x: 455, y: 370,
-    w: 100, h: 100,
+    x: 441, y: 325,
+    w: 49, h: 92,
     type: 'game',
     url: './kong.html'
   },
@@ -75,7 +75,7 @@ const ZONES = [
   {
     id: 'bar',
     label: 'Bar',
-    x: 450, y: 130,
+    x: 452, y: 102,
     w: 700, h: 130,
     type: 'coming_soon'
   }
