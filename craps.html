@@ -105,11 +105,11 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 .msg-box.push{color:#88aaff;}
 @keyframes flashWin{0%,100%{color:#4aff7a;}50%{color:#fff;text-shadow:0 0 12px #4aff7a;}}
 @keyframes flashLose{0%,100%{color:#ff4a4a;}50%{color:#fff;text-shadow:0 0 12px #ff4a4a;}}
-.payout-bar{text-align:center;min-height:20px;font-size:12px;padding:2px 8px;flex-shrink:0;background:rgba(0,0,0,0.4);border-bottom:1px solid rgba(255,215,0,0.1);}
-.payout-bar.show-win{color:#4aff7a;}
-.payout-bar.show-lose{color:#ff6666;}
+.payout-bar{text-align:center;padding:8px 16px;flex-shrink:0;background:rgba(0,0,0,0.6);border-top:2px solid rgba(255,215,0,0.15);border-bottom:2px solid rgba(255,215,0,0.15);font-size:17px;font-weight:bold;letter-spacing:1px;min-height:38px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;}
+.payout-bar.show-win{color:#4aff7a;border-color:rgba(74,255,122,0.35);text-shadow:0 0 12px rgba(74,255,122,0.4);}
+.payout-bar.show-lose{color:#ff5555;border-color:rgba(255,85,85,0.35);text-shadow:0 0 12px rgba(255,85,85,0.3);}
 .payout-bar.show-push{color:#88aaff;}
-.payout-bar.empty{color:#555;}
+.payout-bar.empty{color:#444;font-size:13px;font-weight:normal;}
 
 /* Bottom bar */
 .bottom-bar{display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(0,0,0,0.65);border-top:1px solid #4a3a10;flex-shrink:0;flex-wrap:wrap;}
@@ -156,7 +156,6 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 </div>
 
 <div class="msg-box neutral" id="msgBox">Place your bets — Pass Line to begin</div>
-<div class="payout-bar empty" id="payoutBar">—</div>
 <div class="hint">
   <strong style="color:#4aff7a">PASS/COME ODDS (3-4-5x)</strong>: 4/10 max 3x→pays 2:1 &nbsp;·&nbsp; 5/9 max 4x→pays 3:2 &nbsp;·&nbsp; 6/8 max 5x→pays 6:5 &nbsp;|&nbsp;
   <strong style="color:#ff8888">LAY ODDS</strong>: 4/10 pay 1:2 &nbsp;·&nbsp; 5/9 pay 2:3 &nbsp;·&nbsp; 6/8 pay 5:6 &nbsp;|&nbsp;
@@ -324,6 +323,8 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 
 </div>
 </div>
+
+<div class="payout-bar empty" id="payoutBar">—</div>
 
 <div class="bottom-bar">
   <div style="display:flex;flex-direction:column;justify-content:center;gap:2px;font-size:13px;letter-spacing:1px;margin-right:6px;flex-shrink:0;">
@@ -651,13 +652,33 @@ function showPayouts(wins,losses,winTotal,lostTotal,context){
   const bar=document.getElementById('payoutBar');
   if(!bar) return;
   if(wins.length===0 && losses.length===0){ bar.textContent='—'; bar.className='payout-bar empty'; return; }
-  let parts=[];
-  if(wins.length) parts.push('✅ '+wins.join(' · '));
-  if(losses.length) parts.push('❌ Lost: '+losses.join(', '));
-  if(winTotal>0 && lostTotal>0) parts.push(`NET: ${winTotal>=lostTotal?'+':''}${fmt(winTotal-lostTotal)}g`);
-  else if(winTotal>0) parts.push(`TOTAL WIN: +${fmt(winTotal)}g`);
-  else if(lostTotal>0) parts.push(`TOTAL LOST: -${fmt(lostTotal)}g`);
-  bar.textContent=parts.join('   ');
+  bar.innerHTML='';
+  if(wins.length){
+    const s=document.createElement('span');
+    s.style.cssText='color:#4aff7a;';
+    s.textContent='✅ '+wins.join(' · ');
+    bar.appendChild(s);
+  }
+  if(losses.length){
+    const s=document.createElement('span');
+    s.style.cssText='color:#ff6666;';
+    s.textContent='❌ Lost: '+losses.join(', ');
+    bar.appendChild(s);
+  }
+  const total=document.createElement('span');
+  total.style.cssText='font-size:22px;padding:0 6px;';
+  if(winTotal>0 && lostTotal>0){
+    const net=winTotal-lostTotal;
+    total.style.color=net>=0?'#4aff7a':'#ff5555';
+    total.textContent=(net>=0?'NET +':'NET -')+fmt(Math.abs(net))+'g';
+  } else if(winTotal>0){
+    total.style.color='#4aff7a';
+    total.textContent='WIN +'+fmt(winTotal)+'g';
+  } else {
+    total.style.color='#ff5555';
+    total.textContent='LOST -'+fmt(lostTotal)+'g';
+  }
+  bar.appendChild(total);
   bar.className='payout-bar '+(winTotal>lostTotal?'show-win':winTotal<lostTotal?'show-lose':'show-push');
 }
 
