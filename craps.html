@@ -757,8 +757,8 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
   80% {transform:translate(0px,-2px)    rotate(-749deg) scale(0.99);}  /* settle */
   100%{transform:translate(0px,0px)     rotate(var(--rot2,-630deg)) scale(1);}
 }
-.die-wrap.throwing1{animation:throwDie1 0.9s cubic-bezier(0.15,0.7,0.3,1) forwards;}
-.die-wrap.throwing2{animation:throwDie2 0.9s cubic-bezier(0.15,0.7,0.3,1) forwards;}
+.die-wrap.throwing1{animation:throwDie1 1.44s cubic-bezier(0.15,0.7,0.3,1) forwards;}
+.die-wrap.throwing2{animation:throwDie2 1.44s cubic-bezier(0.15,0.7,0.3,1) forwards;}
 
 
 /* Dice position markers */
@@ -2347,15 +2347,15 @@ function rollDice(){
 
 
 
-  setTimeout(()=>{ playThud(); },500);
+  setTimeout(()=>{ playThud(); },800);
 
 
 
-  setTimeout(()=>{ document.getElementById('diceTotal').textContent=dice[0]+dice[1]; document.getElementById('dieShadow1').style.opacity='1'; document.getElementById('dieShadow2').style.opacity='1'; },820);
+  setTimeout(()=>{ document.getElementById('diceTotal').textContent=dice[0]+dice[1]; document.getElementById('dieShadow1').style.opacity='1'; document.getElementById('dieShadow2').style.opacity='1'; },1310);
 
 
 
-  setTimeout(()=>{ resolveRoll(); },1050);
+  setTimeout(()=>{ resolveRoll(); },1680);
 
 
 
@@ -4353,7 +4353,7 @@ function initAllDrag(){ BET_ZONE_IDS.forEach(initDragOnZone); }
 
 // -- DICE POSITION DEBUG --
 let diceDbgOn = false;
-const dicePos = { x: 480, y: 20, sx: 160, sy: 220 };
+const dicePos = { x: 686, y: 379, sx: 810, sy: 33 };
 let _activeDrag = null;
 
 function applyDicePos() {
