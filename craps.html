@@ -1535,66 +1535,27 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 <!-- Dice debug panel -->
 <div id="diceDbgPanel">
   <h3 style="color:#4aff7a;margin:0 0 8px;font-size:13px;">🎲 Dice Positions</h3>
+  <div id="tapInstruction" style="font-size:12px;color:#ffd700;text-align:center;padding:8px;background:#2a2000;border-radius:5px;margin-bottom:8px;display:none;"></div>
 
-  <!-- STOP -->
-  <div style="margin-bottom:8px;border:1px solid #4aff7a44;border-radius:5px;padding:6px;">
-    <div style="color:#4aff7a;font-size:11px;font-weight:bold;margin-bottom:4px;">● STOP (where dice land)</div>
-    <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">
-      <span style="color:#aaa;font-size:10px;width:12px;">X</span>
-      <button onclick="nudge('stop','x',-20)" style="background:#333;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;">◀</button>
-      <span id="val-stop-x" style="color:#fff;font-size:11px;min-width:36px;text-align:center;">-</span>
-      <button onclick="nudge('stop','x',20)" style="background:#333;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;">▶</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:4px;">
-      <span style="color:#aaa;font-size:10px;width:12px;">Y</span>
-      <button onclick="nudge('stop','y',-20)" style="background:#333;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;">▲</button>
-      <span id="val-stop-y" style="color:#fff;font-size:11px;min-width:36px;text-align:center;">-</span>
-      <button onclick="nudge('stop','y',20)" style="background:#333;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;">▼</button>
-    </div>
+  <div style="display:flex;gap:5px;margin-bottom:8px;">
+    <button onclick="startTapPlace('stop')"   style="flex:1;background:#1a4a1a;color:#4aff7a;border:2px solid #4aff7a;border-radius:5px;padding:8px 4px;cursor:pointer;font-size:11px;font-weight:bold;">TAP<br>STOP</button>
+    <button onclick="startTapPlace('start')"  style="flex:1;background:#4a0a0a;color:#ff7777;border:2px solid #ff4444;border-radius:5px;padding:8px 4px;cursor:pointer;font-size:11px;font-weight:bold;">TAP<br>START</button>
+    <button onclick="startTapPlace('bounce')" style="flex:1;background:#4a2a00;color:#ffaa00;border:2px solid #ffaa00;border-radius:5px;padding:8px 4px;cursor:pointer;font-size:11px;font-weight:bold;">TAP<br>BOUNCE</button>
   </div>
 
-  <!-- START -->
-  <div style="margin-bottom:8px;border:1px solid #ff444444;border-radius:5px;padding:6px;">
-    <div style="color:#ff7777;font-size:11px;font-weight:bold;margin-bottom:4px;">● START (where dice come from)</div>
-    <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">
-      <span style="color:#aaa;font-size:10px;width:12px;">X</span>
-      <button onclick="nudge('start','x',-20)" style="background:#333;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;">◀</button>
-      <span id="val-start-x" style="color:#fff;font-size:11px;min-width:36px;text-align:center;">-</span>
-      <button onclick="nudge('start','x',20)" style="background:#333;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;">▶</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:4px;">
-      <span style="color:#aaa;font-size:10px;width:12px;">Y</span>
-      <button onclick="nudge('start','y',-20)" style="background:#333;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;">▲</button>
-      <span id="val-start-y" style="color:#fff;font-size:11px;min-width:36px;text-align:center;">-</span>
-      <button onclick="nudge('start','y',20)" style="background:#333;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;">▼</button>
-    </div>
+  <div style="font-size:10px;color:#888;margin-bottom:8px;text-align:center;">Press a button, then tap the table to place it</div>
+
+  <div style="background:#111;border-radius:4px;padding:6px;margin-bottom:8px;font-size:10px;">
+    <div style="color:#4aff7a;">● STOP &nbsp;<span id="val-stop-x">-</span>, <span id="val-stop-y">-</span></div>
+    <div style="color:#ff7777;">● START &nbsp;<span id="val-start-x">-</span>, <span id="val-start-y">-</span></div>
+    <div style="color:#ffaa00;">● BOUNCE &nbsp;<span id="val-bounce-x">-</span>, <span id="val-bounce-y">-</span></div>
   </div>
 
-  <!-- BOUNCE -->
-  <div style="margin-bottom:8px;border:1px solid #ffaa0044;border-radius:5px;padding:6px;">
-    <div style="color:#ffaa00;font-size:11px;font-weight:bold;margin-bottom:4px;">● BOUNCE (wall they hit)</div>
-    <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">
-      <span style="color:#aaa;font-size:10px;width:12px;">X</span>
-      <button onclick="nudge('bounce','x',-20)" style="background:#333;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;">◀</button>
-      <span id="val-bounce-x" style="color:#fff;font-size:11px;min-width:36px;text-align:center;">-</span>
-      <button onclick="nudge('bounce','x',20)" style="background:#333;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;">▶</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:4px;">
-      <span style="color:#aaa;font-size:10px;width:12px;">Y</span>
-      <button onclick="nudge('bounce','y',-20)" style="background:#333;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;">▲</button>
-      <span id="val-bounce-y" style="color:#fff;font-size:11px;min-width:36px;text-align:center;">-</span>
-      <button onclick="nudge('bounce','y',20)" style="background:#333;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;">▼</button>
-    </div>
-  </div>
-
-  <div style="display:flex;gap:6px;margin-top:4px;">
-    <button onclick="resetDiceMarkers()" style="flex:1;background:#4a3000;color:#ffaa00;border:1px solid #ffaa00;border-radius:4px;padding:6px;cursor:pointer;font-size:11px;">RESET CENTER</button>
-  </div>
-  <div style="display:flex;gap:6px;margin-top:4px;">
+  <div style="display:flex;gap:5px;margin-bottom:5px;">
     <button onclick="testDiceRoll()" style="flex:1;background:#1a4a1a;color:#4aff7a;border:1px solid #4aff7a;border-radius:4px;padding:6px;cursor:pointer;font-size:11px;">TEST ROLL</button>
     <button onclick="copyDicePos()" style="flex:1;background:#333;color:#4af;border:1px solid #4af;border-radius:4px;padding:6px;cursor:pointer;font-size:11px;">COPY</button>
   </div>
-  <textarea id="diceDbgOut" readonly style="width:100%;height:36px;background:#111;color:#4aff7a;border:1px solid #333;border-radius:4px;font-size:10px;font-family:monospace;margin-top:6px;resize:none;box-sizing:border-all;"></textarea>
+  <textarea id="diceDbgOut" readonly style="width:100%;height:36px;background:#111;color:#4aff7a;border:1px solid #333;border-radius:4px;font-size:10px;font-family:monospace;margin-top:2px;resize:none;box-sizing:border-box;"></textarea>
 </div>
 
 
@@ -4465,31 +4426,31 @@ function applyDicePos() {
   buildDiceKeyframes();
 }
 
-function nudge(marker, axis, delta) {
-  const vw = document.documentElement.clientWidth;
-  const vh = document.documentElement.clientHeight;
-  if(marker === 'stop') {
-    if(axis === 'x') dicePos.x = Math.max(0, Math.min(vw, dicePos.x + delta));
-    else              dicePos.y = Math.max(0, Math.min(vh, dicePos.y + delta));
-  } else if(marker === 'start') {
-    if(axis === 'x') dicePos.sx += delta;
-    else             dicePos.sy += delta;
-  } else if(marker === 'bounce') {
-    if(axis === 'x') dicePos.bx = Math.max(0, Math.min(vw, dicePos.bx + delta));
-    else             dicePos.by = Math.max(0, Math.min(vh, dicePos.by + delta));
-  }
+let _tapTarget = null;
+
+function startTapPlace(marker) {
+  _tapTarget = marker;
+  const labels = { stop:'🟢 STOP', start:'🔴 START', bounce:'🟠 BOUNCE' };
+  const instr = document.getElementById('tapInstruction');
+  if(instr){ instr.style.display='block'; instr.textContent = 'Now tap the table where ' + labels[marker] + ' should be'; }
+}
+
+function _handleTapPlace(e) {
+  if(!_tapTarget) return;
+  e.preventDefault(); e.stopPropagation();
+  const t = e.touches ? e.touches[0] : e;
+  const x = Math.round(t.clientX), y = Math.round(t.clientY);
+  if(_tapTarget === 'stop')        { dicePos.x = x; dicePos.y = y; }
+  else if(_tapTarget === 'start')  { dicePos.sx = x - dicePos.x; dicePos.sy = y - dicePos.y; }
+  else if(_tapTarget === 'bounce') { dicePos.bx = x; dicePos.by = y; }
+  _tapTarget = null;
+  const instr = document.getElementById('tapInstruction');
+  if(instr) instr.style.display = 'none';
   applyDicePos();
 }
 
-function resetDiceMarkers() {
-  const vw = document.documentElement.clientWidth;
-  const vh = document.documentElement.clientHeight;
-  const cx = Math.round(vw / 2), cy = Math.round(vh / 2);
-  dicePos.x = cx; dicePos.y = cy;
-  dicePos.sx = 0; dicePos.sy = 0;
-  dicePos.bx = cx; dicePos.by = cy;
-  applyDicePos();
-}
+document.addEventListener('click',     _handleTapPlace, true);
+document.addEventListener('touchstart', _handleTapPlace, {capture:true, passive:false});
 
 function testDiceRoll() {
   const v1 = Math.ceil(Math.random()*6), v2 = Math.ceil(Math.random()*6);
@@ -4535,23 +4496,17 @@ function toggleDiceDbg() {
   const start  = document.getElementById('diceMarkerStart');
   const bounce = document.getElementById('diceMarkerBounce');
   if(diceDbgOn){
-    // Always reset to true screen center when opening
-    const cx = Math.round(document.documentElement.clientWidth / 2);
-    const cy = Math.round(document.documentElement.clientHeight / 2);
-    dicePos.x = cx; dicePos.y = cy;
-    dicePos.sx = 0; dicePos.sy = 0;
-    dicePos.bx = cx; dicePos.by = cy;
-    applyDicePos();
     if(stop)   stop.style.display = 'block';
     if(start)  start.style.display = 'block';
     if(bounce) bounce.style.display = 'block';
-    _makeDraggable(stop,   function(nx,ny){ dicePos.x=nx;  dicePos.y=ny;  applyDicePos(); });
-    _makeDraggable(start,  function(nx,ny){ dicePos.sx=nx-dicePos.x; dicePos.sy=ny-dicePos.y; applyDicePos(); });
-    _makeDraggable(bounce, function(nx,ny){ dicePos.bx=nx; dicePos.by=ny; applyDicePos(); });
+    applyDicePos();
   } else {
     if(stop)   stop.style.display = 'none';
     if(start)  start.style.display = 'none';
     if(bounce) bounce.style.display = 'none';
+    _tapTarget = null;
+    const instr = document.getElementById('tapInstruction');
+    if(instr) instr.style.display = 'none';
   }
 }
 
