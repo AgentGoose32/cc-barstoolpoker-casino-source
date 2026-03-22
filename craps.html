@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -182,19 +182,19 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 </style>
 </head>
 <body>
-<button id="muteBtn" onclick="toggleMute()">🔊</button>
+<button id="muteBtn" onclick="toggleMute()">ðŸ"Š</button>
 <audio id="bgAmbience" loop src="./casino-ambience.mp3"></audio>
 
 <div class="bal-bar">
   <span>Balance: <strong id="balDisplay">100,000</strong>g</span>
-  <span style="color:#aaa;font-size:11px;letter-spacing:2px;">PERILOUS LEGENDS &nbsp;·&nbsp; CRAPS</span>
+  <span style="color:#aaa;font-size:11px;letter-spacing:2px;">PERILOUS LEGENDS &nbsp;Â·&nbsp; CRAPS</span>
   <span>Bet: <strong id="betDisplay">0</strong>g</span>
 </div>
 
-<div class="msg-box neutral" id="msgBox">Place your bets — Pass Line to begin</div>
+<div class="msg-box neutral" id="msgBox">Place your bets â€" Pass Line to begin</div>
 <div class="hint">
-  <strong style="color:#4aff7a">PASS/COME ODDS (3-4-5x)</strong>: 4/10 max 3x→pays 2:1 &nbsp;·&nbsp; 5/9 max 4x→pays 3:2 &nbsp;·&nbsp; 6/8 max 5x→pays 6:5 &nbsp;|&nbsp;
-  <strong style="color:#ff8888">LAY ODDS</strong>: 4/10 pay 1:2 &nbsp;·&nbsp; 5/9 pay 2:3 &nbsp;·&nbsp; 6/8 pay 5:6 &nbsp;|&nbsp;
+  <strong style="color:#4aff7a">PASS/COME ODDS (3-4-5x)</strong>: 4/10 max 3xâ†'pays 2:1 &nbsp;Â·&nbsp; 5/9 max 4xâ†'pays 3:2 &nbsp;Â·&nbsp; 6/8 max 5xâ†'pays 6:5 &nbsp;|&nbsp;
+  <strong style="color:#ff8888">LAY ODDS</strong>: 4/10 pay 1:2 &nbsp;Â·&nbsp; 5/9 pay 2:3 &nbsp;Â·&nbsp; 6/8 pay 5:6 &nbsp;|&nbsp;
   Click Come/DC badge on number box to add odds
 </div>
 
@@ -217,7 +217,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 </div>
 </div>
 
-<div class="payout-bar empty" id="payoutBar">—</div>
+<div class="payout-bar empty" id="payoutBar">â€"</div>
 
 <div class="bottom-bar">
   <div class="chip-row">
@@ -318,7 +318,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 <!-- Bet zone overlays (all zones except 4/5/6/8/9/10 which are in numOverlay) -->
 <div id="betOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:49;">
   <div class="zone bet-zone-overlay" id="z-dontpass" onclick="placeBet('dontpass')">
-    <span style="font-size:10px;">DON'T PASS BAR &nbsp;·&nbsp; 1:1 &nbsp;·&nbsp; 12 Pushes</span>
+    <span style="font-size:10px;">DON'T PASS BAR &nbsp;Â·&nbsp; 1:1 &nbsp;Â·&nbsp; 12 Pushes</span>
     <span class="bet-chip" id="chip-dontpass">0</span>
   </div>
   <div class="zone bet-zone-overlay" id="z-dontcome" onclick="placeBet('dontcome')">
@@ -341,27 +341,26 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
   <div class="hard-box bet-zone-overlay" id="z-hard10" onclick="placeBet('hard10')"><span style="color:#ffd700;font-weight:bold;">H10</span><span style="color:#888;font-size:7px;">7:1</span><span class="bet-chip" id="chip-hard10">0</span></div>
   <div class="odds-btn disabled bet-zone-overlay" id="z-passodds" onclick="placeBet('passodds')">
     <span style="text-align:center;line-height:1.3;font-size:9px;font-weight:bold;">PASS<br>ODDS</span>
-    <span id="passodds-ratio" style="font-size:13px;font-weight:bold;color:#4aff7a;line-height:1;">—</span>
+    <span id="passodds-ratio" style="font-size:13px;font-weight:bold;color:#4aff7a;line-height:1;">â€"</span>
     <span id="passodds-win" style="font-size:8px;color:#aaa;line-height:1;margin-top:1px;"></span>
     <span class="bet-chip" id="chip-passodds">0</span>
   </div>
   <div class="odds-btn disabled bet-zone-overlay" id="z-dontodds" onclick="placeBet('dontodds')">
     <span style="text-align:center;line-height:1.3;font-size:9px;font-weight:bold;">LAY<br>ODDS</span>
-    <span id="dontodds-ratio" style="font-size:13px;font-weight:bold;color:#ff8888;line-height:1;">—</span>
+    <span id="dontodds-ratio" style="font-size:13px;font-weight:bold;color:#ff8888;line-height:1;">â€"</span>
     <span id="dontodds-win" style="font-size:8px;color:#aaa;line-height:1;margin-top:1px;"></span>
     <span class="bet-chip" id="chip-dontodds">0</span>
   </div>
   <div class="zone bet-zone-overlay" id="z-field" onclick="placeBet('field')">
     <span style="font-size:11px;font-weight:bold;">FIELD</span>
-    <span class="fnums">2(2:1) · 3 · 4 · 9 · 10 · 11 · 12(2:1) — Loses on 5, 6, 7, 8</span>
+    <span class="fnums">2(2:1) Â· 3 Â· 4 Â· 9 Â· 10 Â· 11 Â· 12(2:1) â€" Loses on 5, 6, 7, 8</span>
     <span class="bet-chip" id="chip-field">0</span>
   </div>
   <div class="zone bet-zone-overlay" id="z-passline" onclick="placeBet('passline')">
-    PASS LINE &nbsp;·&nbsp; <span style="font-size:10px;color:#aaa;">7/11 wins · 2/3/12 loses · hit point before 7</span>
+    PASS LINE &nbsp;Â·&nbsp; <span style="font-size:10px;color:#aaa;">7/11 wins Â· 2/3/12 loses Â· hit point before 7</span>
     <span class="bet-chip" id="chip-passline">0</span>
   </div>
   <!-- NEW zones -->
-  <div class="prop-box bet-zone-overlay shape-rounded" id="z-horn"  onclick="placeBet('horn')"><span class="pname">HORN</span><span class="podds" style="font-size:9px;">2/12:27:4&middot;3/11:3:1</span><span class="bet-chip" id="chip-horn">0</span></div>
   <div class="prop-box bet-zone-overlay shape-circle"  id="z-big6"  onclick="placeBet('big6')" style="border-color:rgba(100,255,100,0.35);color:#88ffaa;"><span class="pname">BIG 6</span><span class="podds">1:1</span><span class="bet-chip" id="chip-big6">0</span></div>
   <div class="prop-box bet-zone-overlay shape-circle"  id="z-big8"  onclick="placeBet('big8')" style="border-color:rgba(100,255,100,0.35);color:#88ffaa;"><span class="pname">BIG 8</span><span class="podds">1:1</span><span class="bet-chip" id="chip-big8">0</span></div>
   <div class="prop-box bet-zone-overlay shape-hex"     id="z-ce"    onclick="placeBet('ce')"   style="border-color:rgba(255,160,50,0.4);color:#ffcc77;"><span class="pname">C&amp;E</span><span class="podds" style="font-size:9px;">C:3:1&middot;E:7:1</span><span class="bet-chip" id="chip-ce">0</span></div>
@@ -369,11 +368,11 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 </div>
 
 <!-- Debug toggle button -->
-<button class="dbg-toggle" onclick="toggleDbg()">🔧 DEBUG</button>
+<button class="dbg-toggle" onclick="toggleDbg()">ðŸ"§ DEBUG</button>
 
 <!-- Debug panel -->
 <div id="dbgPanel">
-  <h3>🎲 Zone Editor <span id="dbgSelectedLabel" style="color:#4aff7a;font-size:11px;"></span></h3>
+  <h3>ðŸŽ² Zone Editor <span id="dbgSelectedLabel" style="color:#4aff7a;font-size:11px;"></span></h3>
   <div style="font-size:9px;color:#aaa;margin-bottom:6px;">Click any zone to select it. Drag to move. Corner handles to resize.</div>
   <label>X <input type="range" id="bz-x" min="0" max="1920" value="20"  oninput="applyBetZone()"> <span class="val" id="bv-x">20</span></label>
   <label>Y <input type="range" id="bz-y" min="0" max="1080" value="400" oninput="applyBetZone()"> <span class="val" id="bv-y">400</span></label>
@@ -391,15 +390,15 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
     </select>
   </label>
   <div style="display:flex;gap:6px;margin-top:8px;">
-    <button onclick="copyBetZones()" style="flex:1;">📋 COPY</button>
-    <button onclick="selBetZonePrev()" style="flex:0.4;">◀</button>
-    <button onclick="selBetZoneNext()" style="flex:0.4;">▶</button>
+    <button onclick="copyBetZones()" style="flex:1;">ðŸ"‹ COPY</button>
+    <button onclick="selBetZonePrev()" style="flex:0.4;">â-€</button>
+    <button onclick="selBetZoneNext()" style="flex:0.4;">â-¶</button>
   </div>
-  <textarea id="dbgOut" readonly placeholder="Values appear here after COPY…" style="height:60px;"></textarea>
+  <textarea id="dbgOut" readonly placeholder="Values appear here after COPYâ€¦" style="height:60px;"></textarea>
 </div>
 
 <script>
-// ── STATE ──
+// â"€â"€ STATE â"€â"€
 let balance = 100000, selectedChip = 100, rolling = false;
 let phase = 'comeout', point = null;
 let dice = [1,6];
@@ -413,8 +412,7 @@ const bets = {
   passodds:0, dontodds:0, field:0,
   any7:0, anycraps:0, yo:0, two:0, three:0, twelve:0,
   place4:0, place5:0, place6:0, place8:0, place9:0, place10:0,
-  hard4:0, hard6:0, hard8:0, hard10:0,
-  horn:0, big6:0, big8:0, ce:0, world:0
+  hard4:0, hard6:0, hard8:0, hard10:0,  big6:0, big8:0, ce:0, world:0
 };
 
 // Travelling bets: {4: amount, 5: amount, ...}
@@ -427,18 +425,18 @@ const dontComeOdds= {};  // Lay odds behind Don't Come bets (inverse)
 const PASS_ODDS  = {4:2, 5:3/2, 6:6/5, 8:6/5, 9:3/2, 10:2};
 const LAY_ODDS   = {4:1/2, 5:2/3, 6:5/6, 8:5/6, 9:2/3, 10:1/2};
 
-// 3-4-5x max odds: flat bet × multiplier = max odds allowed
-// Result: max WIN is always 6× your flat bet regardless of point
+// 3-4-5x max odds: flat bet Ã- multiplier = max odds allowed
+// Result: max WIN is always 6Ã- your flat bet regardless of point
 const MAX_ODDS_MULT = {4:3, 5:4, 6:5, 8:5, 9:4, 10:3};
-// Don't Pass/Come lay odds max WIN = 3× flat bet (risk more, win less since 7 is favored)
-// Max lay = 3× flat / LAY_ODDS[pt], e.g. 4/10 → risk 6× to win 3×
+// Don't Pass/Come lay odds max WIN = 3Ã- flat bet (risk more, win less since 7 is favored)
+// Max lay = 3Ã- flat / LAY_ODDS[pt], e.g. 4/10 â†' risk 6Ã- to win 3Ã-
 function maxLayBet(flatBet, num){ return Math.round(flatBet * 3 / LAY_ODDS[num]); }
 
-// ── AUDIO ──
+// â"€â"€ AUDIO â"€â"€
 const bgAmbience = document.getElementById('bgAmbience');
 bgAmbience.volume = 0.4;
 let _muted = false;
-function toggleMute(){ _muted=!_muted; bgAmbience.muted=_muted; document.getElementById('muteBtn').textContent=_muted?'🔇':'🔊'; }
+function toggleMute(){ _muted=!_muted; bgAmbience.muted=_muted; document.getElementById('muteBtn').textContent=_muted?'ðŸ"‡':'ðŸ"Š'; }
 document.addEventListener('pointerdown',()=>{ bgAmbience.play().catch(()=>{}); },{once:true});
 
 let _actx=null;
@@ -447,24 +445,24 @@ function playThud(){ try{ const ctx=getAC(),sr=ctx.sampleRate; for(let d=0;d<2;d
 function playWin(){ try{ const ctx=getAC(); [[523,0],[659,0.1],[784,0.22],[1047,0.36]].forEach(([f,t])=>{ const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='triangle';o.frequency.value=f; const s=ctx.currentTime+t; g.gain.setValueAtTime(0.2,s);g.gain.exponentialRampToValueAtTime(0.001,s+0.22);o.start(s);o.stop(s+0.22); }); }catch(e){} }
 function playLose(){ try{ const ctx=getAC(); [[300,0],[200,0.14],[150,0.28]].forEach(([f,t])=>{ const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='sawtooth';o.frequency.value=f; const s=ctx.currentTime+t; g.gain.setValueAtTime(0.14,s);g.gain.exponentialRampToValueAtTime(0.001,s+0.18);o.start(s);o.stop(s+0.18); }); }catch(e){} }
 
-// ── CHIP SELECT ──
+// â"€â"€ CHIP SELECT â"€â"€
 function selectChip(v){ selectedChip=v; document.querySelectorAll('.chip-btn').forEach(b=>b.classList.remove('selected')); ({100:'chip-sel-100',500:'chip-sel-500',1000:'chip-sel-1k',5000:'chip-sel-5k',10000:'chip-sel-10k'})[v] && document.getElementById(({100:'chip-sel-100',500:'chip-sel-500',1000:'chip-sel-1k',5000:'chip-sel-5k',10000:'chip-sel-10k'})[v])?.classList.add('selected'); updateUI(); }
 
-// ── TOGGLE MODES ──
+// â"€â"€ TOGGLE MODES â"€â"€
 function toggleRemove(){
   removeMode=!removeMode;
   document.getElementById('btnRemove').classList.toggle('active',removeMode);
-  if(removeMode) showMsg('TAKE DOWN mode — click any bet to remove it','neutral');
+  if(removeMode) showMsg('TAKE DOWN mode â€" click any bet to remove it','neutral');
   else showMsg('Bet mode restored','neutral');
 }
 function togglePlaceOff(){
   placeOff=!placeOff;
   document.getElementById('btnOff').classList.toggle('active',placeOff);
-  showMsg(placeOff?'Place bets OFF for next roll — they will not win or lose':'Place bets back ON','neutral');
+  showMsg(placeOff?'Place bets OFF for next roll â€" they will not win or lose':'Place bets back ON','neutral');
   updateZoneStates();
 }
 
-// ── PLACE BET ──
+// â"€â"€ PLACE BET â"€â"€
 function placeBet(id){
   if(rolling) return;
   if(removeMode){ removeBet(id); return; }
@@ -473,10 +471,10 @@ function placeBet(id){
   if(id==='passodds'){
     if(!bets.passline||phase==='comeout'){ showMsg('Need Pass Line bet + point set','neutral'); return; }
     const maxO = bets.passline * MAX_ODDS_MULT[point];
-    if(bets.passodds >= maxO){ showMsg(`Max Pass odds: ${fmt(maxO)}g (${MAX_ODDS_MULT[point]}× flat bet)`,'neutral'); return; }
+    if(bets.passodds >= maxO){ showMsg(`Max Pass odds: ${fmt(maxO)}g (${MAX_ODDS_MULT[point]}Ã- flat bet)`,'neutral'); return; }
     if(bets.passodds + selectedChip > maxO){ selectedChip = maxO - bets.passodds; }
   }
-  if(['horn','big6','big8','ce','world'].includes(id)){
+  if(['big6','big8','ce','world'].includes(id)){
     if(selectedChip>balance){ showMsg('Not enough gold!','lose'); return; }
     bets[id]=(bets[id]||0)+selectedChip; balance-=selectedChip;
     updateUI(); updateZoneStates(); return;
@@ -492,16 +490,16 @@ function placeBet(id){
   updateUI(); updateZoneStates();
 }
 
-// ── REMOVE BET ──
+// â"€â"€ REMOVE BET â"€â"€
 function removeBet(id){
   // Pass Line cannot be taken down after point is established (house rule)
   if(id==='passline' && phase==='point'){ showMsg("Pass Line can't be taken down after point is set",'neutral'); return; }
   // Come bets on numbers can't be taken down
-  if(id.startsWith('place') || id==='passodds' || id==='dontodds' || id==='passline' || id==='dontpass' || id==='come' || id==='dontcome' || id.startsWith('hard') || id==='field' || id==='any7' || id==='anycraps' || id==='yo' || id==='two' || id==='three' || id==='twelve' || ['horn','big6','big8','ce','world'].includes(id)){
+  if(id.startsWith('place') || id==='passodds' || id==='dontodds' || id==='passline' || id==='dontpass' || id==='come' || id==='dontcome' || id.startsWith('hard') || id==='field' || id==='any7' || id==='anycraps' || id==='yo' || id==='two' || id==='three' || id==='twelve' || ['big6','big8','ce','world'].includes(id)){
     const b=bets[id]||0; if(!b){ showMsg('No bet to remove','neutral'); return; }
     balance+=b; bets[id]=0;
     updateUI(); updateZoneStates();
-    showMsg(`${id} removed — ${fmt(b)}g returned`,'neutral');
+    showMsg(`${id} removed â€" ${fmt(b)}g returned`,'neutral');
   }
 }
 function removeComeOdds(num){ if(!comeOdds[num]) return; balance+=comeOdds[num]; delete comeOdds[num]; updateUI(); updateZoneStates(); showMsg(`Come ${num} odds removed`,'neutral'); }
@@ -509,22 +507,22 @@ function removeDCOdds(num)  { if(!dontComeOdds[num]) return; balance+=dontComeOd
 function removeComeBet(num) { if(!comeBets[num]) return; balance+=comeBets[num]+(comeOdds[num]||0); delete comeBets[num]; delete comeOdds[num]; updateUI(); updateZoneStates(); showMsg(`Come ${num} removed`,'neutral'); }
 function removeDCBet(num)   { if(!dontCome[num]) return; balance+=dontCome[num]+(dontComeOdds[num]||0); delete dontCome[num]; delete dontComeOdds[num]; updateUI(); updateZoneStates(); showMsg(`DC ${num} removed`,'neutral'); }
 
-// ── COME ODDS (click the come-bet indicator on a number box) ──
+// â"€â"€ COME ODDS (click the come-bet indicator on a number box) â"€â"€
 function addComeOdds(num){
   if(rolling) return;
   if(removeMode){ removeMode ? (comeOdds[num] ? removeComeOdds(num) : removeComeBet(num)) : null; return; }
   if(!comeBets[num]){ showMsg(`No Come bet on ${num}`,'neutral'); return; }
   const maxO = comeBets[num] * MAX_ODDS_MULT[num];
   const cur = comeOdds[num]||0;
-  if(cur >= maxO){ showMsg(`Max Come odds on ${num}: ${fmt(maxO)}g (${MAX_ODDS_MULT[num]}× Come bet)`,'neutral'); return; }
+  if(cur >= maxO){ showMsg(`Max Come odds on ${num}: ${fmt(maxO)}g (${MAX_ODDS_MULT[num]}Ã- Come bet)`,'neutral'); return; }
   let amt = Math.min(selectedChip, maxO - cur);
   if(amt > balance){ showMsg('Not enough gold!','lose'); return; }
   comeOdds[num] = cur + amt; balance -= amt;
-  showMsg(`Come odds on ${num}: ${fmtChip(comeOdds[num])}g — pays ${oddsLbl(num)} (max ${fmt(maxO)}g)`,'neutral');
+  showMsg(`Come odds on ${num}: ${fmtChip(comeOdds[num])}g â€" pays ${oddsLbl(num)} (max ${fmt(maxO)}g)`,'neutral');
   updateUI(); updateZoneStates();
 }
 
-// ── DON'T COME LAY ODDS (click the DC indicator on a number box) ──
+// â"€â"€ DON'T COME LAY ODDS (click the DC indicator on a number box) â"€â"€
 function addDCOdds(num){
   if(rolling) return;
   if(removeMode){ dontComeOdds[num] ? removeDCOdds(num) : removeDCBet(num); return; }
@@ -539,9 +537,9 @@ function addDCOdds(num){
   updateUI(); updateZoneStates();
 }
 
-function oddsLbl(n){ return {4:'2:1',5:'3:2',6:'6:5',8:'6:5',9:'3:2',10:'2:1'}[n]||'—'; }
+function oddsLbl(n){ return {4:'2:1',5:'3:2',6:'6:5',8:'6:5',9:'3:2',10:'2:1'}[n]||'â€"'; }
 
-// ── CLEAR BETS ──
+// â"€â"€ CLEAR BETS â"€â"€
 function clearBets(){
   if(rolling) return;
   let refund=0;
@@ -554,7 +552,7 @@ function clearBets(){
   showMsg('Bets cleared','neutral');
 }
 
-// ── ROLL ──
+// â"€â"€ ROLL â"€â"€
 function rollDice(){
   if(rolling) return;
   const total=Object.values(bets).reduce((a,b)=>a+b,0)+Object.values(comeBets).reduce((a,b)=>a+b,0)+Object.values(comeOdds).reduce((a,b)=>a+b,0)+Object.values(dontCome).reduce((a,b)=>a+b,0)+Object.values(dontComeOdds).reduce((a,b)=>a+b,0);
@@ -576,7 +574,7 @@ function rollDice(){
   setTimeout(()=>{ resolveRoll(); },850);
 }
 
-// ── RESOLVE ──
+// â"€â"€ RESOLVE â"€â"€
 function resolveRoll(){
   const d1=dice[0],d2=dice[1],total=d1+d2,isHard=(d1===d2);
   let winTotal=0,lostTotal=0,payouts=[],losses=[];
@@ -585,7 +583,7 @@ function resolveRoll(){
   function lose(id,label){ const b=bets[id]||0; if(!b) return; bets[id]=0; lostTotal+=b; losses.push(label||id); }
   function push(id,label){ const b=bets[id]||0; if(!b) return; balance+=b; bets[id]=0; if(label) payouts.push(`${label} push`); }
 
-  // ── Single-roll bets ──
+  // â"€â"€ Single-roll bets â"€â"€
   if(bets.field){ if([2,3,4,9,10,11,12].includes(total)){ collect('field',(total===2||total===12)?2:1,'Field'); } else { lose('field','Field'); } }
   if(bets.any7){     if(total===7)               collect('any7',4,'Any 7');      else lose('any7','Any 7'); }
   if(bets.anycraps){ if([2,3,12].includes(total)) collect('anycraps',7,'Any Craps'); else lose('anycraps','Any Craps'); }
@@ -594,38 +592,31 @@ function resolveRoll(){
   if(bets.three){    if(total===3)                collect('three',15,'Ace Deuce'); else lose('three','3'); }
   if(bets.twelve){   if(total===12)               collect('twelve',30,'Boxcars');  else lose('twelve','12'); }
 
-  // ── Horn (2/3/11/12: 2&12 pay 27:4, 3&11 pay 3:1) ──
-  if(bets.horn){
-    if([2,3,11,12].includes(total)){
-      const rate=[2,12].includes(total)?27/4:3;
-      collect('horn',rate,'Horn');
-    } else { lose('horn','Horn'); }
-  }
-  // ── Big 6 / Big 8 (pays 1:1, loses on 7, push otherwise) ──
+  // â"€â"€ Big 6 / Big 8 (pays 1:1, loses on 7, push otherwise) â"€â"€
   if(bets.big6){ if(total===6) collect('big6',1,'Big 6'); else if(total===7) lose('big6','Big 6'); }
   if(bets.big8){ if(total===8) collect('big8',1,'Big 8'); else if(total===7) lose('big8','Big 8'); }
-  // ── C&E (2/3/12 pays 3:1, 11 pays 7:1, else lose) ──
+  // â"€â"€ C&E (2/3/12 pays 3:1, 11 pays 7:1, else lose) â"€â"€
   if(bets.ce){
     if([2,3,12].includes(total)) collect('ce',3,'C&E Craps');
     else if(total===11) collect('ce',7,'C&E Eleven');
     else lose('ce','C&E');
   }
-  // ── World (7=push, 2/12 pay 26:5, 3/11 pay 11:5, else lose) ──
+  // â"€â"€ World (7=push, 2/12 pay 26:5, 3/11 pay 11:5, else lose) â"€â"€
   if(bets.world){
-    if(total===7){ /* push — no win no loss */ }
+    if(total===7){ /* push â€" no win no loss */ }
     else if([2,12].includes(total)) collect('world',26/5,'World');
     else if([3,11].includes(total)) collect('world',11/5,'World');
     else lose('world','World');
   }
 
-  // ── Hardways ──
+  // â"€â"€ Hardways â"€â"€
   [[4,7],[6,9],[8,9],[10,7]].forEach(([n,pay])=>{
     const k='hard'+n; if(!bets[k]) return;
     if(total===n&&isHard) collect(k,pay,'Hard '+n);
     else if(total===7||(total===n&&!isHard)) lose(k,'Hard '+n);
   });
 
-  // ── Place bets (OFF during come-out OR manual placeOff) ──
+  // â"€â"€ Place bets (OFF during come-out OR manual placeOff) â"€â"€
   if(phase==='point' && !placeOff){
     const pp={4:[9,5],5:[7,5],6:[7,6],8:[7,6],9:[7,5],10:[9,5]};
     [4,5,6,8,9,10].forEach(n=>{
@@ -635,10 +626,10 @@ function resolveRoll(){
     });
   } else if(phase==='point' && placeOff && total===7){
     // Bets OFF: place bets don't win or lose, but refund them on 7 (shooter still out)
-    [4,5,6,8,9,10].forEach(n=>{ const b=bets['place'+n]||0; if(b){ balance+=b; bets['place'+n]=0; payouts.push(`Place ${n} OFF — refunded`); } });
+    [4,5,6,8,9,10].forEach(n=>{ const b=bets['place'+n]||0; if(b){ balance+=b; bets['place'+n]=0; payouts.push(`Place ${n} OFF â€" refunded`); } });
   }
 
-  // ── Travelling Come bets + Come Odds ──
+  // â"€â"€ Travelling Come bets + Come Odds â"€â"€
   for(const num of Object.keys(comeBets)){
     const n=parseInt(num), cb=comeBets[n]||0, co=comeOdds[n]||0;
     if(total===n){
@@ -651,7 +642,7 @@ function resolveRoll(){
     }
   }
 
-  // ── Travelling Don't Come bets + Lay Odds ──
+  // â"€â"€ Travelling Don't Come bets + Lay Odds â"€â"€
   for(const num of Object.keys(dontCome)){
     const n=parseInt(num), db=dontCome[n]||0, dco=dontComeOdds[n]||0;
     if(total===7){
@@ -664,14 +655,14 @@ function resolveRoll(){
     }
   }
 
-  // ── New Come bet this roll ──
+  // â"€â"€ New Come bet this roll â"€â"€
   if(bets.come && phase==='point'){
     if(total===7||total===11){ balance+=bets.come*2; winTotal+=bets.come; payouts.push(`Come +${fmt(bets.come)}g`); bets.come=0; }
     else if([2,3,12].includes(total)){ lose('come','Come'); }
     else { comeBets[total]=(comeBets[total]||0)+bets.come; bets.come=0; }
   }
 
-  // ── New Don't Come bet this roll ──
+  // â"€â"€ New Don't Come bet this roll â"€â"€
   if(bets.dontcome && phase==='point'){
     if(total===2||total===3){ balance+=bets.dontcome*2; winTotal+=bets.dontcome; payouts.push(`DC +${fmt(bets.dontcome)}g`); bets.dontcome=0; }
     else if(total===12){ push('dontcome','DC push'); }
@@ -679,24 +670,24 @@ function resolveRoll(){
     else { dontCome[total]=(dontCome[total]||0)+bets.dontcome; bets.dontcome=0; }
   }
 
-  // ── Main Pass / Don't Pass ──
+  // â"€â"€ Main Pass / Don't Pass â"€â"€
   const NAMES={4:'Little Joe',5:'Fever Five',6:'Six',8:'Eighter',9:'Nina',10:'Big Dick'};
   if(phase==='comeout'){
     if(total===7||total===11){
       collect('passline',1,'Pass Line'); lose('dontpass',"Don't Pass");
-      showMsg(total===7?'🎲 SEVEN — Front line winner! Pay the line!':'🎲 YO-ELEVEN — Six-five, no jive! Winner!','win');
+      showMsg(total===7?'ðŸŽ² SEVEN â€" Front line winner! Pay the line!':'ðŸŽ² YO-ELEVEN â€" Six-five, no jive! Winner!','win');
     } else if(total===2){
       lose('passline','Pass Line'); collect('dontpass',1,"Don't Pass");
-      showMsg("🎲 SNAKE EYES — Two craps two! Take the pass, pay the don't!",'lose');
+      showMsg("ðŸŽ² SNAKE EYES â€" Two craps two! Take the pass, pay the don't!",'lose');
     } else if(total===3){
       lose('passline','Pass Line'); collect('dontpass',1,"Don't Pass");
-      showMsg("🎲 ACE DEUCE — Three craps three!",'lose');
+      showMsg("ðŸŽ² ACE DEUCE â€" Three craps three!",'lose');
     } else if(total===12){
       lose('passline','Pass Line'); push('dontpass',"Don't Pass push");
-      showMsg("🎲 BOXCARS — Twelve craps twelve! Take the pass, don't push!",'push');
+      showMsg("ðŸŽ² BOXCARS â€" Twelve craps twelve! Take the pass, don't push!",'push');
     } else {
       point=total; phase='point';
-      showMsg(`🎲 ${total} — ${NAMES[total]||total}! POINT IS ${total}!`,'neutral');
+      showMsg(`ðŸŽ² ${total} â€" ${NAMES[total]||total}! POINT IS ${total}!`,'neutral');
       showPayouts(payouts,losses,winTotal,lostTotal,'point');
       updatePuck(); updateZoneStates(); updateUI(); rolling=false;
       document.getElementById('btnRoll').disabled=false; document.getElementById('btnClear').disabled=false;
@@ -708,7 +699,7 @@ function resolveRoll(){
       if(pb){ balance+=pb*2; winTotal+=pb; payouts.push(`Pass Line +${fmt(pb)}g`); bets.passline=0; }
       if(bets.passodds){ const w=Math.round(bets.passodds*PASS_ODDS[point]); balance+=bets.passodds+w; winTotal+=w; payouts.push(`Pass Odds +${fmt(w)}g`); bets.passodds=0; }
       lose('dontpass',"Don't Pass"); lose('dontodds',"Don't Odds");
-      showMsg(`🎲 ${total} — WINNER! POINT ${point} MADE!`,'win');
+      showMsg(`ðŸŽ² ${total} â€" WINNER! POINT ${point} MADE!`,'win');
       point=null; phase='comeout';
     } else if(total===7){
       lose('passline','Pass Line'); lose('passodds','Pass Odds');
@@ -716,11 +707,11 @@ function resolveRoll(){
       if(db){ balance+=db*2; winTotal+=db; payouts.push(`Don't Pass +${fmt(db)}g`); bets.dontpass=0; }
       if(bets.dontodds){ const w=Math.round(bets.dontodds*LAY_ODDS[point]); balance+=bets.dontodds+w; winTotal+=w; payouts.push(`Lay Odds +${fmt(w)}g`); bets.dontodds=0; }
       [4,5,6,8,9,10].forEach(n=>{ lose('place'+n, 'Place '+n); });
-      showMsg("🎲 SEVEN OUT — Seven out! Line away!",'lose');
+      showMsg("ðŸŽ² SEVEN OUT â€" Seven out! Line away!",'lose');
       point=null; phase='comeout'; rollNet=0;
     } else {
       const calls={2:'Two',3:'Ace Deuce',4:'Little Joe',5:'Five',6:isHard?'Hard Six':'Six easy',8:isHard?'Hard Eight':'Eight easy',9:'Nine',10:isHard?'Hard Ten':'Ten easy',11:'Yo',12:'Boxcars'};
-      showMsg(`🎲 ${total} — ${calls[total]||total}. Roll again!`,'neutral');
+      showMsg(`ðŸŽ² ${total} â€" ${calls[total]||total}. Roll again!`,'neutral');
     }
   }
 
@@ -738,18 +729,18 @@ function showPayouts(wins,losses,winTotal,lostTotal,context){
   updateUI();
   const bar=document.getElementById('payoutBar');
   if(!bar) return;
-  if(wins.length===0 && losses.length===0){ bar.textContent='—'; bar.className='payout-bar empty'; return; }
+  if(wins.length===0 && losses.length===0){ bar.textContent='â€"'; bar.className='payout-bar empty'; return; }
   bar.innerHTML='';
   if(wins.length){
     const s=document.createElement('span');
     s.style.cssText='color:#4aff7a;';
-    s.textContent='✅ '+wins.join(' · ');
+    s.textContent='âœ… '+wins.join(' Â· ');
     bar.appendChild(s);
   }
   if(losses.length){
     const s=document.createElement('span');
     s.style.cssText='color:#ff6666;';
-    s.textContent='❌ Lost: '+losses.join(', ');
+    s.textContent='âŒ Lost: '+losses.join(', ');
     bar.appendChild(s);
   }
   const total=document.createElement('span');
@@ -769,7 +760,7 @@ function showPayouts(wins,losses,winTotal,lostTotal,context){
   bar.className='payout-bar '+(winTotal>lostTotal?'show-win':winTotal<lostTotal?'show-lose':'show-push');
 }
 
-// ── UI ──
+// â"€â"€ UI â"€â"€
 function updateUI(){
   document.getElementById('balDisplay').textContent=fmt(balance);
   const tb=Object.values(bets).reduce((a,b)=>a+b,0)+Object.values(comeBets).reduce((a,b)=>a+b,0)+Object.values(comeOdds).reduce((a,b)=>a+b,0)+Object.values(dontCome).reduce((a,b)=>a+b,0)+Object.values(dontComeOdds).reduce((a,b)=>a+b,0);
@@ -777,7 +768,7 @@ function updateUI(){
   const nd=document.getElementById('netDisplay');
   nd.textContent=(rollNet>=0?'+':'')+fmt(rollNet)+'g'; nd.style.color=rollNet>0?'#4aff7a':rollNet<0?'#ff4a4a':'#ffd700';
 
-  const chipMap={passline:'chip-passline',dontpass:'chip-dontpass',come:'chip-come',dontcome:'chip-dontcome',passodds:'chip-passodds',dontodds:'chip-dontodds',field:'chip-field',any7:'chip-any7',anycraps:'chip-anycraps',yo:'chip-yo',two:'chip-two',three:'chip-three',twelve:'chip-twelve',place4:'chip-place4',place5:'chip-place5',place6:'chip-place6',place8:'chip-place8',place9:'chip-place9',place10:'chip-place10',hard4:'chip-hard4',hard6:'chip-hard6',hard8:'chip-hard8',hard10:'chip-hard10',horn:'chip-horn',big6:'chip-big6',big8:'chip-big8',ce:'chip-ce',world:'chip-world'};
+  const chipMap={passline:'chip-passline',dontpass:'chip-dontpass',come:'chip-come',dontcome:'chip-dontcome',passodds:'chip-passodds',dontodds:'chip-dontodds',field:'chip-field',any7:'chip-any7',anycraps:'chip-anycraps',yo:'chip-yo',two:'chip-two',three:'chip-three',twelve:'chip-twelve',place4:'chip-place4',place5:'chip-place5',place6:'chip-place6',place8:'chip-place8',place9:'chip-place9',place10:'chip-place10',hard4:'chip-hard4',hard6:'chip-hard6',hard8:'chip-hard8',hard10:'chip-hard10',big6:'chip-big6',big8:'chip-big8',ce:'chip-ce',world:'chip-world'};
   for(const[k,id] of Object.entries(chipMap)){ const el=document.getElementById(id);if(!el)continue; const a=bets[k]||0; el.textContent=fmtChip(a); el.parentElement.classList.toggle('has-bet',a>0); }
 
   // Come bet indicators on number boxes
@@ -792,18 +783,18 @@ function updateUI(){
     const lRatio={4:'1:2',5:'2:3',6:'5:6',8:'5:6',9:'2:3',10:'1:2'}[n]||'';
     if(elCB){
       if(cb){
-        const hint = co ? `C:${fmtChip(cb)} +${fmtChip(co)}` : `C:${fmtChip(cb)} · ${oRatio} odds`;
+        const hint = co ? `C:${fmtChip(cb)} +${fmtChip(co)}` : `C:${fmtChip(cb)} Â· ${oRatio} odds`;
         elCB.textContent=hint; elCB.style.display='block';
       } else { elCB.style.display='none'; }
     }
-    if(elCO){ elCO.textContent=co?`Odds:${fmtChip(co)} → +${fmtChip(Math.round(co*PASS_ODDS[n]))}g`:''; elCO.style.display=co?'block':'none'; }
+    if(elCO){ elCO.textContent=co?`Odds:${fmtChip(co)} â†' +${fmtChip(Math.round(co*PASS_ODDS[n]))}g`:''; elCO.style.display=co?'block':'none'; }
     if(elDC){
       if(dc){
-        const hint = dco ? `DC:${fmtChip(dc)} +${fmtChip(dco)}` : `DC:${fmtChip(dc)} · ${lRatio} lay`;
+        const hint = dco ? `DC:${fmtChip(dc)} +${fmtChip(dco)}` : `DC:${fmtChip(dc)} Â· ${lRatio} lay`;
         elDC.textContent=hint; elDC.style.display='block';
       } else { elDC.style.display='none'; }
     }
-    if(elDCO){ elDCO.textContent=dco?`Lay:${fmtChip(dco)} → +${fmtChip(Math.round(dco*LAY_ODDS[n]))}g`:''; elDCO.style.display=dco?'block':'none'; }
+    if(elDCO){ elDCO.textContent=dco?`Lay:${fmtChip(dco)} â†' +${fmtChip(Math.round(dco*LAY_ODDS[n]))}g`:''; elDCO.style.display=dco?'block':'none'; }
   });
 
   // Odds labels + projected payout
@@ -813,21 +804,21 @@ function updateUI(){
   const pwin   = document.getElementById('passodds-win');
   const dratio = document.getElementById('dontodds-ratio');
   const dwin   = document.getElementById('dontodds-win');
-  if(pratio){ pratio.textContent = point ? ratioLbl[point] : '—'; }
+  if(pratio){ pratio.textContent = point ? ratioLbl[point] : 'â€"'; }
   if(pwin){
     if(point && bets.passline){
       const maxO = bets.passline * MAX_ODDS_MULT[point];
       const rem = maxO - (bets.passodds||0);
-      if(bets.passodds){ const w=Math.round(bets.passodds*PASS_ODDS[point]); pwin.textContent=`+${fmtChip(w)}g · ${fmtChip(rem)} left`; }
+      if(bets.passodds){ const w=Math.round(bets.passodds*PASS_ODDS[point]); pwin.textContent=`+${fmtChip(w)}g Â· ${fmtChip(rem)} left`; }
       else { pwin.textContent=`max ${fmtChip(maxO)}g (${MAX_ODDS_MULT[point]}x)`; }
     } else { pwin.textContent=''; }
   }
-  if(dratio){ dratio.textContent = point ? layLbl[point] : '—'; }
+  if(dratio){ dratio.textContent = point ? layLbl[point] : 'â€"'; }
   if(dwin){
     if(point && bets.dontpass){
       const maxO = maxLayBet(bets.dontpass, point);
       const rem = maxO - (bets.dontodds||0);
-      if(bets.dontodds){ const w=Math.round(bets.dontodds*LAY_ODDS[point]); dwin.textContent=`+${fmtChip(w)}g · ${fmtChip(rem)} left`; }
+      if(bets.dontodds){ const w=Math.round(bets.dontodds*LAY_ODDS[point]); dwin.textContent=`+${fmtChip(w)}g Â· ${fmtChip(rem)} left`; }
       else { dwin.textContent=`max ${fmtChip(maxO)}g`; }
     } else { dwin.textContent=''; }
   }
@@ -862,7 +853,7 @@ function showMsg(txt,type){ const el=document.getElementById('msgBox'); el.textC
 function fmt(n){ return Math.round(n).toLocaleString(); }
 function fmtChip(n){ if(!n)return''; if(n>=10000)return(n/1000).toFixed(0)+'K'; if(n>=1000)return(n/1000).toFixed(1)+'K'; return String(n); }
 
-// ── DRAW DIE ──
+// â"€â"€ DRAW DIE â"€â"€
 function drawDie(id,value){
   const canvas=document.getElementById(id),ctx=canvas.getContext('2d'),sz=canvas.width;
   ctx.clearRect(0,0,sz,sz);
@@ -875,7 +866,7 @@ function drawDie(id,value){
   for(const[dx,dy] of(dots[value]||dots[1])){ ctx.beginPath();ctx.arc(dx*sz,dy*sz,sz*0.1,0,Math.PI*2);ctx.fill(); }
 }
 
-// ── NUMBER ZONES (locked) ──
+// â"€â"€ NUMBER ZONES (locked) â"€â"€
 const NUMS = [4,5,6,8,9,10];
 const zoneData = {
   4:  {x:720,  y:282, w:99,  h:74},
@@ -894,8 +885,8 @@ function applyAllZones(){
   });
 }
 
-// ── BET ZONE DEBUG ──
-const BET_ZONE_IDS = ['dontpass','dontcome','come','any7','anycraps','yo','two','three','twelve','hard4','hard6','hard8','hard10','passodds','dontodds','field','passline','horn','big6','big8','ce','world'];
+// â"€â"€ BET ZONE DEBUG â"€â"€
+const BET_ZONE_IDS = ['dontpass','dontcome','come','any7','anycraps','yo','two','three','twelve','hard4','hard6','hard8','hard10','passodds','dontodds','field','passline','big6','big8','ce','world'];
 const betZoneData = {
   dontpass: {x:20,  y:100, w:680, h:46, scale:100},
   dontcome: {x:710, y:100, w:100, h:46, scale:100},
@@ -914,13 +905,14 @@ const betZoneData = {
   dontodds: {x:828, y:457, w:72,  h:37, scale:100},
   field:    {x:20,  y:550, w:790, h:52, scale:100},
   passline: {x:20,  y:612, w:790, h:52, scale:100},
-  horn:     {x:20,  y:680, w:130, h:55, scale:100, shape:'shape-rounded'},
+
   big6:     {x:160, y:680, w:70,  h:70, scale:100, shape:'shape-circle'},
   big8:     {x:240, y:680, w:70,  h:70, scale:100, shape:'shape-circle'},
   ce:       {x:320, y:680, w:100, h:60, scale:100, shape:'shape-hex'},
   world:    {x:430, y:680, w:110, h:60, scale:100, shape:'shape-octagon'},
 };
-let activeBetZone = 'horn';
+// horn removed - not on this table
+let activeBetZone = 'big6';
 let dbgOn = false;
 
 const SHAPES=['shape-rounded','shape-circle','shape-diamond','shape-hex','shape-octagon'];
@@ -948,7 +940,7 @@ function refreshPanel(){
   setV('bz-h',d.h); setT('bv-h',d.h);
   setV('bz-s',d.scale||100); setT('bv-s',d.scale||100);
   const sh=document.getElementById('bz-shape'); if(sh) sh.value=(d.shape||'');
-  const lbl=document.getElementById('dbgSelectedLabel'); if(lbl) lbl.textContent='→ '+activeBetZone;
+  const lbl=document.getElementById('dbgSelectedLabel'); if(lbl) lbl.textContent='â†' '+activeBetZone;
   // Highlight selected
   BET_ZONE_IDS.forEach(bid=>{
     const el=document.getElementById('z-'+bid);
@@ -987,7 +979,7 @@ function applyBetZone(){
   refreshPanel();
 }
 
-// ── Drag to move + corner resize ──
+// â"€â"€ Drag to move + corner resize â"€â"€
 let _drag=null;
 
 function initDragOnZone(id){
@@ -1090,7 +1082,7 @@ function copyBetZones(){
 // Wire up drag on all zones after init
 function initAllDrag(){ BET_ZONE_IDS.forEach(initDragOnZone); }
 
-// ── INIT ──
+// â"€â"€ INIT â"€â"€
 drawDie('die1',dice[0]); drawDie('die2',dice[1]);
 applyAllZones();
 applyAllBetZones();
@@ -1099,3 +1091,5 @@ initAllDrag();
 </script>
 </body>
 </html>
+
+
