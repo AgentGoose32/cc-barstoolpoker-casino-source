@@ -760,6 +760,17 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 .die-wrap.throwing1{animation:throwDie1 0.9s cubic-bezier(0.15,0.7,0.3,1) forwards;}
 .die-wrap.throwing2{animation:throwDie2 0.9s cubic-bezier(0.15,0.7,0.3,1) forwards;}
 
+
+/* Dice position markers */
+#diceMarkerStop{position:fixed;width:24px;height:24px;background:#4aff7a;border-radius:50%;border:3px solid #fff;
+  cursor:move;z-index:200;display:none;transform:translate(-50%,-50%);box-shadow:0 0 8px #4aff7a;}
+#diceMarkerStop::after{content:'STOP';position:absolute;top:26px;left:50%;transform:translateX(-50%);
+  color:#4aff7a;font-size:10px;font-weight:bold;white-space:nowrap;text-shadow:0 0 4px #000;}
+#diceMarkerStart{position:fixed;width:24px;height:24px;background:#ff4444;border-radius:50%;border:3px solid #fff;
+  cursor:move;z-index:200;display:none;transform:translate(-50%,-50%);box-shadow:0 0 8px #f44;}
+#diceMarkerStart::after{content:'START';position:absolute;top:26px;left:50%;transform:translateX(-50%);
+  color:#ff7777;font-size:10px;font-weight:bold;white-space:nowrap;text-shadow:0 0 4px #000;}
+
 /* Dice debug panel */
 #diceDbgPanel{position:fixed;top:40px;left:10px;z-index:9999;background:rgba(0,0,0,0.88);border:1px solid #4af;border-radius:8px;padding:10px 14px;font-size:11px;font-family:monospace;color:#4af;min-width:220px;display:none;}
 #diceDbgPanel.visible{display:block;}
@@ -1519,17 +1530,15 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 
 <!-- Dice debug panel -->
 <div id="diceDbgPanel">
-  <h3 style="color:#4aff7a;">?? Drag the dice to position</h3>
-  <div style="font-size:9px;color:#aaa;margin-bottom:6px;">Dice are now draggable. Drag to rest position. Then TEST ROLL to set launch.</div>
-  <div style="font-size:10px;color:#fff;margin:4px 0;">Rest: <span id="dv-xy">x:480 y:20</span></div>
-  <div style="font-size:10px;color:#fff;margin:4px 0;">Launch offset: <span id="dv-sxy">sx:160 sy:220</span></div>
-  <label style="margin-top:4px;">Launch X <input type="range" id="dx-sx" min="-600" max="600" value="160" oninput="applyDicePos()"> <span class="val" id="dv-sx">160</span></label>
-  <label>Launch Y <input type="range" id="dx-sy" min="-600" max="600" value="220" oninput="applyDicePos()"> <span class="val" id="dv-sy">220</span></label>
-  <div style="display:flex;gap:6px;margin-top:6px;">
-    <button onclick="testDiceRoll()" style="flex:1;background:#1a4a1a;color:#4aff7a;border:1px solid #4aff7a;border-radius:4px;padding:4px;cursor:pointer;">TEST ROLL</button>
-    <button onclick="copyDicePos()" style="flex:1;background:#333;color:#4af;border:1px solid #4af;border-radius:4px;padding:4px;cursor:pointer;">COPY</button>
+  <h3 style="color:#4aff7a;margin:0 0 6px;">?? Dice Debug</h3>
+  <div style="font-size:10px;color:#aaa;margin-bottom:8px;">Drag the markers on the table.</div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="display:inline-block;width:14px;height:14px;background:#ff4444;border-radius:50%;border:2px solid #fff;"></span> <span style="color:#ff7777;font-size:11px;">START - where dice fly from</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;"><span style="display:inline-block;width:14px;height:14px;background:#4aff7a;border-radius:50%;border:2px solid #fff;"></span> <span style="color:#4aff7a;font-size:11px;">STOP - where dice land</span></div>
+  <div style="display:flex;gap:6px;">
+    <button onclick="testDiceRoll()" style="flex:1;background:#1a4a1a;color:#4aff7a;border:1px solid #4aff7a;border-radius:4px;padding:5px;cursor:pointer;">TEST ROLL</button>
+    <button onclick="copyDicePos()" style="flex:1;background:#333;color:#4af;border:1px solid #4af;border-radius:4px;padding:5px;cursor:pointer;">COPY</button>
   </div>
-  <textarea id="diceDbgOut" readonly style="width:100%;height:36px;background:#111;color:#4aff7a;border:1px solid #333;border-radius:4px;font-size:10px;font-family:monospace;margin-top:6px;resize:none;"></textarea>
+  <textarea id="diceDbgOut" readonly style="width:100%;height:36px;background:#111;color:#4aff7a;border:1px solid #333;border-radius:4px;font-size:10px;font-family:monospace;margin-top:6px;resize:none;box-sizing:border-box;"></textarea>
 </div>
 
 
@@ -4345,23 +4354,22 @@ function initAllDrag(){ BET_ZONE_IDS.forEach(initDragOnZone); }
 // -- DICE POSITION DEBUG --
 let diceDbgOn = false;
 const dicePos = { x: 480, y: 20, sx: 160, sy: 220 };
-let _diceDrag = null;
+let _activeDrag = null;
 
 function applyDicePos() {
-  const sxEl = document.getElementById('dx-sx');
-  const syEl = document.getElementById('dx-sy');
-  if(sxEl) dicePos.sx = +sxEl.value;
-  if(syEl) dicePos.sy = +syEl.value;
-  if(document.getElementById('dv-sx')) document.getElementById('dv-sx').textContent = dicePos.sx;
-  if(document.getElementById('dv-sy')) document.getElementById('dv-sy').textContent = dicePos.sy;
-  if(document.getElementById('dv-xy'))  document.getElementById('dv-xy').textContent  = 'x:'+dicePos.x+' y:'+dicePos.y;
-  if(document.getElementById('dv-sxy')) document.getElementById('dv-sxy').textContent = 'sx:'+dicePos.sx+' sy:'+dicePos.sy;
   document.documentElement.style.setProperty('--dice-x', dicePos.x + 'px');
   document.documentElement.style.setProperty('--dice-y', dicePos.y + 'px');
+  const launchX = dicePos.x + dicePos.sx;
+  const launchY = dicePos.y + dicePos.sy;
   document.documentElement.style.setProperty('--d1-sx', dicePos.sx + 'px');
   document.documentElement.style.setProperty('--d1-sy', dicePos.sy + 'px');
   document.documentElement.style.setProperty('--d2-sx', (dicePos.sx - 40) + 'px');
   document.documentElement.style.setProperty('--d2-sy', (dicePos.sy + 20) + 'px');
+  // Sync markers
+  const stop  = document.getElementById('diceMarkerStop');
+  const start = document.getElementById('diceMarkerStart');
+  if(stop)  { stop.style.left  = dicePos.x + 'px'; stop.style.top  = dicePos.y + 'px'; }
+  if(start) { start.style.left = launchX + 'px';   start.style.top = launchY + 'px'; }
 }
 
 function testDiceRoll() {
@@ -4382,41 +4390,53 @@ function copyDicePos() {
   navigator.clipboard.writeText(out).catch(()=>{});
 }
 
+function _makeDraggable(el, onMove) {
+  el.addEventListener('mousedown', function(e){
+    e.preventDefault(); e.stopPropagation();
+    const startX = e.clientX, startY = e.clientY;
+    const ox = parseInt(el.style.left)||0, oy = parseInt(el.style.top)||0;
+    function mm(e){
+      const nx = ox+(e.clientX-startX), ny = oy+(e.clientY-startY);
+      el.style.left = nx+'px'; el.style.top = ny+'px';
+      onMove(nx, ny);
+    }
+    function mu(){ document.removeEventListener('mousemove',mm); document.removeEventListener('mouseup',mu); }
+    document.addEventListener('mousemove',mm);
+    document.addEventListener('mouseup',mu);
+  });
+}
+
 function toggleDiceDbg() {
   diceDbgOn = !diceDbgOn;
   document.getElementById('diceDbgPanel').classList.toggle('visible', diceDbgOn);
+  const stop  = document.getElementById('diceMarkerStop');
+  const start = document.getElementById('diceMarkerStart');
   const panel = document.querySelector('.dice-panel');
-  if(!panel) return;
   if(diceDbgOn){
-    panel.style.pointerEvents = 'all';
-    panel.style.cursor = 'move';
-    panel.style.outline = '2px dashed #4aff7a';
-    panel.addEventListener('mousedown', _diceMD);
+    stop.style.display  = 'block';
+    start.style.display = 'block';
+    if(panel){ panel.style.pointerEvents='none'; }
+    applyDicePos();
+    _makeDraggable(stop, function(nx, ny){
+      dicePos.x = nx; dicePos.y = ny;
+      document.documentElement.style.setProperty('--dice-x', nx+'px');
+      document.documentElement.style.setProperty('--dice-y', ny+'px');
+    });
+    _makeDraggable(start, function(nx, ny){
+      dicePos.sx = nx - dicePos.x;
+      dicePos.sy = ny - dicePos.y;
+      document.documentElement.style.setProperty('--d1-sx', dicePos.sx+'px');
+      document.documentElement.style.setProperty('--d1-sy', dicePos.sy+'px');
+      document.documentElement.style.setProperty('--d2-sx', (dicePos.sx-40)+'px');
+      document.documentElement.style.setProperty('--d2-sy', (dicePos.sy+20)+'px');
+    });
   } else {
-    panel.style.pointerEvents = 'none';
-    panel.style.cursor = '';
-    panel.style.outline = '';
-    panel.removeEventListener('mousedown', _diceMD);
+    stop.style.display  = 'none';
+    start.style.display = 'none';
+    if(panel){ panel.style.pointerEvents='none'; }
   }
 }
 
-function _diceMD(e){
-  e.preventDefault();
-  _diceDrag = { startX: e.clientX, startY: e.clientY, ox: dicePos.x, oy: dicePos.y };
-  document.addEventListener('mousemove', _diceMM);
-  document.addEventListener('mouseup', _diceMU);
-}
-function _diceMM(e){
-  if(!_diceDrag) return;
-  dicePos.x = Math.round(_diceDrag.ox + (e.clientX - _diceDrag.startX));
-  dicePos.y = Math.round(_diceDrag.oy + (e.clientY - _diceDrag.startY));
-  applyDicePos();
-}
-function _diceMU(){
-  _diceDrag = null;
-  document.removeEventListener('mousemove', _diceMM);
-  document.removeEventListener('mouseup', _diceMU);
-}
 
 // "" INIT ""
 
@@ -4447,6 +4467,8 @@ applyDicePos();
 
 
 
+<div id="diceMarkerStop"></div>
+<div id="diceMarkerStart"></div>
 </body>
 
 
