@@ -6,14 +6,14 @@
 <title>Craps - Perilous Legends</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0a1a0a;font-family:'Georgia',serif;color:#ffd700;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+body{background:url('./craps-bg.png') center center / cover no-repeat fixed;background-color:#0a1a0a;font-family:'Georgia',serif;color:#ffd700;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
 .bal-bar{display:none;}
-.table-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;min-height:0;}
+.table-area{flex:1;display:flex;flex-direction:column;align-items:stretch;justify-content:stretch;padding:0;min-height:0;}
 .craps-table{
-  background:url('./craps-bg.png') center center / cover no-repeat;
-  border:4px solid #8B6914;border-radius:16px;
-  box-shadow:0 0 40px rgba(0,0,0,0.9),inset 0 0 30px rgba(0,0,0,0.3);
-  width:100%;max-width:1200px;display:flex;flex-direction:column;gap:4px;padding:10px;
+  background:transparent;
+  border:none;border-radius:0;
+  box-shadow:none;
+  width:100%;max-width:100%;display:flex;flex-direction:column;gap:4px;padding:10px;
 }
 .zone{border:1px solid rgba(255,215,0,0.35);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;user-select:none;transition:background 0.15s,box-shadow 0.15s;font-size:14px;font-weight:bold;letter-spacing:1px;color:#ffd700;text-align:center;flex-direction:column;}
 .zone:hover:not(.disabled){background:rgba(255,215,0,0.18);box-shadow:0 0 8px rgba(255,215,0,0.3);}
@@ -100,13 +100,13 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 .point-disp{font-size:12px;color:#aaa;text-align:center;min-height:16px;}
 
 /* Message */
-.msg-box{text-align:center;min-height:24px;font-size:14px;font-weight:bold;color:#ffd700;letter-spacing:1px;padding:3px 8px;flex-shrink:0;font-style:italic;}
+.msg-box{text-align:center;min-height:24px;font-size:14px;font-weight:bold;color:#ffd700;letter-spacing:1px;padding:3px 8px;flex-shrink:0;font-style:italic;background:rgba(0,0,0,0.55);}
 .msg-box.win{color:#4aff7a;animation:flashWin 0.7s ease-out;}
 .msg-box.lose{color:#ff4a4a;animation:flashLose 0.7s ease-out;}
 .msg-box.push{color:#88aaff;}
 @keyframes flashWin{0%,100%{color:#4aff7a;}50%{color:#fff;text-shadow:0 0 12px #4aff7a;}}
 @keyframes flashLose{0%,100%{color:#ff4a4a;}50%{color:#fff;text-shadow:0 0 12px #ff4a4a;}}
-.payout-bar{text-align:center;padding:8px 16px;flex-shrink:0;background:rgba(0,0,0,0.6);border-top:2px solid rgba(255,215,0,0.15);border-bottom:2px solid rgba(255,215,0,0.15);font-size:17px;font-weight:bold;letter-spacing:1px;min-height:38px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;}
+.payout-bar{text-align:center;padding:8px 16px;flex-shrink:0;background:rgba(0,0,0,0.65);border-top:2px solid rgba(255,215,0,0.15);border-bottom:2px solid rgba(255,215,0,0.15);font-size:17px;font-weight:bold;letter-spacing:1px;min-height:38px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;}
 .payout-bar.show-win{color:#4aff7a;border-color:rgba(74,255,122,0.35);text-shadow:0 0 12px rgba(74,255,122,0.4);}
 .payout-bar.show-lose{color:#ff5555;border-color:rgba(255,85,85,0.35);text-shadow:0 0 12px rgba(255,85,85,0.3);}
 .payout-bar.show-push{color:#88aaff;}
@@ -145,7 +145,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 #muteBtn{position:fixed;top:8px;right:10px;z-index:999;background:rgba(0,0,0,0.6);border:1px solid #c9a84c44;color:#ffd700;font-size:17px;padding:3px 8px;border-radius:6px;cursor:pointer;}
 
 /* Hint bar */
-.hint{font-size:9px;color:#aaa;text-align:center;padding:1px 0;flex-shrink:0;}
+.hint{font-size:9px;color:#aaa;text-align:center;padding:1px 4px;flex-shrink:0;background:rgba(0,0,0,0.5);}
 </style>
 </head>
 <body>
