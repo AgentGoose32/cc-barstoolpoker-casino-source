@@ -800,6 +800,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 
 
 <audio id="bgAmbience" loop src="./casino-ambience.mp3"></audio>
+<audio id="diceRollSound" src="https://drive.google.com/uc?export=download&id=1MUtAq-O7GG7RuClHSS_RVX-cYKDrtxSG" preload="auto"></audio>
 
 
 
@@ -2362,7 +2363,12 @@ function rollDice(){
 
   w1.classList.add('throwing1'); w2.classList.add('throwing2');
 
-
+  // Play rolling sound on throw, stop when dice land
+  try {
+    const rs = document.getElementById('diceRollSound');
+    if(rs){ rs.currentTime = 0; rs.play().catch(()=>{}); }
+    setTimeout(()=>{ if(rs){ rs.pause(); rs.currentTime = 0; } }, 1130);
+  } catch(e){}
 
   setTimeout(()=>{ playThud(); },1100);
 
