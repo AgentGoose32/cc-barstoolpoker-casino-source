@@ -10,14 +10,15 @@ body{background:#0a1a0a;font-family:'Georgia',serif;color:#ffd700;height:100vh;o
 .bal-bar{display:none;}
 .table-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;min-height:0;}
 .craps-table{
-  background:radial-gradient(ellipse at center,#0d5c2c 0%,#093d1c 60%,#072d15 100%);
+  background:url('./craps-bg.png') center center / cover no-repeat;
   border:4px solid #8B6914;border-radius:16px;
-  box-shadow:0 0 40px rgba(0,0,0,0.9),inset 0 0 30px rgba(0,0,0,0.4);
+  box-shadow:0 0 40px rgba(0,0,0,0.9),inset 0 0 30px rgba(0,0,0,0.3);
   width:100%;max-width:1200px;display:flex;flex-direction:column;gap:4px;padding:10px;
 }
 .zone{border:1px solid rgba(255,215,0,0.35);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;user-select:none;transition:background 0.15s,box-shadow 0.15s;font-size:14px;font-weight:bold;letter-spacing:1px;color:#ffd700;text-align:center;flex-direction:column;}
-.zone:hover:not(.disabled){background:rgba(255,215,0,0.12);box-shadow:0 0 8px rgba(255,215,0,0.3);}
-.zone.has-bet{background:rgba(255,215,0,0.08);}
+.zone:hover:not(.disabled){background:rgba(255,215,0,0.18);box-shadow:0 0 8px rgba(255,215,0,0.3);}
+.zone.has-bet{background:rgba(255,215,0,0.12);}
+.zone{background:rgba(0,0,0,0.25);}
 .zone.disabled{cursor:default;opacity:0.42;pointer-events:none;}
 .bet-chip{position:absolute;bottom:3px;right:4px;background:#c9a84c;color:#000;border-radius:50%;width:28px;height:28px;line-height:28px;text-align:center;font-size:11px;font-weight:bold;display:none;}
 .zone.has-bet .bet-chip{display:block;}
