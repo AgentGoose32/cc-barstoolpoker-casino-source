@@ -731,8 +731,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 
 
 
-@keyframes throwDie1{
-  0%  {transform:translate(var(--d1-sx,160px),var(--d1-sy,220px)) rotate(0deg)   scale(1.5); opacity:0.5;}
+
   8%  {transform:translate(80px,100px)  rotate(180deg)  scale(1.4); opacity:1;}
   22% {transform:translate(10px,5px)    rotate(520deg)  scale(1.2);}
   32% {transform:translate(0px,-28px)   rotate(640deg)  scale(0.9);}  /* bounce up */
@@ -744,8 +743,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
   80% {transform:translate(0px,-2px)    rotate(768deg)  scale(0.99);}  /* settle */
   100%{transform:translate(0px,0px)     rotate(var(--rot1,720deg)) scale(1);}
 }
-@keyframes throwDie2{
-  0%  {transform:translate(var(--d2-sx,120px),var(--d2-sy,240px)) rotate(0deg)   scale(1.5); opacity:0.5;}
+
   8%  {transform:translate(55px,120px)  rotate(-220deg) scale(1.4); opacity:1;}
   22% {transform:translate(-8px,6px)    rotate(-580deg) scale(1.15);}
   32% {transform:translate(2px,-24px)   rotate(-660deg) scale(0.88);} /* bounce up */
@@ -757,8 +755,8 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
   80% {transform:translate(0px,-2px)    rotate(-749deg) scale(0.99);}  /* settle */
   100%{transform:translate(0px,0px)     rotate(var(--rot2,-630deg)) scale(1);}
 }
-.die-wrap.throwing1{animation:throwDie1 1.44s cubic-bezier(0.15,0.7,0.3,1) forwards;}
-.die-wrap.throwing2{animation:throwDie2 1.44s cubic-bezier(0.15,0.7,0.3,1) forwards;}
+
+
 
 
 /* Dice position markers */
@@ -768,6 +766,10 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
   color:#4aff7a;font-size:10px;font-weight:bold;white-space:nowrap;text-shadow:0 0 4px #000;}
 #diceMarkerStart{position:fixed;width:24px;height:24px;background:#ff4444;border-radius:50%;border:3px solid #fff;
   cursor:move;z-index:200;display:none;transform:translate(-50%,-50%);box-shadow:0 0 8px #f44;}
+#diceMarkerBounce{position:fixed;width:24px;height:24px;background:#ffaa00;border-radius:50%;border:3px solid #fff;
+  cursor:move;z-index:200;display:none;transform:translate(-50%,-50%);box-shadow:0 0 8px #fa0;}
+#diceMarkerBounce::after{content:'BOUNCE';position:absolute;top:26px;left:50%;transform:translateX(-50%);
+  color:#ffaa00;font-size:10px;font-weight:bold;white-space:nowrap;text-shadow:0 0 4px #000;}
 #diceMarkerStart::after{content:'START';position:absolute;top:26px;left:50%;transform:translateX(-50%);
   color:#ff7777;font-size:10px;font-weight:bold;white-space:nowrap;text-shadow:0 0 4px #000;}
 
@@ -783,6 +785,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 
 
 
+<style id="dice-kf"></style>
 </head>
 
 
@@ -1532,7 +1535,8 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 <div id="diceDbgPanel">
   <h3 style="color:#4aff7a;margin:0 0 6px;">?? Dice Debug</h3>
   <div style="font-size:10px;color:#aaa;margin-bottom:8px;">Drag the markers on the table.</div>
-  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="display:inline-block;width:14px;height:14px;background:#ff4444;border-radius:50%;border:2px solid #fff;"></span> <span style="color:#ff7777;font-size:11px;">START - where dice fly from</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="display:inline-block;width:14px;height:14px;background:#ff4444;border-radius:50%;border:2px solid #fff;"></span> <span style="color:#ff7777;font-size:11px;">START - where dice come from</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="display:inline-block;width:14px;height:14px;background:#ffaa00;border-radius:50%;border:2px solid #fff;"></span> <span style="color:#ffaa00;font-size:11px;">BOUNCE - wall they hit</span></div>
   <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;"><span style="display:inline-block;width:14px;height:14px;background:#4aff7a;border-radius:50%;border:2px solid #fff;"></span> <span style="color:#4aff7a;font-size:11px;">STOP - where dice land</span></div>
   <div style="display:flex;gap:6px;">
     <button onclick="testDiceRoll()" style="flex:1;background:#1a4a1a;color:#4aff7a;border:1px solid #4aff7a;border-radius:4px;padding:5px;cursor:pointer;">TEST ROLL</button>
@@ -2347,15 +2351,15 @@ function rollDice(){
 
 
 
-  setTimeout(()=>{ playThud(); },800);
+  setTimeout(()=>{ playThud(); },1100);
 
 
 
-  setTimeout(()=>{ document.getElementById('diceTotal').textContent=dice[0]+dice[1]; document.getElementById('dieShadow1').style.opacity='1'; document.getElementById('dieShadow2').style.opacity='1'; },1310);
+  setTimeout(()=>{ document.getElementById('diceTotal').textContent=dice[0]+dice[1]; document.getElementById('dieShadow1').style.opacity='1'; document.getElementById('dieShadow2').style.opacity='1'; },1700);
 
 
 
-  setTimeout(()=>{ resolveRoll(); },1680);
+  setTimeout(()=>{ resolveRoll(); },2000);
 
 
 
@@ -4353,39 +4357,63 @@ function initAllDrag(){ BET_ZONE_IDS.forEach(initDragOnZone); }
 
 // -- DICE POSITION DEBUG --
 let diceDbgOn = false;
-const dicePos = { x: 686, y: 379, sx: 810, sy: 33 };
-let _activeDrag = null;
+// STOP pos, START offset, BOUNCE absolute
+const dicePos = { x: 686, y: 379, sx: 810, sy: 33, bx: 1350, by: 379 };
+
+function buildDiceKeyframes() {
+  // All positions in screen coords. STOP = (dicePos.x, dicePos.y) = origin in transform space.
+  const sx = dicePos.sx, sy = dicePos.sy;           // START relative to STOP
+  const bx = dicePos.bx - dicePos.x;               // BOUNCE relative to STOP
+  const by = dicePos.by - dicePos.y;
+  // Distance ratio for timing the bounce keyframe
+  const d1 = Math.sqrt((sx-bx)**2 + (sy-by)**2);   // START to BOUNCE
+  const d2 = Math.sqrt(bx*bx + by*by);              // BOUNCE to STOP
+  const total = (d1 + d2) || 1;
+  const pct  = Math.max(10, Math.min(85, Math.round(d1/total*100)));
+  const dur  = 2.16;
+  const rot1 =  360*4, rot2 = -360*3;
+  const rb1  = Math.round(rot1*pct/100), rb2 = Math.round(rot2*pct/100);
+  const kf = `
+@keyframes throwDie1{
+  0%{transform:translate(${sx}px,${sy}px) rotate(0deg);animation-timing-function:linear;}
+  ${pct}%{transform:translate(${bx}px,${by}px) rotate(${rb1}deg) scale(1.15);animation-timing-function:linear;}
+  ${pct+3}%{transform:translate(${bx}px,${by}px) rotate(${rb1+15}deg) scale(0.8);animation-timing-function:linear;}
+  100%{transform:translate(0px,0px) rotate(${rot1}deg);}
+}
+@keyframes throwDie2{
+  0%{transform:translate(${sx-30}px,${sy+20}px) rotate(0deg);animation-timing-function:linear;}
+  ${pct}%{transform:translate(${bx+18}px,${by-12}px) rotate(${rb2}deg) scale(1.15);animation-timing-function:linear;}
+  ${pct+3}%{transform:translate(${bx+18}px,${by-12}px) rotate(${rb2-15}deg) scale(0.8);animation-timing-function:linear;}
+  100%{transform:translate(0px,0px) rotate(${rot2}deg);}
+}
+.die-wrap.throwing1{animation:throwDie1 ${dur}s linear forwards;}
+.die-wrap.throwing2{animation:throwDie2 ${dur}s linear forwards;}`;
+  document.getElementById('dice-kf').textContent = kf;
+}
 
 function applyDicePos() {
   document.documentElement.style.setProperty('--dice-x', dicePos.x + 'px');
   document.documentElement.style.setProperty('--dice-y', dicePos.y + 'px');
-  const launchX = dicePos.x + dicePos.sx;
-  const launchY = dicePos.y + dicePos.sy;
-  document.documentElement.style.setProperty('--d1-sx', dicePos.sx + 'px');
-  document.documentElement.style.setProperty('--d1-sy', dicePos.sy + 'px');
-  document.documentElement.style.setProperty('--d2-sx', (dicePos.sx - 40) + 'px');
-  document.documentElement.style.setProperty('--d2-sy', (dicePos.sy + 20) + 'px');
-  // Sync markers
-  const stop  = document.getElementById('diceMarkerStop');
-  const start = document.getElementById('diceMarkerStart');
-  if(stop)  { stop.style.left  = dicePos.x + 'px'; stop.style.top  = dicePos.y + 'px'; }
-  if(start) { start.style.left = launchX + 'px';   start.style.top = launchY + 'px'; }
+  const stop   = document.getElementById('diceMarkerStop');
+  const start  = document.getElementById('diceMarkerStart');
+  const bounce = document.getElementById('diceMarkerBounce');
+  if(stop)  { stop.style.left   = dicePos.x + 'px';                stop.style.top   = dicePos.y + 'px'; }
+  if(start) { start.style.left  = (dicePos.x+dicePos.sx) + 'px';  start.style.top  = (dicePos.y+dicePos.sy) + 'px'; }
+  if(bounce){ bounce.style.left = dicePos.bx + 'px';              bounce.style.top  = dicePos.by + 'px'; }
+  buildDiceKeyframes();
 }
 
 function testDiceRoll() {
   const v1 = Math.ceil(Math.random()*6), v2 = Math.ceil(Math.random()*6);
   drawDie('die1', v1); drawDie('die2', v2);
-  const rot1 =  360*(3+Math.floor(Math.random()*3));
-  const rot2 = -360*(2+Math.floor(Math.random()*3));
   const w1 = document.getElementById('dieWrap1'), w2 = document.getElementById('dieWrap2');
-  w1.style.setProperty('--rot1', rot1+'deg'); w2.style.setProperty('--rot2', rot2+'deg');
   w1.classList.remove('throwing1','throwing2'); w2.classList.remove('throwing1','throwing2');
   void w1.offsetWidth;
   w1.classList.add('throwing1'); w2.classList.add('throwing2');
 }
 
 function copyDicePos() {
-  const out = 'dicePos = { x:'+dicePos.x+', y:'+dicePos.y+', sx:'+dicePos.sx+', sy:'+dicePos.sy+' }';
+  const out = 'dicePos = { x:'+dicePos.x+', y:'+dicePos.y+', sx:'+dicePos.sx+', sy:'+dicePos.sy+', bx:'+dicePos.bx+', by:'+dicePos.by+' }';
   document.getElementById('diceDbgOut').value = out;
   navigator.clipboard.writeText(out).catch(()=>{});
 }
@@ -4409,13 +4437,21 @@ function _makeDraggable(el, onMove) {
 function toggleDiceDbg() {
   diceDbgOn = !diceDbgOn;
   document.getElementById('diceDbgPanel').classList.toggle('visible', diceDbgOn);
-  const stop  = document.getElementById('diceMarkerStop');
-  const start = document.getElementById('diceMarkerStart');
-  const panel = document.querySelector('.dice-panel');
+  const stop   = document.getElementById('diceMarkerStop');
+  const start  = document.getElementById('diceMarkerStart');
+  const bounce = document.getElementById('diceMarkerBounce');
+  const vis = diceDbgOn ? 'block' : 'none';
+  if(stop)   stop.style.display   = vis;
+  if(start)  start.style.display  = vis;
+  if(bounce) bounce.style.display = vis;
   if(diceDbgOn){
-    stop.style.display  = 'block';
-    start.style.display = 'block';
-    if(panel){ panel.style.pointerEvents='none'; }
+    applyDicePos();
+    _makeDraggable(stop, function(nx,ny){ dicePos.x=nx; dicePos.y=ny; applyDicePos(); });
+    _makeDraggable(start, function(nx,ny){ dicePos.sx=nx-dicePos.x; dicePos.sy=ny-dicePos.y; applyDicePos(); });
+    _makeDraggable(bounce, function(nx,ny){ dicePos.bx=nx; dicePos.by=ny; applyDicePos(); });
+  }
+}
+
     applyDicePos();
     _makeDraggable(stop, function(nx, ny){
       dicePos.x = nx; dicePos.y = ny;
@@ -4430,12 +4466,7 @@ function toggleDiceDbg() {
       document.documentElement.style.setProperty('--d2-sx', (dicePos.sx-40)+'px');
       document.documentElement.style.setProperty('--d2-sy', (dicePos.sy+20)+'px');
     });
-  } else {
-    stop.style.display  = 'none';
-    start.style.display = 'none';
-    if(panel){ panel.style.pointerEvents='none'; }
-  }
-}
+
 
 
 // "" INIT ""
@@ -4468,6 +4499,7 @@ applyDicePos();
 
 
 <div id="diceMarkerStop"></div>
+<div id="diceMarkerBounce"></div>
 <div id="diceMarkerStart"></div>
 </body>
 
