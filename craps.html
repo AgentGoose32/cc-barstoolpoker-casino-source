@@ -379,7 +379,23 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 <!-- Debug panel -->
 <div id="dbgPanel">
   <h3>🎲 Number Zone Placement</h3>
-  <div style="font-size:9px;color:#aaa;margin-bottom:6px;">Drag sliders to position each zone on the image. Hit COPY when done.</div>
+  <div style="font-size:9px;color:#aaa;margin-bottom:6px;">Select a number, drag sliders, hit COPY when done.</div>
+  <div id="zoneSelect" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;">
+    <button onclick="selZone(4)"  id="zb4"  style="flex:1;padding:3px;background:#665500;color:#ffd700;border:1px solid #888;border-radius:3px;cursor:pointer;">4</button>
+    <button onclick="selZone(5)"  id="zb5"  style="flex:1;padding:3px;background:#333;color:#ffd700;border:1px solid #555;border-radius:3px;cursor:pointer;">5</button>
+    <button onclick="selZone(6)"  id="zb6"  style="flex:1;padding:3px;background:#333;color:#ffd700;border:1px solid #555;border-radius:3px;cursor:pointer;">6</button>
+    <button onclick="selZone(8)"  id="zb8"  style="flex:1;padding:3px;background:#333;color:#ffd700;border:1px solid #555;border-radius:3px;cursor:pointer;">8</button>
+    <button onclick="selZone(9)"  id="zb9"  style="flex:1;padding:3px;background:#333;color:#ffd700;border:1px solid #555;border-radius:3px;cursor:pointer;">9</button>
+    <button onclick="selZone(10)" id="zb10" style="flex:1;padding:3px;background:#333;color:#ffd700;border:1px solid #555;border-radius:3px;cursor:pointer;">10</button>
+  </div>
+  <div style="color:#ffd700;font-size:11px;margin-bottom:4px;">Editing: <strong id="editingLabel">4</strong></div>
+  <label>Left (X) <input type="range" id="d-x" min="0" max="1920" value="20"  oninput="applyZone()"> <span class="val" id="v-x">20</span>px</label>
+  <label>Top  (Y) <input type="range" id="d-y" min="0" max="1080" value="400" oninput="applyZone()"> <span class="val" id="v-y">400</span>px</label>
+  <label>Width    <input type="range" id="d-w" min="20" max="600" value="120"  oninput="applyZone()"> <span class="val" id="v-w">120</span>px</label>
+  <label>Height   <input type="range" id="d-h" min="20" max="400" value="80"   oninput="applyZone()"> <span class="val" id="v-h">80</span>px</label>
+  <button onclick="copyDbg()">📋 COPY ALL VALUES</button>
+  <textarea id="dbgOut" readonly placeholder="Values appear here after COPY…"></textarea>
+</div>
 
 <script>
 // ── STATE ──
@@ -832,12 +848,12 @@ function drawDie(id,value){
 const NUMS = [4,5,6,8,9,10];
 // Starting positions: spread across top of screen, adjust via debug
 const zoneData = {
-  4:  {x:20,  y:20, w:120, h:80},
-  5:  {x:160, y:20, w:120, h:80},
-  6:  {x:300, y:20, w:120, h:80},
-  8:  {x:440, y:20, w:120, h:80},
-  9:  {x:580, y:20, w:120, h:80},
-  10: {x:720, y:20, w:120, h:80},
+  4:  {x:20,  y:400, w:120, h:80},
+  5:  {x:160, y:400, w:120, h:80},
+  6:  {x:300, y:400, w:120, h:80},
+  8:  {x:440, y:400, w:120, h:80},
+  9:  {x:580, y:400, w:120, h:80},
+  10: {x:720, y:400, w:120, h:80},
 };
 let activeZone = 4;
 
