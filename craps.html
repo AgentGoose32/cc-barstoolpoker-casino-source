@@ -1560,7 +1560,8 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 </div>
 
 
-<button class="dbg-toggle" onclick="toggleOddsDbg()" style="left:10px;">ODDS</button>
+<button class="dbg-toggle" onclick="toggleDbg()" style="left:10px;">DEBUG</button>
+<button class="dbg-toggle" onclick="toggleOddsDbg()" style="left:80px;">ODDS</button>
 
 
 
@@ -3996,34 +3997,23 @@ function initDragOnZone(id){
 
 
 
-  // Main drag (move)
-
-
+  // Touch drag (move)
+  el.addEventListener('touchstart', function(e){
+    if(!dbgOn) return;
+    if(e.target.classList.contains('dbg-resize-handle')) return;
+    e.preventDefault(); e.stopPropagation();
+    const pt=e.touches[0];
+    selBetZone(id);
+    const d=betZoneData[id];
+    _drag={type:'move',id,startX:pt.clientX,startY:pt.clientY,ox:d.x,oy:d.y};
+  }, {passive:false});
 
   el.addEventListener('mousedown', e=>{
-
-
-
     if(!dbgOn) return;
-
-
-
     if(e.target.classList.contains('dbg-resize-handle')) return;
-
-
-
     e.preventDefault(); e.stopPropagation();
-
-
-
     selBetZone(id);
-
-
-
     const d=betZoneData[id];
-
-
-
     _drag={type:'move',id,startX:e.clientX,startY:e.clientY,ox:d.x,oy:d.y};
 
 
@@ -4128,31 +4118,16 @@ function injectResizeHandles(id){
 
 
 
-    h.addEventListener('mousedown', e=>{
-
-
-
+    function _startResize(e){
       if(!dbgOn) return;
-
-
-
       e.preventDefault(); e.stopPropagation();
-
-
-
+      const pt=e.touches?e.touches[0]:e;
       selBetZone(id);
-
-
-
       const d=betZoneData[id];
-
-
-
-      _drag={type:'resize',id,cx,cy,startX:e.clientX,startY:e.clientY,ox:d.x,oy:d.y,ow:d.w,oh:d.h};
-
-
-
-    });
+      _drag={type:'resize',id,cx,cy,startX:pt.clientX,startY:pt.clientY,ox:d.x,oy:d.y,ow:d.w,oh:d.h};
+    }
+    h.addEventListener('mousedown', _startResize);
+    h.addEventListener('touchstart', _startResize, {passive:false});
 
 
 
@@ -4172,15 +4147,10 @@ function injectResizeHandles(id){
 
 
 
-document.addEventListener('mousemove', e=>{
-
-
-
+function _onDragMove(e){
   if(!_drag) return;
-
-
-
-  const dx=e.clientX-_drag.startX, dy=e.clientY-_drag.startY;
+  const pt=e.touches?e.touches[0]:e;
+  const dx=pt.clientX-_drag.startX, dy=pt.clientY-_drag.startY;
 
 
 
@@ -4229,14 +4199,8 @@ document.addEventListener('mousemove', e=>{
 
 
   applyAllBetZones();
-
-
-
   refreshPanel();
-
-
-
-});
+}
 
 
 
@@ -4244,7 +4208,10 @@ document.addEventListener('mousemove', e=>{
 
 
 
-document.addEventListener('mouseup', ()=>{ _drag=null; });
+document.addEventListener('mousemove', _onDragMove);
+document.addEventListener('touchmove', _onDragMove, {passive:false});
+document.addEventListener('mouseup',  ()=>{ _drag=null; });
+document.addEventListener('touchend', ()=>{ _drag=null; });
 
 
 
