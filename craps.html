@@ -1560,8 +1560,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 </div>
 
 
-<button class="dice-dbg-toggle" onclick="toggleDiceDbg()">?? DICE</button>
-<button class="dbg-toggle" onclick="toggleDbg()">" DEBUG</button>
+<button class="dbg-toggle" onclick="toggleOddsDbg()" style="left:10px;">ODDS</button>
 
 
 
@@ -1667,12 +1666,27 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 
   <textarea id="dbgOut" readonly placeholder="Values appear here after COPY" style="height:60px;"></textarea>
 
-
-
 </div>
 
+<!-- Odds debug panel -->
+<div id="oddsDbgPanel" style="position:fixed;top:40px;left:10px;z-index:9999;background:rgba(0,0,0,0.92);border:1px solid #ffd700;border-radius:8px;padding:10px 14px;font-size:11px;font-family:monospace;color:#ffd700;width:240px;display:none;">
+  <h3 style="margin:0 0 8px;font-size:13px;border-bottom:1px solid #ffd70044;padding-bottom:4px;">Pass/Lay Odds Editor</h3>
 
+  <div style="color:#4aff7a;font-weight:bold;margin-bottom:4px;font-size:11px;">PASS ODDS</div>
+  <label style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">X <input type="range" id="oz-px" min="0" max="1920" value="0" oninput="applyOddsZone('passodds')"> <span style="width:36px;text-align:right;" id="ov-px">0</span></label>
+  <label style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">Y <input type="range" id="oz-py" min="0" max="1080" value="0" oninput="applyOddsZone('passodds')"> <span style="width:36px;text-align:right;" id="ov-py">0</span></label>
+  <label style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">W <input type="range" id="oz-pw" min="20" max="600" value="85" oninput="applyOddsZone('passodds')"> <span style="width:36px;text-align:right;" id="ov-pw">85</span></label>
+  <label style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">H <input type="range" id="oz-ph" min="10" max="300" value="45" oninput="applyOddsZone('passodds')"> <span style="width:36px;text-align:right;" id="ov-ph">45</span></label>
 
+  <div style="color:#ff8888;font-weight:bold;margin-bottom:4px;font-size:11px;">LAY ODDS (DONT)</div>
+  <label style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">X <input type="range" id="oz-dx" min="0" max="1920" value="0" oninput="applyOddsZone('dontodds')"> <span style="width:36px;text-align:right;" id="ov-dx">0</span></label>
+  <label style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">Y <input type="range" id="oz-dy" min="0" max="1080" value="0" oninput="applyOddsZone('dontodds')"> <span style="width:36px;text-align:right;" id="ov-dy">0</span></label>
+  <label style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">W <input type="range" id="oz-dw" min="20" max="600" value="72" oninput="applyOddsZone('dontodds')"> <span style="width:36px;text-align:right;" id="ov-dw">72</span></label>
+  <label style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">H <input type="range" id="oz-dh" min="10" max="300" value="37" oninput="applyOddsZone('dontodds')"> <span style="width:36px;text-align:right;" id="ov-dh">37</span></label>
+
+  <button onclick="copyOddsZones()" style="width:100%;padding:6px;background:#333;color:#ffd700;border:1px solid #ffd700;border-radius:4px;cursor:pointer;font-size:11px;">COPY</button>
+  <textarea id="oddsDbgOut" readonly style="width:100%;height:40px;background:#111;color:#4aff7a;border:1px solid #333;border-radius:4px;font-size:10px;font-family:monospace;margin-top:6px;resize:none;box-sizing:border-box;"></textarea>
+</div>
 
 
 
@@ -2364,7 +2378,7 @@ function rollDice(){
   w1.classList.add('throwing1'); w2.classList.add('throwing2');
 
   // Play rolling sound on throw, stop when dice land
-  (function(){ const rs = document.getElementById('diceRollSound'); if(!rs) return; try{ rs.currentTime=0; rs.play().catch(()=>{}); setTimeout(()=>{ rs.pause(); rs.currentTime=0; }, 1130); }catch(e){} })();
+  (function(){ const rs = document.getElementById('diceRollSound'); if(!rs) return; try{ rs.currentTime=0; rs.play().catch(()=>{}); setTimeout(()=>{ rs.pause(); rs.currentTime=0; }, 960); }catch(e){} })();
 
 
 
@@ -4385,7 +4399,7 @@ function buildDiceKeyframes() {
   const d2 = Math.sqrt(bx*bx + by*by);              // BOUNCE to STOP
   const total = (d1 + d2) || 1;
   const pct  = Math.max(10, Math.min(85, Math.round(d1/total*100)));
-  const dur  = 1.13;
+  const dur  = 0.96;
   const rot1 =  360*4, rot2 = -360*3;
   const rb1  = Math.round(rot1*pct/100), rb2 = Math.round(rot2*pct/100);
   const kf = `
@@ -4489,6 +4503,46 @@ function _makeDraggable(el, onMove) {
   }
   el.addEventListener('mousedown', function(e){ e.preventDefault(); e.stopPropagation(); startDrag(e.clientX, e.clientY); });
   el.addEventListener('touchstart', function(e){ e.preventDefault(); e.stopPropagation(); startDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
+}
+
+function toggleOddsDbg() {
+  const panel = document.getElementById('oddsDbgPanel');
+  const visible = panel.style.display === 'none' || panel.style.display === '';
+  panel.style.display = visible ? 'block' : 'none';
+  if(visible) {
+    // Load current values into sliders
+    const p = betZoneData['passodds'], d = betZoneData['dontodds'];
+    document.getElementById('oz-px').value = p.x; document.getElementById('ov-px').textContent = p.x;
+    document.getElementById('oz-py').value = p.y; document.getElementById('ov-py').textContent = p.y;
+    document.getElementById('oz-pw').value = p.w; document.getElementById('ov-pw').textContent = p.w;
+    document.getElementById('oz-ph').value = p.h; document.getElementById('ov-ph').textContent = p.h;
+    document.getElementById('oz-dx').value = d.x; document.getElementById('ov-dx').textContent = d.x;
+    document.getElementById('oz-dy').value = d.y; document.getElementById('ov-dy').textContent = d.y;
+    document.getElementById('oz-dw').value = d.w; document.getElementById('ov-dw').textContent = d.w;
+    document.getElementById('oz-dh').value = d.h; document.getElementById('ov-dh').textContent = d.h;
+  }
+}
+
+function applyOddsZone(id) {
+  const prefix = id === 'passodds' ? 'p' : 'd';
+  const x = parseInt(document.getElementById('oz-'+prefix+'x').value);
+  const y = parseInt(document.getElementById('oz-'+prefix+'y').value);
+  const w = parseInt(document.getElementById('oz-'+prefix+'w').value);
+  const h = parseInt(document.getElementById('oz-'+prefix+'h').value);
+  document.getElementById('ov-'+prefix+'x').textContent = x;
+  document.getElementById('ov-'+prefix+'y').textContent = y;
+  document.getElementById('ov-'+prefix+'w').textContent = w;
+  document.getElementById('ov-'+prefix+'h').textContent = h;
+  betZoneData[id] = Object.assign(betZoneData[id]||{}, {x,y,w,h,scale:100});
+  const el = document.getElementById('z-'+id); if(!el) return;
+  el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=w+'px'; el.style.height=h+'px';
+}
+
+function copyOddsZones() {
+  const p=betZoneData['passodds'], d=betZoneData['dontodds'];
+  const out = `passodds: {x:${p.x}, y:${p.y}, w:${p.w}, h:${p.h}, scale:100},\ndontodds: {x:${d.x}, y:${d.y}, w:${d.w}, h:${d.h}, scale:100},`;
+  document.getElementById('oddsDbgOut').value = out;
+  try{ navigator.clipboard.writeText(out); }catch(e){}
 }
 
 function toggleDiceDbg() {
