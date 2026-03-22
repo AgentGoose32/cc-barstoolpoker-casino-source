@@ -373,38 +373,29 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 
 <!-- Debug panel -->
 <div id="dbgPanel">
-  <h3>🎲 Bet Zone Placement</h3>
-  <div style="font-size:9px;color:#aaa;margin-bottom:6px;">Pick a zone, drag sliders to position, hit COPY when done.</div>
-  <select id="bzSelect" onchange="selBetZone(this.value)" style="width:100%;background:#222;color:#ffd700;border:1px solid #ffd70055;border-radius:4px;padding:3px;font-size:11px;margin-bottom:6px;">
-    <option value="dontpass">Don't Pass</option>
-    <option value="dontcome">Don't Come</option>
-    <option value="come">Come</option>
-    <option value="any7">Any 7</option>
-    <option value="anycraps">Any Craps</option>
-    <option value="yo">Yo (11)</option>
-    <option value="two">2 (Snake Eyes)</option>
-    <option value="three">3</option>
-    <option value="twelve">12 (Boxcars)</option>
-    <option value="hard4">Hard 4</option>
-    <option value="hard6">Hard 6</option>
-    <option value="hard8">Hard 8</option>
-    <option value="hard10">Hard 10</option>
-    <option value="passodds">Pass Odds</option>
-    <option value="dontodds">Lay Odds</option>
-    <option value="field">Field</option>
-    <option value="passline">Pass Line</option>
-    <option value="horn">Horn</option>
-    <option value="big6">Big 6</option>
-    <option value="big8">Big 8</option>
-    <option value="ce">C&amp;E</option>
-    <option value="world">World</option>
-  </select>
-  <label>Left (X) <input type="range" id="bz-x" min="0" max="1920" value="20"  oninput="applyBetZone()"> <span class="val" id="bv-x">20</span>px</label>
-  <label>Top  (Y) <input type="range" id="bz-y" min="0" max="1080" value="400" oninput="applyBetZone()"> <span class="val" id="bv-y">400</span>px</label>
-  <label>Width    <input type="range" id="bz-w" min="20" max="1200" value="120" oninput="applyBetZone()"> <span class="val" id="bv-w">120</span>px</label>
-  <label>Height   <input type="range" id="bz-h" min="20" max="400" value="50"  oninput="applyBetZone()"> <span class="val" id="bv-h">50</span>px</label>
-  <button onclick="copyBetZones()">📋 COPY ALL VALUES</button>
-  <textarea id="dbgOut" readonly placeholder="Values appear here after COPY…"></textarea>
+  <h3>🎲 Zone Editor <span id="dbgSelectedLabel" style="color:#4aff7a;font-size:11px;"></span></h3>
+  <div style="font-size:9px;color:#aaa;margin-bottom:6px;">Click any zone to select it. Drag to move. Corner handles to resize.</div>
+  <label>X <input type="range" id="bz-x" min="0" max="1920" value="20"  oninput="applyBetZone()"> <span class="val" id="bv-x">20</span></label>
+  <label>Y <input type="range" id="bz-y" min="0" max="1080" value="400" oninput="applyBetZone()"> <span class="val" id="bv-y">400</span></label>
+  <label>W <input type="range" id="bz-w" min="20" max="800"  value="120" oninput="applyBetZone()"> <span class="val" id="bv-w">120</span></label>
+  <label>H <input type="range" id="bz-h" min="20" max="400"  value="50"  oninput="applyBetZone()"> <span class="val" id="bv-h">50</span></label>
+  <label>Scale <input type="range" id="bz-s" min="50" max="300" value="100" oninput="applyBetZone()"> <span class="val" id="bv-s">100</span>%</label>
+  <label style="margin-top:4px;">Shape
+    <select id="bz-shape" onchange="applyBetZone()" style="flex:1;background:#222;color:#ffd700;border:1px solid #ffd70055;border-radius:4px;padding:2px;font-size:11px;margin-left:6px;">
+      <option value="">Rectangle</option>
+      <option value="shape-rounded">Rounded</option>
+      <option value="shape-circle">Circle</option>
+      <option value="shape-diamond">Diamond</option>
+      <option value="shape-hex">Hexagon</option>
+      <option value="shape-octagon">Octagon</option>
+    </select>
+  </label>
+  <div style="display:flex;gap:6px;margin-top:8px;">
+    <button onclick="copyBetZones()" style="flex:1;">📋 COPY</button>
+    <button onclick="selBetZonePrev()" style="flex:0.4;">◀</button>
+    <button onclick="selBetZoneNext()" style="flex:0.4;">▶</button>
+  </div>
+  <textarea id="dbgOut" readonly placeholder="Values appear here after COPY…" style="height:60px;"></textarea>
 </div>
 
 <script>
@@ -906,55 +897,77 @@ function applyAllZones(){
 // ── BET ZONE DEBUG ──
 const BET_ZONE_IDS = ['dontpass','dontcome','come','any7','anycraps','yo','two','three','twelve','hard4','hard6','hard8','hard10','passodds','dontodds','field','passline','horn','big6','big8','ce','world'];
 const betZoneData = {
-  dontpass: {x:20,  y:100, w:680, h:46},
-  dontcome: {x:710, y:100, w:100, h:46},
-  come:     {x:20,  y:420, w:340, h:72},
-  any7:     {x:370, y:420, w:100, h:32},
-  anycraps: {x:480, y:420, w:120, h:32},
-  yo:       {x:610, y:420, w:100, h:32},
-  two:      {x:370, y:462, w:60,  h:32},
-  three:    {x:440, y:462, w:60,  h:32},
-  twelve:   {x:510, y:462, w:60,  h:32},
-  hard4:    {x:580, y:462, w:52,  h:32},
-  hard6:    {x:642, y:462, w:52,  h:32},
-  hard8:    {x:704, y:462, w:52,  h:32},
-  hard10:   {x:766, y:462, w:52,  h:32},
-  passodds: {x:828, y:420, w:72,  h:37},
-  dontodds: {x:828, y:457, w:72,  h:37},
-  field:    {x:20,  y:550, w:790, h:52},
-  passline: {x:20,  y:612, w:790, h:52},
-  horn:     {x:20,  y:680, w:130, h:55, shape:'shape-rounded'},
-  big6:     {x:160, y:680, w:70,  h:70, shape:'shape-circle'},
-  big8:     {x:240, y:680, w:70,  h:70, shape:'shape-circle'},
-  ce:       {x:320, y:680, w:100, h:60, shape:'shape-hex'},
-  world:    {x:430, y:680, w:110, h:60, shape:'shape-octagon'},
+  dontpass: {x:20,  y:100, w:680, h:46, scale:100},
+  dontcome: {x:710, y:100, w:100, h:46, scale:100},
+  come:     {x:20,  y:420, w:340, h:72, scale:100},
+  any7:     {x:370, y:420, w:100, h:32, scale:100},
+  anycraps: {x:480, y:420, w:120, h:32, scale:100},
+  yo:       {x:610, y:420, w:100, h:32, scale:100},
+  two:      {x:370, y:462, w:60,  h:32, scale:100},
+  three:    {x:440, y:462, w:60,  h:32, scale:100},
+  twelve:   {x:510, y:462, w:60,  h:32, scale:100},
+  hard4:    {x:580, y:462, w:52,  h:32, scale:100},
+  hard6:    {x:642, y:462, w:52,  h:32, scale:100},
+  hard8:    {x:704, y:462, w:52,  h:32, scale:100},
+  hard10:   {x:766, y:462, w:52,  h:32, scale:100},
+  passodds: {x:828, y:420, w:72,  h:37, scale:100},
+  dontodds: {x:828, y:457, w:72,  h:37, scale:100},
+  field:    {x:20,  y:550, w:790, h:52, scale:100},
+  passline: {x:20,  y:612, w:790, h:52, scale:100},
+  horn:     {x:20,  y:680, w:130, h:55, scale:100, shape:'shape-rounded'},
+  big6:     {x:160, y:680, w:70,  h:70, scale:100, shape:'shape-circle'},
+  big8:     {x:240, y:680, w:70,  h:70, scale:100, shape:'shape-circle'},
+  ce:       {x:320, y:680, w:100, h:60, scale:100, shape:'shape-hex'},
+  world:    {x:430, y:680, w:110, h:60, scale:100, shape:'shape-octagon'},
 };
-let activeBetZone = 'dontpass';
+let activeBetZone = 'horn';
+let dbgOn = false;
 
 const SHAPES=['shape-rounded','shape-circle','shape-diamond','shape-hex','shape-octagon'];
+
 function applyAllBetZones(){
   BET_ZONE_IDS.forEach(id=>{
     const el=document.getElementById('z-'+id); if(!el) return;
     const d=betZoneData[id];
     el.style.left=d.x+'px'; el.style.top=d.y+'px';
     el.style.width=d.w+'px'; el.style.height=d.h+'px';
+    const sc=(d.scale||100)/100;
+    el.style.transform=sc!==1?`scale(${sc})`:'';
+    el.style.transformOrigin='top left';
     if(d.shape!==undefined){ SHAPES.forEach(s=>el.classList.remove(s)); if(d.shape) el.classList.add(d.shape); }
+  });
+}
+
+function refreshPanel(){
+  const d=betZoneData[activeBetZone];
+  const setV=(id,val)=>{ const e=document.getElementById(id); if(e) e.value=val; };
+  const setT=(id,val)=>{ const e=document.getElementById(id); if(e) e.textContent=val; };
+  setV('bz-x',d.x); setT('bv-x',d.x);
+  setV('bz-y',d.y); setT('bv-y',d.y);
+  setV('bz-w',d.w); setT('bv-w',d.w);
+  setV('bz-h',d.h); setT('bv-h',d.h);
+  setV('bz-s',d.scale||100); setT('bv-s',d.scale||100);
+  const sh=document.getElementById('bz-shape'); if(sh) sh.value=(d.shape||'');
+  const lbl=document.getElementById('dbgSelectedLabel'); if(lbl) lbl.textContent='→ '+activeBetZone;
+  // Highlight selected
+  BET_ZONE_IDS.forEach(bid=>{
+    const el=document.getElementById('z-'+bid);
+    if(el) el.style.outline=bid===activeBetZone?'3px dashed #ffd700':'1px dashed rgba(255,215,0,0.25)';
   });
 }
 
 function selBetZone(id){
   activeBetZone=id;
-  const d=betZoneData[id];
-  document.getElementById('bz-x').value=d.x; document.getElementById('bv-x').textContent=d.x;
-  document.getElementById('bz-y').value=d.y; document.getElementById('bv-y').textContent=d.y;
-  document.getElementById('bz-w').value=d.w; document.getElementById('bv-w').textContent=d.w;
-  document.getElementById('bz-h').value=d.h; document.getElementById('bv-h').textContent=d.h;
-  // highlight selected, clear others
-  BET_ZONE_IDS.forEach(bid=>{
-    const el=document.getElementById('z-'+bid);
-    if(el) el.style.outline=bid===id?'2px dashed #ffd700':'1px dashed rgba(255,215,0,0.3)';
-  });
-  const shapeEl=document.getElementById('bz-shape'); if(shapeEl) shapeEl.value=(betZoneData[id].shape||'');
+  refreshPanel();
+}
+
+function selBetZoneNext(){
+  const i=BET_ZONE_IDS.indexOf(activeBetZone);
+  selBetZone(BET_ZONE_IDS[(i+1)%BET_ZONE_IDS.length]);
+}
+function selBetZonePrev(){
+  const i=BET_ZONE_IDS.indexOf(activeBetZone);
+  selBetZone(BET_ZONE_IDS[(i-1+BET_ZONE_IDS.length)%BET_ZONE_IDS.length]);
 }
 
 function applyBetZone(){
@@ -962,38 +975,127 @@ function applyBetZone(){
   const y=+document.getElementById('bz-y').value;
   const w=+document.getElementById('bz-w').value;
   const h=+document.getElementById('bz-h').value;
+  const scale=+document.getElementById('bz-s').value;
   document.getElementById('bv-x').textContent=x;
   document.getElementById('bv-y').textContent=y;
   document.getElementById('bv-w').textContent=w;
   document.getElementById('bv-h').textContent=h;
+  document.getElementById('bv-s').textContent=scale;
   const shape=document.getElementById('bz-shape')?.value||'';
-  betZoneData[activeBetZone]={x,y,w,h,shape};
+  betZoneData[activeBetZone]={x,y,w,h,scale,shape};
   applyAllBetZones();
+  refreshPanel();
 }
 
+// ── Drag to move + corner resize ──
+let _drag=null;
+
+function initDragOnZone(id){
+  const el=document.getElementById('z-'+id); if(!el) return;
+
+  // Main drag (move)
+  el.addEventListener('mousedown', e=>{
+    if(!dbgOn) return;
+    if(e.target.classList.contains('dbg-resize-handle')) return;
+    e.preventDefault(); e.stopPropagation();
+    selBetZone(id);
+    const d=betZoneData[id];
+    _drag={type:'move',id,startX:e.clientX,startY:e.clientY,ox:d.x,oy:d.y};
+  });
+
+  // Click to select
+  el.addEventListener('click', e=>{
+    if(!dbgOn) return;
+    e.stopPropagation();
+    selBetZone(id);
+  });
+}
+
+// Resize handle injected per zone
+function injectResizeHandles(id){
+  const el=document.getElementById('z-'+id); if(!el) return;
+  // Remove old
+  el.querySelectorAll('.dbg-resize-handle').forEach(h=>h.remove());
+  const corners=[
+    {cx:0,cy:0,cur:'nw-resize'},{cx:1,cy:0,cur:'ne-resize'},
+    {cx:0,cy:1,cur:'sw-resize'},{cx:1,cy:1,cur:'se-resize'}
+  ];
+  corners.forEach(({cx,cy,cur})=>{
+    const h=document.createElement('div');
+    h.className='dbg-resize-handle';
+    h.style.cssText=`position:absolute;width:10px;height:10px;background:#ffd700;border:1px solid #000;border-radius:2px;z-index:9999;cursor:${cur};`
+      + (cx===0?'left:-5px;':'right:-5px;')
+      + (cy===0?'top:-5px;':'bottom:-5px;');
+    h.addEventListener('mousedown', e=>{
+      if(!dbgOn) return;
+      e.preventDefault(); e.stopPropagation();
+      selBetZone(id);
+      const d=betZoneData[id];
+      _drag={type:'resize',id,cx,cy,startX:e.clientX,startY:e.clientY,ox:d.x,oy:d.y,ow:d.w,oh:d.h};
+    });
+    el.appendChild(h);
+  });
+}
+
+document.addEventListener('mousemove', e=>{
+  if(!_drag) return;
+  const dx=e.clientX-_drag.startX, dy=e.clientY-_drag.startY;
+  const d=betZoneData[_drag.id];
+  if(_drag.type==='move'){
+    d.x=Math.round(_drag.ox+dx);
+    d.y=Math.round(_drag.oy+dy);
+  } else {
+    // Resize: cx=0 means left edge, cy=0 means top edge
+    if(_drag.cx===0){ d.x=Math.round(_drag.ox+dx); d.w=Math.max(20,Math.round(_drag.ow-dx)); }
+    else             { d.w=Math.max(20,Math.round(_drag.ow+dx)); }
+    if(_drag.cy===0){ d.y=Math.round(_drag.oy+dy); d.h=Math.max(20,Math.round(_drag.oh-dy)); }
+    else             { d.h=Math.max(20,Math.round(_drag.oh+dy)); }
+  }
+  applyAllBetZones();
+  refreshPanel();
+});
+
+document.addEventListener('mouseup', ()=>{ _drag=null; });
+
 function toggleDbg(){
-  document.getElementById('dbgPanel').classList.toggle('visible');
-  const on=document.getElementById('dbgPanel').classList.contains('visible');
-  if(on){ selBetZone(activeBetZone); }
-  else { BET_ZONE_IDS.forEach(id=>{ const el=document.getElementById('z-'+id); if(el) el.style.outline=''; }); }
+  dbgOn=!dbgOn;
+  document.getElementById('dbgPanel').classList.toggle('visible', dbgOn);
+  BET_ZONE_IDS.forEach(id=>{
+    const el=document.getElementById('z-'+id); if(!el) return;
+    if(dbgOn){
+      el.style.outline=id===activeBetZone?'3px dashed #ffd700':'1px dashed rgba(255,215,0,0.25)';
+      el.style.cursor='move';
+      injectResizeHandles(id);
+    } else {
+      el.style.outline='';
+      el.style.cursor='';
+      el.querySelectorAll('.dbg-resize-handle').forEach(h=>h.remove());
+    }
+  });
+  if(dbgOn) refreshPanel();
 }
 
 function copyBetZones(){
   const lines=BET_ZONE_IDS.map(id=>{
     const d=betZoneData[id];
     const sc=d.shape?`, shape:'${d.shape}'`:'';
-    return `  ${id}: {x:${d.x}, y:${d.y}, w:${d.w}, h:${d.h}${sc}},`;
+    const ss=(d.scale&&d.scale!==100)?`, scale:${d.scale}`:'';
+    return `  ${id}: {x:${d.x}, y:${d.y}, w:${d.w}, h:${d.h}${ss}${sc}},`;
   });
   const out=lines.join('\n');
   document.getElementById('dbgOut').value=out;
   navigator.clipboard.writeText(out).catch(()=>{});
 }
 
+// Wire up drag on all zones after init
+function initAllDrag(){ BET_ZONE_IDS.forEach(initDragOnZone); }
+
 // ── INIT ──
 drawDie('die1',dice[0]); drawDie('die2',dice[1]);
 applyAllZones();
 applyAllBetZones();
 updateZoneStates(); updatePuck(); updateUI();
+initAllDrag();
 </script>
 </body>
 </html>
