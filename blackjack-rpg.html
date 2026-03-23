@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPG Blackjack - PL Casino</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+:root { --card-w:66px; --card-h:99px; }
+body { background:#000; color:#fff; font-family:Georgia,serif; overflow:hidden; width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; }
+.table-wrap { position:relative; height:100vh; width:calc(100vh * 1.5); aspect-ratio:3/2; flex-shrink:0; }
+.table-bg { position:absolute; inset:0; background:url('https://drive.google.com/thumbnail?id=1bSL5fh1UzXGmaJQ6ZwntGov8UEv2mnSB&sz=w1200') center/100% 100% no-repeat; }
+
+/* SIDE PANELS */
+.side-panel { position:absolute; top:0; bottom:26px; width:175px; background:rgba(0,0,0,0.8); border:1px solid rgba(255,215,0,0.12); z-index:30; display:flex; flex-direction:column; }
+.side-panel.left { left:0; border-left:none; }
+.side-panel.right { right:0; border-right:none; }
+.panel-title { background:rgba(255,215,0,0.07); color:#ffd700; padding:5px 8px; font-size:10px; letter-spacing:1px; border-bottom:1px solid rgba(255,215,0,0.15); text-align:center; flex-shrink:0; }
+.feed-scroll { flex:1; overflow-y:auto; padding:5px; display:flex; flex-direction:column; gap:3px; }
+.feed-scroll::-webkit-scrollbar { width:3px; }
+.feed-scroll::-webkit-scrollbar-thumb { background:#333; }
+.feed-item { padding:3px 5px; border-radius:3px; font-size:9.5px; line-height:1.4; animation:fadeSlide .3s ease; flex-shrink:0; }
+@keyframes fadeSlide { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
+.feed-item.proc  { color:#ffd700; background:rgba(255,215,0,0.07); border-left:2px solid #ffd700; }
+.feed-item.win   { color:#44ff88; background:rgba(68,255,136,0.06); border-left:2px solid #44ff88; }
+.feed-item.loss  { color:#ff7070; background:rgba(255,100,100,0.06); border-left:2px solid #ff7070; }
+.feed-item.info  { color:#aac8ff; background:rgba(100,140,255,0.05); border-left:2px solid #335; }
+.feed-item.equip { color:#ff9944; background:rgba(255,153,68,0.07); border-left:2px solid #ff9944; }
+
+/* RIGHT PANEL CONTENT */
+.class-section { padding:8px; flex:1; overflow-y:auto; }
+.class-section::-webkit-scrollbar { width:3px; }
+.class-section::-webkit-scrollbar-thumb { background:#333; }
+.class-header { display:flex; align-items:center; gap:7px; margin-bottom:8px; }
+.cls-icon { font-size:22px; }
+.cls-name { font-size:13px; font-weight:bold; color:#ffd700; }
+.cls-tag { font-size:9px; color:#666; letter-spacing:1px; }
+.proc-card { background:rgba(255,255,255,0.04); border-radius:4px; padding:5px 6px; margin-bottom:5px; border-left:3px solid #333; }
+.proc-card.ready { border-left-color:#44ff88; }
+.proc-card.fired { border-left-color:#ffd700; opacity:0.5; }
+.proc-nm { font-size:10px; font-weight:bold; color:#ddd; }
+.proc-ch { font-size:9px; color:#666; float:right; }
+.proc-ds { font-size:9px; color:#999; margin-top:1px; }
+.stats-section { padding:7px 8px; border-top:1px solid rgba(255,215,0,0.1); flex-shrink:0; }
+.sr { display:flex; justify-content:space-between; font-size:10px; color:#666; margin-bottom:3px; }
+.sr span { color:#ccc; }
+
+/* PRE-ROUND BAR */
+.preround-bar { position:absolute; top:9%; left:50%; transform:translateX(-50%); z-index:25; display:flex; gap:12px; align-items:stretch; pointer-events:none; }
+.mult-badge { background:rgba(0,0,0,0.9); border:2px solid rgba(255,215,0,0.65); border-radius:10px; padding:5px 16px; text-align:center; box-shadow:0 0 16px rgba(255,215,0,0.2); min-width:80px; }
+.mult-label { font-size:8px; color:#777; letter-spacing:1.5px; text-transform:uppercase; }
+.mult-value { font-size:28px; font-weight:bold; color:#ffd700; text-shadow:0 0 12px rgba(255,215,0,0.7); line-height:1.1; }
+.equip-badge { background:rgba(0,0,0,0.9); border:2px solid rgba(255,153,68,0.5); border-radius:10px; padding:5px 12px; text-align:center; min-width:115px; }
+.equip-badge.none { border-color:rgba(255,153,68,0.15); opacity:0.45; }
+.equip-label { font-size:8px; color:#666; letter-spacing:1.5px; text-transform:uppercase; }
+.equip-nm { font-size:11px; font-weight:bold; color:#ff9944; line-height:1.3; margin-top:1px; }
+.equip-ds { font-size:9px; color:#888; margin-top:1px; }
+
+/* PROC FLASH */
+.proc-flash { position:absolute; top:40%; left:50%; transform:translate(-50%,-50%); z-index:70; background:rgba(0,0,0,0.93); border:2px solid #ffd700; border-radius:12px; padding:10px 26px; text-align:center; pointer-events:none; animation:pfAnim 2.1s ease forwards; }
+@keyframes pfAnim { 0%{opacity:0;transform:translate(-50%,-50%) scale(.75)} 15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)} 30%{transform:translate(-50%,-50%) scale(1)} 65%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50%) scale(.92)} }
+.pf-eye  { font-size:10px; color:#666; letter-spacing:2px; text-transform:uppercase; }
+.pf-name { font-size:20px; font-weight:bold; color:#ffd700; margin:2px 0; text-shadow:0 0 14px rgba(255,215,0,0.7); }
+.pf-fx   { font-size:12px; color:#aaccff; }
+
+/* CLASS SELECT */
+.class-select { position:absolute; inset:0; z-index:100; background:rgba(0,0,0,0.96); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; }
+.cs-title { font-size:22px; color:#ffd700; letter-spacing:3px; text-transform:uppercase; }
+.cs-sub   { font-size:11px; color:#555; letter-spacing:1px; }
+.cs-grid  { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:600px; width:90%; }
+.cs-card  { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:13px 10px; cursor:pointer; transition:all .2s; text-align:center; }
+.cs-card:hover { background:rgba(255,215,0,0.07); border-color:rgba(255,215,0,0.4); transform:translateY(-3px); }
+.cs-card.selected { border-color:#ffd700; background:rgba(255,215,0,0.09); box-shadow:0 0 18px rgba(255,215,0,0.18); }
+.cs-icon { font-size:26px; margin-bottom:4px; }
+.cs-nm   { font-size:13px; font-weight:bold; color:#ffd700; margin-bottom:5px; }
+.cs-ab   { font-size:9px; color:#777; line-height:1.6; text-align:left; padding:0 2px; }
+.cs-confirm { background:#e6b800; color:#1a1000; border:none; padding:10px 44px; border-radius:8px; font-family:Georgia,serif; font-size:14px; font-weight:bold; cursor:pointer; letter-spacing:1px; transition:all .15s; opacity:0; pointer-events:none; }
+.cs-confirm.show { opacity:1; pointer-events:auto; }
+.cs-confirm:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,0.5); }
+
+/* BALANCE BAR */
+.bal-bar { position:absolute; bottom:0; left:0; right:0; height:26px; background:rgba(0,0,0,0.65); border-top:1px solid rgba(255,215,0,0.18); display:flex; align-items:center; justify-content:space-between; padding:0 12px; z-index:10; font-size:11px; color:#ffd700; }
+
+/* GAME ELEMENTS */
+.dealer-zone { position:absolute; left:50%; top:20%; transform:translateX(-50%); text-align:center; }
+.dealer-label { font-size:10px; color:#ff9944; letter-spacing:1px; margin-bottom:2px; }
+.dealer-hand-row { display:flex; align-items:center; gap:10px; }
+.score-row { font-size:24px; font-weight:bold; color:#ffd700; text-shadow:0 0 8px rgba(0,0,0,0.9),1px 1px 3px #000; min-width:32px; text-align:right; flex-shrink:0; }
+.hands-wrap { position:absolute; left:50%; top:60%; transform:translateX(-50%); display:flex; gap:20px; align-items:flex-end; justify-content:center; }
+.hand-col { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.hand-row { display:flex; align-items:center; gap:10px; }
+.hand-cards { display:flex; gap:4px; }
+.hand-score { font-size:24px; font-weight:bold; color:#ffd700; text-shadow:0 0 8px rgba(0,0,0,0.9),1px 1px 3px #000; min-width:36px; text-align:right; flex-shrink:0; }
+.hand-label { font-size:9px; color:#aaa; min-height:12px; }
+.hand-col.active .hand-score { color:#44ff88; }
+.hand-col.active.split .hand-cards { outline:3px solid #44ff88; outline-offset:4px; border-radius:6px; box-shadow:0 0 18px rgba(68,255,136,.7),0 0 40px rgba(68,255,136,.3); }
+.hand-col.busted .hand-score { color:#ff4444; }
+.hand-col.stood  .hand-score { color:#aaa; }
+.hand-col.bj     .hand-score { color:#ffd700; text-shadow:0 0 8px #ffd700; }
+.card { width:var(--card-w); height:var(--card-h); border-radius:6px; border:1.5px solid #ccc; box-shadow:2px 3px 8px rgba(0,0,0,0.6); background:#fff; overflow:hidden; flex-shrink:0; }
+.card img { width:100%; height:100%; object-fit:cover; display:block; border-radius:5px; }
+.card.fallback { background:#f5f0e8; display:flex; flex-direction:column; justify-content:space-between; padding:4px; font-size:12px; font-weight:bold; }
+.card.fallback.red { color:#c00; border-color:#c00; }
+.card.fallback.black { color:#111; border-color:#444; }
+.card.fallback .top { display:flex; flex-direction:column; line-height:1.1; }
+.card.fallback .mid { text-align:center; font-size:18px; line-height:1; }
+.card.fallback .bot { display:flex; flex-direction:column; align-items:flex-end; line-height:1.1; transform:rotate(180deg); }
+.bet-zone { position:absolute; left:70.5%; top:65.5%; transform:translate(-50%,-50%) scale(2); transform-origin:center center; }
+.bet-circle { width:60px; height:60px; border-radius:50%; border:2px dashed rgba(255,215,0,0.45); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:border-color .2s; user-select:none; }
+.bet-circle:hover { border-color:rgba(255,215,0,0.85); }
+.bet-circle .bz-label { font-size:8px; color:#aaa; letter-spacing:1px; margin-bottom:1px; }
+.bet-circle .bz-val { font-size:13px; color:#ffd700; font-weight:bold; min-height:17px; }
+.chip-sel { position:absolute; left:50%; top:80%; transform:translate(-50%,-50%) scale(1.45); display:flex; gap:8px; align-items:center; }
+.chip-btn { width:50px; height:50px; border-radius:50%; border:3px solid transparent; cursor:pointer; padding:0; background:none; transition:transform .1s,box-shadow .1s,border-color .1s; box-shadow:0 3px 8px rgba(0,0,0,0.5); }
+.chip-btn img { width:100%; height:100%; border-radius:50%; display:block; pointer-events:none; }
+.chip-btn:hover { transform:translateY(-4px); box-shadow:0 6px 16px rgba(0,0,0,0.7); }
+.chip-btn.selected { transform:translateY(-6px) scale(1.12); box-shadow:0 8px 22px rgba(0,0,0,0.8),0 0 14px rgba(255,215,0,0.6); border-color:#ffd700; }
+.action-btns { position:absolute; left:49.5%; top:87%; transform:translate(-50%,-50%) scale(1.15); transform-origin:top center; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+.btn { padding:6px 13px; border:none; border-radius:6px; cursor:pointer; font-family:Georgia,serif; font-size:12px; font-weight:bold; letter-spacing:.5px; transition:all .15s; box-shadow:0 3px 8px rgba(0,0,0,0.4); }
+.btn:hover { transform:translateY(-2px); box-shadow:0 5px 12px rgba(0,0,0,0.5); }
+.btn:active { transform:translateY(0); }
+.btn-deal   { background:#e6b800; color:#1a1000; }
+.btn-hit    { background:#2980b9; color:#fff; }
+.btn-stand  { background:#c0392b; color:#fff; }
+.btn-double { background:#8e44ad; color:#fff; }
+.btn-split  { background:#d35400; color:#fff; }
+.btn-ins    { background:#7f8c8d; color:#fff; font-size:11px; }
+.btn-noins  { background:#444;    color:#aaa; font-size:11px; }
+.btn-new    { background:#27ae60; color:#fff; }
+.btn-clear  { background:#c0392b; color:#fff; }
+.btn-rebet  { background:#27ae60; color:#fff; }
+.btn-class  { background:rgba(255,215,0,0.15); color:#ffd700; border:1px solid rgba(255,215,0,0.3); font-size:11px; }
+.btn-disabled { background:#3a3a3a; color:#777; cursor:default; box-shadow:none; border:1px solid #555; }
+.btn-disabled:hover { transform:none; box-shadow:none; }
+.result-msg { position:absolute; left:20%; top:66.5%; transform:translate(-50%,-50%) scale(1.45); font-size:15px; font-weight:bold; text-align:center; padding:8px 18px; border-radius:8px; background:rgba(0,0,0,0.8); display:none; z-index:20; pointer-events:none; max-width:280px; }
+.result-msg.win  { color:#44ff88; border:1px solid #44ff88; box-shadow:0 0 12px rgba(68,255,136,.3); }
+.result-msg.lose { color:#ff7070; border:1px solid #ff7070; }
+.result-msg.push { color:#ffd700; border:1px solid #ffd700; }
+.result-msg.bj   { color:#ffd700; border:1px solid #ffd700; box-shadow:0 0 20px rgba(255,215,0,.5); font-size:20px; }
+.result-msg.info { color:#aad4ff; border:1px solid #446; }
+</style>
+</head>
+<body>
+<div class="table-wrap">
+  <div class="table-bg"></div>
+
+  <!-- Left: Activity Feed -->
+  <div class="side-panel left">
+    <div class="panel-title">ACTIVITY FEED</div>
+    <div class="feed-scroll" id="feedScroll"></div>
+  </div>
+
+  <!-- Right: Class Info -->
+  <div class="side-panel right">
+    <div class="panel-title">CLASS</div>
+    <div class="class-section" id="classPanel"></div>
+    <div class="stats-section" id="statsPanel"></div>
+  </div>
+
+  <!-- Pre-Round Info -->
+  <div class="preround-bar" id="preroundBar">
+    <div class="mult-badge">
+      <div class="mult-label">MULTIPLIER</div>
+      <div class="mult-value" id="multVal">2x</div>
+    </div>
+    <div class="equip-badge none" id="equipBadge">
+      <div class="equip-label">DEALER EQUIP</div>
+      <div class="equip-nm" id="equipNm">None</div>
+      <div class="equip-ds" id="equipDs"></div>
+    </div>
+  </div>
+
+  <!-- Dealer -->
+  <div class="dealer-zone">
+    <div class="dealer-label">DEALER</div>
+    <div class="dealer-hand-row">
+      <div class="score-row" id="dealerScore"></div>
+      <div class="hand-cards" id="dealerCards"></div>
+    </div>
+  </div>
+
+  <!-- Player Hands -->
+  <div class="hands-wrap" id="handsWrap"></div>
+
+  <!-- Bet Zone -->
+  <div class="bet-zone"><div class="bet-circle" onclick="addBet()"><div class="bz-label">BET</div><div class="bz-val" id="betDisplay">-</div></div></div>
+
+  <!-- Chips -->
+  <div class="chip-sel" id="chipSel">
+    <button class="chip-btn" id="chip-100"  onclick="selectChip(100)"><img src="https://drive.google.com/thumbnail?id=1hx7VaQG7UFHtdOE_uGJ64cOuedd81n-x&sz=w120" alt="100"></button>
+    <button class="chip-btn" id="chip-500"  onclick="selectChip(500)"><img src="https://drive.google.com/thumbnail?id=1IJ7Lp03TQ7rJjetXNoUGq9TB5b8sJmTs&sz=w120" alt="500"></button>
+    <button class="chip-btn" id="chip-1k"   onclick="selectChip(1000)"><img src="https://drive.google.com/thumbnail?id=1gN38szt9JExdAZrVipnRKahg9zLwGtOq&sz=w120" alt="1K"></button>
+    <button class="chip-btn" id="chip-5k"   onclick="selectChip(5000)"><img src="https://drive.google.com/thumbnail?id=11cxGHjfNZFIJgTXnQGmFDSFK-1fUhVup&sz=w120" alt="5K"></button>
+    <button class="chip-btn" id="chip-10k"  onclick="selectChip(10000)"><img src="https://drive.google.com/thumbnail?id=10SkRQCPz-BckF4jBUS0noiSmThGsyx47&sz=w120" alt="10K"></button>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-btns" id="actionBtns"></div>
+
+  <!-- Result -->
+  <div class="result-msg" id="resultMsg"></div>
+
+  <!-- Balance Bar -->
+  <div class="bal-bar">
+    <span>Balance: <strong id="balance">100,000</strong>g</span>
+    <span style="color:#aaa;font-size:10px;letter-spacing:2px;">PERILOUS LEGENDS</span>
+    <span>Net P/L: <strong id="netPL" style="color:#ffd700">+0</strong>g &nbsp; Hands: <strong id="handsPlayed">0</strong></span>
+  </div>
+
+  <!-- Class Select Overlay -->
+  <div class="class-select" id="classSelect">
+    <div class="cs-title">Choose Your Class</div>
+    <div class="cs-sub">Your class grants special proc abilities during play</div>
+    <div class="cs-grid" id="csGrid"></div>
+    <button class="cs-confirm" id="csConfirm" onclick="confirmClass()">BEGIN</button>
+  </div>
+</div>
+
+<script>
+// ── CARD DATA ──────────────────────────────────────────────
+const SUITS=['♠','♣','♥','♦'], SUIT_CODES=['S','C','H','D'];
+const RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const IS_RED=[false,false,true,true];
+const CARD_IMG={
+  '2C':'1hBVEJWWnnDnoXmwqU3vBi3fVM9iFudPP','2D':'1t8Y_XUjEpxiPGl5sYhBgeILOno-CzGka','2H':'1vjYrkyQgAtPmG3vKf3E9_mZKkqdiGNNd','2S':'1cFCyQRdXIOVmooD9icQQtTqTWGBJQgMn',
+  '3C':'181g1VKzRSVIvT0zfciwXgOSijfrRUdez','3D':'1AHT9ZYcYGrwE9qAifkLVek_iqFxS2PW-','3H':'1X_ZsuhF9KylvGEt8LraY0L3Oyu4ktHrv','3S':'1ucMPfAtXSI2sMrcp1GCP0p6mRdKU8oKz',
+  '4C':'1W3sSXW7jcLARdQVPa2tdbVeNe5JtQLKj','4D':'1moJWd6QnSRL76hhE7rnH9lDf9zfmwSHf','4H':'1uxJzzkC2crwMdTbrOe8SRrV5ZuK5cJCf','4S':'16KS1wvLp0AUcBtqq5qmhxbqDdKFs4nq2',
+  '5C':'14T5jdOHQyE5POJnk-V8PJJvEYSrPNKYK','5D':'1cLvE8c6kwCKCBsW-7VC7AdYISJSmPK1s','5H':'1_i7iClKaTQrKraA1FlAqaFPgqsry9ogv','5S':'1WJ8XBCgy7WtEk3qMg2ry__p9UcN-T6La',
+  '6C':'1tlAJvIg1-wCpFnmlek2GPnr5eeBQU2uv','6D':'1gRNX2QEbRPMr0HsW6BCsQYc0UZ3rS9Ao','6H':'14qe6vVkra0tHMEU9-wMYMoegMJXvAvkt','6S':'1O2cSRz_bx74BN94Vz-rrYC4odOBehYqV',
+  '7C':'1uoPbBefhLohq3W8xi7qhEfUJKSg5a71Z','7D':'1Qp3DRtftoeUW80c2omjwHbD3MQpQR4Gk','7H':'1FGOxRjgV0wtYhP79BUmwT69hcvlKT7Y4','7S':'1gi3LqqAdLLjTp_fnxJynyvzvXDro_taf',
+  '8C':'1vr77sxraIYaUnnEbgZRnf1KsTEV1lhrQ','8D':'1NhugKDxw1pdykFrUXS3j9TzAPw70on2F','8H':'1b0bBg-eHY1X96ASLia9cLZQmnBZ4qN8r','8S':'1-VdJmeuhw6TEiBjopJ5-LrbDZvku-ptc',
+  '9C':'19lZOp9qYrUdvBbuVBZnF7xC8iqVTO3l9','9D':'1QoIkEFA42Q8KOSKt3Rx16456AWL7F_4E','9H':'1jU29CXF3-u-l3vW1cM450prwevOvQY2R','9S':'13k5BDA05z9O-p5V1I3SQ1yiTAjj9NDQX',
+  '10C':'1ediRyhXjmJYkbzAhS4Z4vBmO18ZRCyfK','10D':'139LCPwOxejG4Xol_stFynqX2NZg3d_zR','10H':'1AxYE9XISohgCiyrfiWwZQeH_5sZm4fHG','10S':'1eJWqEN5U05h8GP3uu_6HLM_Tjv0s_EDA',
+  'JC':'1_GOJ5g-ewBOPiU0y4BnGS41jkg-ezleS','JD':'1gDADF3zHzTxMfg-FD9x3KWJAV2_2clo6','JH':'16lPF3lpg1fPtmZutOCMns8nWVvOVGHJK','JS':'19K9QspU0ZHadyfdJLBsPgmnnD5N_qVHw',
+  'QC':'1fb1BTgyXskgihC8lYBOH_glPSc7M8wUV','QD':'11MqnqgJQvc_wORNaON9mjzClZBf2OaKM','QH':'1UULVEKi7QBiImfTXDFtkHpSDDrNWVUWV','QS':'1Yw38kFdGN_U5GnZNrWwI1qBZVglfB05-',
+  'KC':'1TNnXRdA3w7rpUoN9d3R0Fv8l-LBwLhz-','KD':'1NBKJPYr0JL8v1V4w98HwrdiyQcmujfNi','KH':'1gAeFLpsge3DXSCLWE--vJqF0ohsBk2cw','KS':'14vSempQtUldisO0c7sJJJfA3yFYGONZt',
+  'AC':'1POs93FrSlPvPgt-wdPOshnSDHiTB3Qeg','AD':'11MayUoL_WL1surSfEhrf-XWL0xTuGqcA','AH':'13xmzHxMxoOb4utH1NACjFzyCjWuv4GPn','AS':'1NYqqZ98tFmAvmdYFixeEk8x0g_dSEEEW',
+};
+const BACK_ID='1qv9SNBcZkM2gAJk6r_TDtA5COgOOy94Z';
+
+// ── CLASSES ──────────────────────────────────────────────
+const CLASSES = {
+  wizard: {
+    name:'Wizard', icon:'🧙', color:'#9b59b6',
+    procs:[
+      { id:'arcane_rewind', name:'Arcane Rewind', chance:.20, desc:'Redraw on bust',        trigger:'bust' },
+      { id:'mana_surge',    name:'Mana Surge',    chance:.15, desc:'+2x bonus on win',       trigger:'win'  },
+    ]
+  },
+  thief: {
+    name:'Thief', icon:'🗡️', color:'#2ecc71',
+    procs:[
+      { id:'gold_swipe',    name:'Gold Swipe',    chance:.25, desc:'+5% extra payout on win', trigger:'win'  },
+      { id:'shadow_escape', name:'Shadow Escape', chance:.20, desc:'15% refund on loss',      trigger:'loss' },
+    ]
+  },
+  cleric: {
+    name:'Cleric', icon:'✝️', color:'#3498db',
+    procs:[
+      { id:'divine_shield', name:'Divine Shield', chance:.25, desc:'Reduce loss by 25%',      trigger:'loss' },
+      { id:'blessing',      name:'Blessing',      chance:.15, desc:'Push pays like a win',     trigger:'push' },
+    ]
+  },
+  warrior: {
+    name:'Warrior', icon:'⚔️', color:'#e74c3c',
+    procs:[
+      { id:'battle_fury',   name:'Battle Fury',   chance:.20, desc:'+3x bonus on win',        trigger:'win'  },
+      { id:'last_stand',    name:'Last Stand',     chance:.10, desc:'Bust becomes push',       trigger:'bust' },
+    ]
+  },
+  ranger: {
+    name:'Ranger', icon:'🏹', color:'#27ae60',
+    procs:[
+      { id:'precision',     name:'Precision',     chance:.20, desc:'Peek next card before hit', trigger:'hit' },
+      { id:'quick_draw',    name:'Quick Draw',     chance:.15, desc:'Redraw a busting hit card', trigger:'bust' },
+    ]
+  },
+  necromancer: {
+    name:'Necromancer', icon:'💀', color:'#8e44ad',
+    procs:[
+      { id:'soul_drain',    name:'Soul Drain',    chance:.20, desc:'+15% bonus on win',       trigger:'win'  },
+      { id:'undying',       name:'Undying',        chance:.12, desc:'Bust resets hand to 13',  trigger:'bust' },
+    ]
+  },
+};
+
+// ── DEALER EQUIPMENT ─────────────────────────────────────
+const EQUIP = [
+  { id:'none',   name:'None',               icon:'',  desc:'',                            weight:.55 },
+  { id:'sigil',  name:'House Sigil',        icon:'🔮', desc:'Pushes become dealer wins',   weight:.12 },
+  { id:'cloak',  name:'Ashen Guard Cloak',  icon:'🧥', desc:'Dealer bust = push',          weight:.15 },
+  { id:'bracer', name:'Loaded Bracer',      icon:'🪬', desc:'Multipliers halved (min 1x)', weight:.18 },
+];
+
+// ── MULTIPLIER TABLE ─────────────────────────────────────
+const MULT_TABLE=[[2,40],[3,25],[5,15],[10,10],[25,5],[50,3],[100,1.5],[200,.5]];
+function rollMult(){let r=Math.random()*100,c=0;for(const[m,w]of MULT_TABLE){c+=w;if(r<c)return m;}return 2;}
+function rollEquip(){let r=Math.random(),c=0;for(const e of EQUIP){c+=e.weight;if(r<c)return e;}return EQUIP[0];}
+
+// ── GAME STATE ────────────────────────────────────────────
+let balance=100000,netPL=0,handsCount=0;
+let selectedChip=0,selectedClass=null;
+let roundMult=2,roundEquip=EQUIP[0];
+let G={};
+let feedItems=[];
+let procsFired=[];
+const PH={BET:'bet',INS:'ins',PLAYER:'player',DEALER:'dealer',RESULT:'result'};
+
+function newGame(){
+  const lastBet=G.lastBet||0;
+  roundMult=rollMult();
+  roundEquip=rollEquip();
+  if(roundEquip.id==='bracer') roundMult=Math.max(1,Math.floor(roundMult/2));
+  G={phase:PH.BET,dealer:[],hands:[{cards:[],bet:0,doubled:false,stood:false,splitAce:false}],active:0,splitCount:0,insured:0,lastBet};
+  procsFired=[];
+  refreshPreround();
+  render();
+}
+
+// ── AUDIO ─────────────────────────────────────────────────
+let _ctx=null;
+function aC(){if(!_ctx)_ctx=new(window.AudioContext||window.webkitAudioContext)();if(_ctx.state==='suspended')_ctx.resume();return _ctx;}
+function tone(f,dur,type='sine',vol=.2,delay=0){try{const c=aC(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;o.type=type;const t=c.currentTime+delay;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.start(t);o.stop(t+dur);}catch(e){}}
+function noise(dur,vol){try{const c=aC(),sr=c.sampleRate,buf=c.createBuffer(1,sr*dur,sr),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const src=c.createBufferSource();src.buffer=buf;const g=c.createGain();g.gain.setValueAtTime(vol,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);src.connect(g);g.connect(c.destination);src.start();}catch(e){}}
+const snd={
+  card(){noise(.04,.08);tone(900,.03,'sine',.06);},
+  chip(){tone(900,.05,'square',.15);tone(1100,.04,'square',.08,.03);},
+  win(){[523,659,784,1047].forEach((f,i)=>tone(f,.18,'sine',.25,i*.09));},
+  bigwin(){[523,659,784,1047,1319].forEach((f,i)=>tone(f,.2,'sine',.28,i*.08));},
+  lose(){[400,320,240].forEach((f,i)=>tone(f,.2,'sawtooth',.1,i*.14));},
+  push(){tone(520,.15,'sine',.15);tone(520,.15,'sine',.1,.2);},
+  bust(){[300,220,160].forEach((f,i)=>tone(f,.18,'sawtooth',.12,i*.1));},
+  proc(){[1047,1319,1568].forEach((f,i)=>tone(f,.12,'sine',.22,i*.06));tone(2093,.2,'sine',.18,.22);},
+};
+
+// ── FEED ─────────────────────────────────────────────────
+function addFeed(text,type='info'){
+  feedItems.unshift({text,type});
+  if(feedItems.length>40)feedItems.pop();
+  const el=document.getElementById('feedScroll');
+  if(el)el.innerHTML=feedItems.map(f=>`<div class="feed-item ${f.type}">${f.text}</div>`).join('');
+}
+
+// ── PROC FLASH ────────────────────────────────────────────
+function showFlash(name,effect,color='#ffd700'){
+  document.querySelectorAll('.proc-flash').forEach(e=>e.remove());
+  const el=document.createElement('div');
+  el.className='proc-flash';
+  el.style.borderColor=color;
+  el.innerHTML=`<div class="pf-eye">ABILITY PROC</div><div class="pf-name" style="color:${color}">${name}</div><div class="pf-fx">${effect}</div>`;
+  document.querySelector('.table-wrap').appendChild(el);
+  setTimeout(()=>el.remove(),2200);
+  snd.proc();
+}
+
+function roll(c){return Math.random()<c;}
+
+// ── BUST PROCS (return true = bust cancelled/modified) ──
+function checkBustProcs(hi){
+  if(!selectedClass) return false;
+  const h=G.hands[hi];
+  for(const p of CLASSES[selectedClass].procs){
+    const key=p.id+'_'+hi;
+    if(procsFired.includes(key)) continue;
+    if(p.trigger==='bust'&&roll(p.chance)){
+      procsFired.push(key);
+      if(p.id==='arcane_rewind'){
+        h.cards.pop();
+        h.cards.push(draw());
+        const{total}=handVal(h.cards);
+        showFlash('Arcane Rewind',`Bust card redrawn! Total: ${total}`,'#9b59b6');
+        addFeed(`Arcane Rewind! Redrawn to ${total}`,'proc');
+        renderAll();
+        return total<=21;
+      }
+      if(p.id==='last_stand'){
+        h.lastStand=true;
+        showFlash('Last Stand','Bust becomes push!','#e74c3c');
+        addFeed('Last Stand! Bust saved as push','proc');
+        return true;
+      }
+      if(p.id==='undying'){
+        h.undying=true;
+        showFlash('Undying','Reborn with 13!','#8e44ad');
+        addFeed('Undying! Hand reset to 13','proc');
+        renderAll();
+        return true;
+      }
+      if(p.id==='quick_draw'){
+        h.cards.pop();
+        h.cards.push(draw());
+        const{total}=handVal(h.cards);
+        showFlash('Quick Draw',`Busting card replaced! Total: ${total}`,'#27ae60');
+        addFeed(`Quick Draw! Replaced card, total ${total}`,'proc');
+        renderAll();
+        return total<=21;
+      }
+    }
+  }
+  return false;
+}
+
+// ── SETTLEMENT PROCS ──────────────────────────────────────
+function applySettleProcs(result,bet,basePayout){
+  let bonus=0;
+  if(!selectedClass) return bonus;
+  for(const p of CLASSES[selectedClass].procs){
+    if(procsFired.includes(p.id)) continue;
+    let fires=false;
+    if((result==='win'||result==='bj')&&p.trigger==='win')  fires=roll(p.chance);
+    if(result==='loss'&&p.trigger==='loss')                  fires=roll(p.chance);
+    if(result==='push'&&p.trigger==='push')                  fires=roll(p.chance);
+    if(!fires) continue;
+    procsFired.push(p.id);
+    if(p.id==='mana_surge'){    const x=bet*2; bonus+=x; showFlash('Mana Surge',`+2x bonus! +${fmt(x)}g`,'#9b59b6'); addFeed(`Mana Surge! +${fmt(x)}g`,'proc'); }
+    if(p.id==='gold_swipe'){    const x=Math.floor(basePayout*.05); bonus+=x; showFlash('Gold Swipe',`+5% payout! +${fmt(x)}g`,'#2ecc71'); addFeed(`Gold Swipe! +${fmt(x)}g`,'proc'); }
+    if(p.id==='battle_fury'){   const x=bet*3; bonus+=x; showFlash('Battle Fury',`+3x bonus! +${fmt(x)}g`,'#e74c3c'); addFeed(`Battle Fury! +${fmt(x)}g`,'proc'); }
+    if(p.id==='soul_drain'){    const x=Math.floor(basePayout*.15); bonus+=x; showFlash('Soul Drain',`+15% payout! +${fmt(x)}g`,'#8e44ad'); addFeed(`Soul Drain! +${fmt(x)}g`,'proc'); }
+    if(p.id==='shadow_escape'){ const x=Math.floor(bet*.15); bonus+=x; showFlash('Shadow Escape',`15% refund! +${fmt(x)}g`,'#2ecc71'); addFeed(`Shadow Escape! +${fmt(x)}g`,'proc'); }
+    if(p.id==='divine_shield'){ const x=Math.floor(bet*.25); bonus+=x; showFlash('Divine Shield',`25% saved! +${fmt(x)}g`,'#3498db'); addFeed(`Divine Shield! +${fmt(x)}g`,'proc'); }
+    if(p.id==='blessing'){      const x=bet; bonus+=x; showFlash('Blessing',`Push pays! +${fmt(x)}g`,'#3498db'); addFeed(`Blessing! Push to win +${fmt(x)}g`,'proc'); }
+  }
+  return bonus;
+}
+
+// ── DECK ─────────────────────────────────────────────────
+function mkShoe(n=6){const d=[];for(let k=0;k<n;k++)for(let s=0;s<4;s++)for(let r=0;r<13;r++)d.push({r,s});return d;}
+function shuffle(d){const a=[...d];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+let shoe=shuffle(mkShoe()),shoeIdx=0;
+function draw(){if(shoeIdx>=shoe.length-52){shoe=shuffle(mkShoe());shoeIdx=0;}return shoe[shoeIdx++];}
+
+// ── HAND VALUE ────────────────────────────────────────────
+function cardVal(r){if(r===12)return 11;if(r>=8)return 10;return r+2;}
+function handVal(cards){let t=0,a=0;for(const c of cards){if(c.r===12){a++;t+=11;}else t+=cardVal(c.r);}while(t>21&&a>0){t-=10;a--;}return{total:t,soft:a>0&&t<=21};}
+function isBJ(cards){return cards.length===2&&handVal(cards).total===21;}
+function dealerHits(cards){const{total,soft}=handVal(cards);return total<17||(total===17&&soft);}
+function sameVal(a,b){return cardVal(a.r)===cardVal(b.r);}
+
+// ── CARD HTML ─────────────────────────────────────────────
+function cKey(c){return RANKS[c.r]+SUIT_CODES[c.s];}
+function cardHTML(c,down=false){
+  if(down)return`<div class="card"><img src="https://drive.google.com/thumbnail?id=${BACK_ID}&sz=w300" loading="lazy"></div>`;
+  const k=cKey(c),id=CARD_IMG[k];
+  if(id)return`<div class="card"><img src="https://drive.google.com/thumbnail?id=${id}&sz=w300" alt="${k}" loading="lazy"></div>`;
+  const cl=IS_RED[c.s]?'red':'black',rk=RANKS[c.r],su=SUITS[c.s];
+  return`<div class="card fallback ${cl}"><div class="top">${rk}<br>${su}</div><div class="mid">${su}</div><div class="bot">${rk}<br>${su}</div></div>`;
+}
+
+// ── BETTING ──────────────────────────────────────────────
+function selectChip(v){
+  selectedChip=v;
+  document.querySelectorAll('.chip-btn').forEach(e=>e.classList.remove('selected'));
+  const m={100:'chip-100',500:'chip-500',1000:'chip-1k',5000:'chip-5k',10000:'chip-10k'};
+  document.getElementById(m[v])?.classList.add('selected');
+  addBet();
+}
+function addBet(){
+  if(G.phase!==PH.BET||!selectedChip) return;
+  const h=G.hands[0];
+  if(h.bet+selectedChip>balance) return;
+  h.bet+=selectedChip; snd.chip(); updateBetDisp(); renderBtns();
+}
+function clearBet(){if(G.phase!==PH.BET)return;G.hands[0].bet=0;updateBetDisp();renderBtns();}
+function rebet(){if(!G.lastBet||G.lastBet>balance)return;G.hands[0].bet=G.lastBet;updateBetDisp();renderBtns();}
+function updateBetDisp(){const el=document.getElementById('betDisplay');if(el)el.textContent=G.hands[0].bet||'-';}
+
+// ── DEAL ─────────────────────────────────────────────────
+function doDeal(){
+  if(G.phase!==PH.BET)return;
+  const bet=G.hands[0].bet;
+  if(!bet||bet>balance)return;
+  G.lastBet=bet; balance-=bet;
+  G.hands[0].cards=[draw()];
+  G.dealer=[draw()];
+  G.hands[0].cards.push(draw());
+  G.dealer.push(draw());
+  G.phase=PH.PLAYER; renderAll();
+  snd.card();setTimeout(()=>snd.card(),130);setTimeout(()=>snd.card(),260);setTimeout(()=>snd.card(),390);
+  addFeed(`Hand dealt — ${roundMult}x mult${roundEquip.id!=='none'?' | '+roundEquip.name:''}`, 'info');
+  setTimeout(()=>{
+    if(G.dealer[0].r===12){G.phase=PH.INS;setMsg('Dealer shows Ace — Insurance?','info');renderBtns();return;}
+    checkBJFlow();
+  },500);
+}
+function checkBJFlow(){
+  const h=G.hands[0];
+  if(isBJ(h.cards)){
+    if(isBJ(G.dealer)){balance+=h.bet;settle([{result:'push',net:0}]);}
+    else{const pay=Math.floor(h.bet*1.5);balance+=h.bet+pay;netPL+=pay;handsCount++;updateStats();setMsg('BLACKJACK! Pays 3:2 (+'+fmt(pay)+'g)','bj');snd.bigwin();addFeed('BLACKJACK! +'+fmt(pay)+'g','win');G.phase=PH.RESULT;renderAll();renderBtns();}
+    return;
+  }
+  G.phase=PH.PLAYER; renderBtns();
+}
+function takeInsurance(){
+  const cost=Math.floor(G.hands[0].bet/2);
+  if(cost>balance){declineInsurance();return;}
+  G.insured=cost; balance-=cost; G.phase=PH.PLAYER; updateStats();
+  if(isBJ(G.dealer)){
+    const ip=cost*2; balance+=cost+ip;
+    if(isBJ(G.hands[0].cards)){balance+=G.hands[0].bet;settle([{result:'push',net:ip}]);}
+    else{netPL-=G.hands[0].bet;netPL+=ip;handsCount++;updateStats();setMsg('Dealer Blackjack. Insurance pays 2:1.','lose');snd.lose();G.phase=PH.RESULT;renderAll();renderBtns();}
+    return;
+  }
+  setMsg('No Blackjack. Insurance lost.','info'); checkBJFlow(); renderAll();
+}
+function declineInsurance(){
+  G.insured=0; G.phase=PH.PLAYER;
+  if(isBJ(G.dealer)){
+    if(isBJ(G.hands[0].cards)){balance+=G.hands[0].bet;settle([{result:'push',net:0}]);}
+    else{netPL-=G.hands[0].bet;handsCount++;updateStats();setMsg('Dealer Blackjack — you lose.','lose');snd.lose();G.phase=PH.RESULT;renderAll();renderBtns();}
+    return;
+  }
+  checkBJFlow(); renderAll();
+}
+
+// ── PLAYER ACTIONS ────────────────────────────────────────
+function doHit(){
+  if(G.phase!==PH.PLAYER)return;
+  const h=G.hands[G.active];
+  if(h.stood||h.busted)return;
+
+  // Ranger Precision: peek at top card before drawing
+  if(selectedClass==='ranger'){
+    const pp=CLASSES.ranger.procs.find(p=>p.id==='precision');
+    const pk='precision_peek_'+G.active;
+    if(!procsFired.includes(pk)&&roll(pp.chance)){
+      procsFired.push(pk);
+      const nx=shoe[shoeIdx];
+      const nv=cardVal(nx.r);
+      const{total}=handVal(h.cards);
+      const bust=total+nv>21;
+      showFlash('Precision',`Next card: ${RANKS[nx.r]}${SUITS[nx.s]} (${nv}) — ${bust?'BUST!':'SAFE'}`,'#27ae60');
+      addFeed(`Precision: next card is ${RANKS[nx.r]}${SUITS[nx.s]} (${bust?'would bust':'safe'})`,'proc');
+      // still proceed with the hit
+    }
+  }
+
+  h.cards.push(draw()); snd.card();
+  const{total}=handVal(h.cards);
+  renderAll();
+  if(total>21){
+    const saved=checkBustProcs(G.active);
+    if(saved){
+      if(h.lastStand){h.stood=true;setTimeout(()=>advanceHand(),400);}
+      else if(h.undying){h.stood=true;setTimeout(()=>advanceHand(),400);}
+      else{const{total:nt}=handVal(h.cards);if(nt>21){h.busted=true;setTimeout(()=>{snd.bust();advanceHand();},200);}else if(nt===21){setTimeout(()=>advanceHand(),300);}else{renderBtns();}}
+    }else{h.busted=true;setTimeout(()=>{snd.bust();advanceHand();},200);}
+  }else if(total===21){setTimeout(()=>advanceHand(),300);}
+  else renderBtns();
+}
+function doStand(){if(G.phase!==PH.PLAYER)return;G.hands[G.active].stood=true;advanceHand();}
+function doDouble(){
+  if(G.phase!==PH.PLAYER)return;
+  const h=G.hands[G.active];
+  if(h.cards.length!==2||h.doubled||h.bet>balance)return;
+  balance-=h.bet; h.bet*=2; h.doubled=true;
+  h.cards.push(draw()); snd.chip(); snd.card();
+  if(handVal(h.cards).total>21)h.busted=true;
+  h.stood=true; renderAll(); updateStats();
+  setTimeout(()=>advanceHand(),400);
+}
+function doSplit(){
+  if(G.phase!==PH.PLAYER)return;
+  const h=G.hands[G.active];
+  if(h.cards.length!==2||!sameVal(h.cards[0],h.cards[1])||G.splitCount>=2||h.bet>balance)return;
+  const ace=h.cards[0].r===12;
+  balance-=h.bet;
+  const c2=h.cards.pop();
+  const nh={cards:[c2],bet:h.bet,doubled:false,stood:false,busted:false,splitAce:ace};
+  h.cards.push(draw());
+  if(ace)h.stood=true;
+  G.hands.splice(G.active,0,nh); G.active++; G.splitCount++;
+  snd.chip(); snd.card(); renderAll(); renderBtns();
+  if(ace)setTimeout(()=>advanceHand(),400);
+}
+function advanceHand(){
+  let next=-1;
+  for(let i=G.hands.length-1;i>=0;i--){
+    if(i!==G.active&&!G.hands[i].stood&&!G.hands[i].busted){next=i;break;}
+  }
+  if(next!==-1){
+    G.active=next;
+    if(G.hands[next].cards.length===1){
+      setTimeout(()=>{
+        G.hands[next].cards.push(draw()); snd.card();
+        if(G.hands[next].splitAce)G.hands[next].stood=true;
+        renderAll(); renderBtns();
+        if(G.hands[next].splitAce)setTimeout(()=>advanceHand(),400);
+      },400);
+    }else{renderAll();renderBtns();}
+  }else{
+    if(G.hands.every(h=>h.busted))settleAll();
+    else dealerPlay();
+  }
+}
+
+// ── DEALER ───────────────────────────────────────────────
+function dealerPlay(){
+  G.phase=PH.DEALER; renderAll();
+  function step(){
+    if(dealerHits(G.dealer)){setTimeout(()=>{G.dealer.push(draw());snd.card();renderAll();setTimeout(step,600);},600);}
+    else settleAll();
+  }
+  setTimeout(step,700);
+}
+
+// ── SETTLEMENT ────────────────────────────────────────────
+function settleAll(){
+  const dv=handVal(G.dealer).total, dBust=dv>21;
+  let totalNet=0;
+  const msgs=[];
+
+  for(const h of G.hands){
+    const pv=h.undying?13:handVal(h.cards).total;
+    const pBJ=isBJ(h.cards)&&G.splitCount===0;
+    let result;
+    if(h.lastStand)           result='push';
+    else if(h.busted)         result='loss';
+    else if(pBJ&&!isBJ(G.dealer)) result='bj';
+    else if(dBust)            result=roundEquip.id==='cloak'?'push':'win';
+    else if(pv>dv)            result='win';
+    else if(pv===dv)          result=roundEquip.id==='sigil'?'loss':'push';
+    else                      result='loss';
+
+    // Log dealer equipment effects
+    if(dBust&&roundEquip.id==='cloak'&&!G._cloakLog){addFeed('Ashen Guard Cloak: dealer bust = push','equip');G._cloakLog=true;}
+    if(pv===dv&&roundEquip.id==='sigil'&&!G._sigilLog){addFeed('House Sigil: push became dealer win!','equip');G._sigilLog=true;}
+
+    let profit=0;
+    if(result==='bj'){     profit=Math.floor(h.bet*1.5)*roundMult; balance+=h.bet+profit;}
+    else if(result==='win'){profit=h.bet*roundMult; balance+=h.bet+profit;}
+    else if(result==='push'){balance+=h.bet;}
+    else{profit=-h.bet;}
+
+    const pBonus=applySettleProcs(result,h.bet,profit>0?profit:0);
+    balance+=pBonus; profit+=pBonus;
+    totalNet+=profit;
+    msgs.push({result,profit,bet:h.bet});
+  }
+
+  totalNet-=G.insured;
+  netPL+=totalNet; handsCount++; updateStats();
+  G.phase=PH.RESULT; renderAll();
+
+  // Build result message
+  if(G.hands.length===1){
+    const{result,profit,bet}=msgs[0];
+    if(result==='bj')       {setMsg(`BLACKJACK! ${roundMult}x = +${fmt(profit)}g`,'bj');snd.bigwin();addFeed(`BJ +${fmt(profit)}g (${roundMult}x)`,'win');}
+    else if(result==='win') {setMsg(`YOU WIN! ${roundMult}x = +${fmt(profit)}g`,'win');snd.win();addFeed(`Win +${fmt(profit)}g (${roundMult}x)`,'win');}
+    else if(result==='push'){setMsg('PUSH — bet returned.','push');snd.push();}
+    else                    {setMsg(`DEALER WINS. -${fmt(bet)}g`,'lose');snd.lose();addFeed(`Loss -${fmt(bet)}g`,'loss');}
+  }else{
+    const wins=msgs.filter(m=>m.result==='win'||m.result==='bj').length;
+    const pushes=msgs.filter(m=>m.result==='push').length;
+    const losses=msgs.filter(m=>m.result==='loss').length;
+    const parts=[];
+    if(wins)   parts.push(wins+' win'+(wins>1?'s':''));
+    if(pushes) parts.push(pushes+' push'+(pushes>1?'es':''));
+    if(losses) parts.push(losses+' loss'+(losses>1?'es':''));
+    const cls=totalNet>0?'win':totalNet<0?'lose':'push';
+    setMsg(parts.join(', ')+'. Net: '+(totalNet>=0?'+':'')+fmt(totalNet)+'g',cls);
+    if(totalNet>0)snd.win();else if(totalNet<0)snd.lose();else snd.push();
+  }
+  renderBtns(); updateClassPanel();
+}
+function settle(results){G.phase=PH.RESULT;renderAll();renderBtns();}
+
+// ── UI HELPERS ────────────────────────────────────────────
+function fmt(n){return Number(n).toLocaleString();}
+function updateStats(){
+  document.getElementById('balance').textContent=fmt(Math.floor(balance));
+  const np=document.getElementById('netPL');
+  np.textContent=(netPL>=0?'+':'')+fmt(Math.floor(netPL));
+  np.style.color=netPL>=0?'#44ff88':'#ff7070';
+  document.getElementById('handsPlayed').textContent=handsCount;
+}
+function setMsg(text,cls){
+  const el=document.getElementById('resultMsg');
+  el.textContent=text; el.className='result-msg '+cls; el.style.display='block';
+  if(cls!=='info')setTimeout(()=>{if(G.phase!==PH.RESULT)el.style.display='none';},3200);
+}
+function refreshPreround(){
+  document.getElementById('multVal').textContent=roundMult+'x';
+  const eb=document.getElementById('equipBadge');
+  const e=roundEquip;
+  document.getElementById('equipNm').textContent=e.id==='none'?'None':(e.icon+' '+e.name);
+  document.getElementById('equipDs').textContent=e.desc||'';
+  eb.className='equip-badge'+(e.id==='none'?' none':'');
+}
+function updateClassPanel(){
+  if(!selectedClass)return;
+  const cls=CLASSES[selectedClass];
+  document.getElementById('classPanel').innerHTML=`
+    <div class="class-section">
+      <div class="class-header">
+        <div class="cls-icon">${cls.icon}</div>
+        <div><div class="cls-name">${cls.name}</div><div class="cls-tag">CLASS ABILITIES</div></div>
+      </div>
+      ${cls.procs.map(p=>{
+        const fired=procsFired.some(f=>f.startsWith(p.id));
+        return`<div class="proc-card ${fired?'fired':'ready'}">
+          <div class="proc-nm">${p.name}<span class="proc-ch">${Math.round(p.chance*100)}%</span></div>
+          <div class="proc-ds">${p.desc}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  document.getElementById('statsPanel').innerHTML=`
+    <div class="stats-section">
+      <div class="sr">Balance  <span>${fmt(Math.floor(balance))}g</span></div>
+      <div class="sr">Net P/L  <span style="color:${netPL>=0?'#44ff88':'#ff7070'}">${(netPL>=0?'+':'')+fmt(Math.floor(netPL))}g</span></div>
+      <div class="sr">Hands    <span>${handsCount}</span></div>
+      <div class="sr">Multiplier <span style="color:#ffd700">${roundMult}x</span></div>
+    </div>`;
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function scoreStr(cards,hideHole,undying){
+  if(undying)return'13';
+  if(hideHole){const{total}=handVal([cards[0]]);return''+total;}
+  const{total,soft}=handVal(cards);
+  if(total>21)return'BUST ('+total+')';
+  if(soft&&total<21)return(total-10)+'/'+total;
+  return''+total;
+}
+function renderAll(){
+  document.getElementById('chipSel').style.display=G.phase===PH.BET?'':'none';
+  const hide=G.phase===PH.PLAYER||G.phase===PH.INS;
+  document.getElementById('dealerCards').innerHTML=G.dealer.map((c,i)=>cardHTML(c,hide&&i===1)).join('');
+  document.getElementById('dealerScore').textContent=G.dealer.length?scoreStr(G.dealer,hide):'';
+  const wrap=document.getElementById('handsWrap');
+  wrap.innerHTML=G.hands.map((h,i)=>{
+    const{total}=handVal(h.cards);
+    const bj=isBJ(h.cards)&&G.splitCount===0;
+    const bust=h.busted||total>21;
+    let cls='hand-col';
+    if(G.hands.length>1)cls+=' split';
+    if(i===G.active&&G.phase===PH.PLAYER)cls+=' active';
+    if(bust)cls+=' busted';
+    else if(h.stood||h.lastStand)cls+=' stood';
+    if(bj)cls+=' bj';
+    const sc=h.undying?'13':(bj?'BJ':bust?'BUST':scoreStr(h.cards));
+    return`<div class="${cls}"><div class="hand-label"></div><div class="hand-row"><div class="hand-score">${h.cards.length?sc:''}</div><div class="hand-cards">${h.cards.map(c=>cardHTML(c)).join('')}</div></div></div>`;
+  }).join('');
+  updateBetDisp(); updateStats(); refreshPreround();
+  if(selectedClass)updateClassPanel();
+}
+function render(){renderAll();renderBtns();}
+function renderBtns(){
+  const el=document.getElementById('actionBtns'); if(!el)return;
+  const h=G.hands[G.active]||G.hands[0];
+  let html='';
+  if(G.phase===PH.BET){
+    const hb=h.bet>0, cr=G.lastBet&&G.lastBet<=balance;
+    html+=`<button class="btn btn-clear${hb?'':' btn-disabled'}" onclick="${hb?'clearBet()':''}">CLEAR</button>`;
+    html+=`<button class="btn btn-rebet${cr?'':' btn-disabled'}" onclick="${cr?'rebet()':''}">REBET</button>`;
+    html+=`<button class="btn btn-deal${hb?'':' btn-disabled'}" onclick="${hb?'doDeal()':''}">DEAL</button>`;
+    html+=`<button class="btn btn-class" onclick="showClassSelect()">CLASS: ${CLASSES[selectedClass]?.name||'?'} ${CLASSES[selectedClass]?.icon||''}</button>`;
+  }else if(G.phase===PH.INS){
+    const c=Math.floor(h.bet/2);
+    html+=`<button class="btn btn-ins" onclick="takeInsurance()">INSURANCE (${fmt(c)}g)</button>`;
+    html+=`<button class="btn btn-noins" onclick="declineInsurance()">NO THANKS</button>`;
+  }else if(G.phase===PH.PLAYER){
+    const cd=h.cards.length===2&&!h.doubled&&h.bet<=balance;
+    const cs=h.cards.length===2&&sameVal(h.cards[0],h.cards[1])&&G.splitCount<2&&h.bet<=balance;
+    html+=`<button class="btn btn-hit" onclick="doHit()">HIT</button>`;
+    html+=`<button class="btn btn-stand" onclick="doStand()">STAND</button>`;
+    if(cd)html+=`<button class="btn btn-double" onclick="doDouble()">DOUBLE</button>`;
+    if(cs)html+=`<button class="btn btn-split" onclick="doSplit()">SPLIT</button>`;
+  }else if(G.phase===PH.RESULT){
+    html+=`<button class="btn btn-new" onclick="newGame()">NEW HAND</button>`;
+  }
+  el.innerHTML=html;
+}
+
+// ── CLASS SELECT ──────────────────────────────────────────
+function buildClassSelect(){
+  document.getElementById('csGrid').innerHTML=Object.entries(CLASSES).map(([id,cls])=>`
+    <div class="cs-card" id="cs-${id}" onclick="pickClass('${id}')">
+      <div class="cs-icon">${cls.icon}</div>
+      <div class="cs-nm">${cls.name}</div>
+      <div class="cs-ab">${cls.procs.map(p=>`<b style="color:#aaa">${Math.round(p.chance*100)}%</b> ${p.name}: ${p.desc}`).join('<br>')}</div>
+    </div>`).join('');
+}
+function pickClass(id){
+  selectedClass=id;
+  document.querySelectorAll('.cs-card').forEach(e=>e.classList.remove('selected'));
+  document.getElementById('cs-'+id)?.classList.add('selected');
+  document.getElementById('csConfirm').classList.add('show');
+}
+function confirmClass(){
+  if(!selectedClass)return;
+  document.getElementById('classSelect').style.display='none';
+  updateClassPanel(); newGame();
+}
+function showClassSelect(){
+  document.getElementById('classSelect').style.display='flex';
+  if(selectedClass){
+    document.querySelectorAll('.cs-card').forEach(e=>e.classList.remove('selected'));
+    document.getElementById('cs-'+selectedClass)?.classList.add('selected');
+    document.getElementById('csConfirm').classList.add('show');
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────
+buildClassSelect();
+// Pre-roll conditions so the preround bar shows before first game
+roundMult=rollMult(); roundEquip=rollEquip();
+if(roundEquip.id==='bracer') roundMult=Math.max(1,Math.floor(roundMult/2));
+refreshPreround();
+G={phase:PH.BET,dealer:[],hands:[{cards:[],bet:0,doubled:false,stood:false}],active:0,splitCount:0,insured:0,lastBet:0};
+renderBtns();
+</script>
+</body>
+</html>
