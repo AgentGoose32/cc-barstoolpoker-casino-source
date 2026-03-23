@@ -66,19 +66,9 @@ body{background:url('./craps-bg.png') center center / auto 100% no-repeat fixed;
 
 
 
-.zone{border:1px solid rgba(255,215,0,0.35);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;user-select:none;transition:background 0.15s,box-shadow 0.15s;font-size:14px;font-weight:bold;letter-spacing:1px;color:#ffd700;text-align:center;flex-direction:column;}
-
-
-
-.zone:hover:not(.disabled){background:rgba(255,215,0,0.18);box-shadow:0 0 8px rgba(255,215,0,0.3);}
-
-
-
+.zone{border:1px solid transparent;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;user-select:none;transition:background 0.15s,box-shadow 0.15s;font-size:14px;font-weight:bold;letter-spacing:1px;color:transparent;text-align:center;flex-direction:column;background:transparent;}
+.zone:hover:not(.disabled){background:rgba(255,215,0,0.18);box-shadow:0 0 8px rgba(255,215,0,0.3);border-color:rgba(255,215,0,0.5);}
 .zone.has-bet{background:rgba(255,215,0,0.12);}
-
-
-
-.zone{background:rgba(0,0,0,0.25);}
 
 
 
@@ -254,7 +244,7 @@ body{background:url('./craps-bg.png') center center / auto 100% no-repeat fixed;
 
 
 
-.prop-box{flex:1;border:1px solid rgba(255,215,0,0.25);border-radius:3px;display:flex;flex-direction:row;align-items:center;justify-content:space-between;padding:0 6px;cursor:pointer;position:relative;transition:background 0.15s;font-size:11px;}
+.prop-box{flex:1;border:1px solid transparent;border-radius:3px;display:flex;flex-direction:row;align-items:center;justify-content:space-between;padding:0 6px;cursor:pointer;position:relative;transition:background 0.15s;font-size:11px;}
 
 
 
@@ -282,7 +272,7 @@ body{background:url('./craps-bg.png') center center / auto 100% no-repeat fixed;
 
 
 
-.hard-box{flex:1;border:1px solid rgba(255,215,0,0.22);border-radius:3px;display:flex;flex-direction:row;align-items:center;justify-content:space-between;padding:0 5px;cursor:pointer;font-size:10px;position:relative;transition:background 0.15s;}
+.hard-box{flex:1;border:1px solid transparent;border-radius:3px;display:flex;flex-direction:row;align-items:center;justify-content:space-between;padding:0 5px;cursor:pointer;font-size:10px;position:relative;transition:background 0.15s;}
 
 
 
@@ -314,7 +304,7 @@ body{background:url('./craps-bg.png') center center / auto 100% no-repeat fixed;
 
 
 
-.odds-btn{flex:1;background:rgba(0,80,180,0.2);border:1px solid rgba(80,160,255,0.35);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:#88ccff;position:relative;transition:background 0.15s,box-shadow 0.15s;}
+.odds-btn{flex:1;background:transparent;border:1px solid transparent;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:#88ccff;position:relative;transition:background 0.15s,box-shadow 0.15s;}
 
 
 
@@ -607,7 +597,7 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 
 
 
-.num-zone{position:absolute;pointer-events:all;cursor:pointer;border:1px solid rgba(255,215,0,0.4);border-radius:4px;background:rgba(0,0,0,0.18);display:flex;align-items:flex-end;justify-content:flex-end;padding:3px;transition:background 0.15s;}
+.num-zone{position:absolute;pointer-events:all;cursor:pointer;border:1px solid transparent;background:transparent;border-radius:4px;background:rgba(0,0,0,0.18);display:flex;align-items:flex-end;justify-content:flex-end;padding:3px;transition:background 0.15s;}
 
 
 
