@@ -1364,13 +1364,6 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 
 
 
-  <div class="zone bet-zone-overlay" id="z-dontcome2" onclick="placeBet('dontcome')">
-    <span style="font-size:9px;">DON'T<br>COME</span>
-    <span class="bet-chip" id="chip-dontcome2">0</span>
-  </div>
-
-
-
   <div class="zone bet-zone-overlay" id="z-come" onclick="placeBet('come')">
 
 
@@ -3128,7 +3121,7 @@ function updateUI(){
 
 
 
-  const chipMap={passline:'chip-passline',dontpass:'chip-dontpass',dontpass2:'chip-dontpass2',dontcome2:'chip-dontcome2',come:'chip-come',dontcome:'chip-dontcome',passodds:'chip-passodds',dontodds:'chip-dontodds',field:'chip-field',any7:'chip-any7',anycraps:'chip-anycraps',yo:'chip-yo',two:'chip-two',three:'chip-three',twelve:'chip-twelve',place4:'chip-place4',place5:'chip-place5',place6:'chip-place6',place8:'chip-place8',place9:'chip-place9',place10:'chip-place10',hard4:'chip-hard4',hard6:'chip-hard6',hard8:'chip-hard8',hard10:'chip-hard10',big6:'chip-big6',big8:'chip-big8'};
+  const chipMap={passline:'chip-passline',dontpass:'chip-dontpass',dontpass2:'chip-dontpass2',come:'chip-come',dontcome:'chip-dontcome',passodds:'chip-passodds',dontodds:'chip-dontodds',field:'chip-field',any7:'chip-any7',anycraps:'chip-anycraps',yo:'chip-yo',two:'chip-two',three:'chip-three',twelve:'chip-twelve',place4:'chip-place4',place5:'chip-place5',place6:'chip-place6',place8:'chip-place8',place9:'chip-place9',place10:'chip-place10',hard4:'chip-hard4',hard6:'chip-hard6',hard8:'chip-hard8',hard10:'chip-hard10',big6:'chip-big6',big8:'chip-big8'};
 
 
 
@@ -3364,7 +3357,7 @@ function updateZoneStates(){
 
 
 
-  setDisabled('z-come',!isPoint);    setDisabled('z-dontcome',!isPoint); setDisabled('z-dontcome2',!isPoint);
+  setDisabled('z-come',!isPoint);    setDisabled('z-dontcome',!isPoint);
 
 
 
@@ -3600,7 +3593,7 @@ function applyAllZones(){
 
 
 
-const BET_ZONE_IDS = ['dontpass','dontpass2','dontcome','dontcome2','come','any7','anycraps','yo','two','three','twelve','hard4','hard6','hard8','hard10','passodds','dontodds','field','passline','big6','big8'];
+const BET_ZONE_IDS = ['dontpass','dontpass2','dontcome','come','any7','anycraps','yo','two','three','twelve','hard4','hard6','hard8','hard10','passodds','dontodds','field','passline','big6','big8'];
 
 
 
@@ -3608,7 +3601,7 @@ const betZoneData = {
   dontpass:  {x:709,  y:519, w:459, h:47,  scale:100},
   dontpass2: {x:709,  y:519, w:459, h:47,  scale:100},
   dontcome:  {x:636,  y:284, w:77,  h:116, scale:100},
-  dontcome2: {x:636,  y:284, w:77,  h:116, scale:100},
+
   come:      {x:728,  y:376, w:521, h:68,  scale:100},
   any7:      {x:1272, y:351, w:221, h:21,  scale:100},
   anycraps:  {x:1293, y:582, w:235, h:29,  scale:100},
