@@ -1645,22 +1645,14 @@ canvas.die{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.7);display:bloc
 
 
 
-  <div style="display:flex;gap:6px;margin-top:8px;">
-
-
-
-    <button onclick="copyBetZones()" style="flex:1;">" COPY</button>
-
-
-
-    <button onclick="selBetZonePrev()" style="flex:0.4;">-</button>
-
-
-
-    <button onclick="selBetZoneNext()" style="flex:0.4;">-</button>
-
-
-
+  <div style="display:flex;gap:4px;margin-top:6px;">
+    <button onclick="selBetZone('dontpass')" style="flex:1;background:#4a1a1a;color:#ff9999;border:1px solid #ff444488;border-radius:4px;padding:4px;cursor:pointer;font-size:10px;">DON'T PASS</button>
+    <button onclick="selBetZone('dontcome')" style="flex:1;background:#4a1a1a;color:#ff9999;border:1px solid #ff444488;border-radius:4px;padding:4px;cursor:pointer;font-size:10px;">DON'T COME</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-top:6px;">
+    <button onclick="copyBetZones()" style="flex:1;">📋 COPY</button>
+    <button onclick="selBetZonePrev()" style="flex:0.4;">◀</button>
+    <button onclick="selBetZoneNext()" style="flex:0.4;">▶</button>
   </div>
 
 
@@ -4174,23 +4166,18 @@ function toggleDbg(){
 
 
     if(dbgOn){
-
-
-
       el.style.outline=id===activeBetZone?'3px dashed #ffd700':'1px dashed rgba(255,215,0,0.25)';
       el.style.cursor='move';
       el.style.pointerEvents='all';
+      el.style.opacity='1';      // force visible even if disabled
+      el.style.display='block';  // force shown even if hidden
       injectResizeHandles(id);
-
-
-
     } else {
-
-
-
       el.style.outline='';
       el.style.cursor='';
       el.style.pointerEvents='';
+      el.style.opacity='';
+      el.style.display='';
       el.querySelectorAll('.dbg-resize-handle').forEach(h=>h.remove());
 
 
