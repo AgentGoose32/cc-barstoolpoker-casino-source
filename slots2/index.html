@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Slots | HoH Casino</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="assets/css/main.css">
+  <script>
+  localStorage.clear();
+  var slotMachineConfig = {
+    balance: 100000,
+    minBet: 100,
+    maxBet: 10000,
+    defaultBet: 100,
+    betChangeAmount: 100,
+    symbols: [
+      // Low tier  (idx 0=j, 1=q, 2=a)
+      { filename: 'j.png',        scatter: false, wild: false, w1:0, w2:0, w3:13, w4:27, w5:54 },
+      { filename: 'q.png',        scatter: false, wild: false, w1:0, w2:0, w3:13, w4:27, w5:54 },
+      { filename: 'a.png',        scatter: false, wild: false, w1:0, w2:0, w3:13, w4:27, w5:54 },
+      // Mid-low tier (idx 3=clubs, 4=spades)
+      { filename: 'clubs.png',    scatter: false, wild: false, w1:0, w2:0, w3:20, w4:38, w5:76 },
+      { filename: 'spades.png',   scatter: false, wild: false, w1:0, w2:0, w3:20, w4:38, w5:76 },
+      // Mid tier (idx 5=hearts, 6=diamonds, 7=k)
+      { filename: 'hearts.png',   scatter: false, wild: false, w1:0, w2:0, w3:27, w4:52, w5:103 },
+      { filename: 'diamonds.png', scatter: false, wild: false, w1:0, w2:0, w3:27, w4:52, w5:103 },
+      { filename: 'k.png',        scatter: false, wild: false, w1:0, w2:0, w3:27, w4:52, w5:103 },
+      // Jackpot (idx 8=seven)
+      { filename: 'seven.png',    scatter: false, wild: false, w1:0, w2:0, w3:54, w4:108, w5:216 },
+      // Wild (idx 9)
+      { filename: 'wild.png',     scatter: false, wild: true,  w1:0, w2:0, w3:0,  w4:0,   w5:0  },
+      // Scatter (idx 10)
+      { filename: 'scatter.png',  scatter: true,  wild: false, w1:0, w2:0, w3:13, w4:31,  w5:100 }
+    ],
+    reels: [
+      [7,1,4,8,0,4,5,1,0,9,5,0,7,6,10,6,3,1,8,2,2,3,2],
+      [8,7,3,0,2,10,1,2,6,4,4,0,5,5,8,6,2,7,0,1,9,3,1],
+      [7,3,8,5,1,6,2,0,4,1,0,6,4,10,2,2,8,9,5,7,1,0,3],
+      [0,3,3,5,1,5,8,2,2,9,6,2,8,1,4,7,6,7,0,0,10,1,4],
+      [2,5,1,2,1,3,3,7,8,1,7,10,9,2,4,0,8,5,4,6,0,0,6]
+    ]
+  }
+  </script>
+  <script src="assets/js/main.js"></script>
+  <style>
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      background-color: #05020f;
+    }
+    #slot-machine {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    /* ===== CHEST OVERLAY ===== */
+    #chestOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.92);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: Georgia, serif;
+    }
+    #chestOverlay.active { display: flex; }
+
+    #chestTitle {
+      font-size: 2.2rem;
+      color: #ffd700;
+      text-shadow: 0 0 20px rgba(255,215,0,0.7);
+      margin-bottom: 8px;
+      letter-spacing: 3px;
+      animation: pulseGold 1.5s ease-in-out infinite;
+    }
+    #chestSubtitle {
+      font-size: 1rem;
+      color: #aaa;
+      margin-bottom: 48px;
+      letter-spacing: 1px;
+    }
+    #chestRow {
+      display: flex;
+      gap: 50px;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .chest-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .chest-btn {
+      width: 140px;
+      height: 140px;
+      background: transparent !important;
+      border: none !important;
+      outline: none !important;
+      padding: 0;
+      cursor: pointer;
+      transition: transform 0.15s;
+      position: relative;
+      -webkit-appearance: none;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+    }
+    .chest-btn:focus,
+    .chest-btn:focus-visible,
+    .chest-btn:active { outline: none !important; border: none !important; box-shadow: none !important; }
+    .chest-btn img {
+      width: 140px;
+      height: 140px;
+      object-fit: contain;
+      display: block;
+    }
+    .chest-btn:hover:not(.opened) { transform: scale(1.08) translateY(-4px); }
+    .chest-btn.opened { cursor: default; }
+    .chest-result {
+      font-size: 1rem;
+      color: #ffd700;
+      text-align: center;
+      font-family: Georgia, serif;
+      min-height: 1.4rem;
+      font-weight: bold;
+      text-shadow: 0 0 8px rgba(255,215,0,0.6);
+    }
+    .chest-btn.bonus-hit img {
+      animation: bonusFlash 0.4s ease-in-out 4;
+      filter: drop-shadow(0 0 20px rgba(74,255,122,1));
+    }
+
+    #chestMessage {
+      margin-top: 36px;
+      font-size: 1.3rem;
+      color: #fff;
+      min-height: 2rem;
+      text-align: center;
+    }
+    #chestContinueBtn {
+      display: none;
+      margin-top: 24px;
+      padding: 12px 40px;
+      font-size: 1.1rem;
+      font-family: Georgia, serif;
+      font-weight: bold;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg,#1a6b1a,#2a9b2a);
+      color: #ffd700;
+      border: 2px solid #4aff7a;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #chestContinueBtn:hover { background: linear-gradient(135deg,#2a8b2a,#3ab53a); }
+
+    /* Fireworks canvas */
+    #fireworksCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: 10500;
+      pointer-events: none;
+      display: none;
+    }
+
+    /* Bonus round overlay */
+    #bonusOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: radial-gradient(ellipse at center, #1a0a3a 0%, #05020f 100%);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: Georgia, serif;
+    }
+    #bonusOverlay.active { display: flex; }
+    #bonusTitle {
+      font-size: 3rem;
+      color: #ffd700;
+      text-shadow: 0 0 30px rgba(255,215,0,0.9), 0 0 60px rgba(255,165,0,0.5);
+      letter-spacing: 5px;
+      margin-bottom: 12px;
+      animation: pulseGold 1s ease-in-out infinite;
+    }
+    #bonusSubtitle {
+      font-size: 1.1rem;
+      color: #cc99ff;
+      letter-spacing: 2px;
+      margin-bottom: 50px;
+    }
+    #bonusSpinsLeft {
+      font-size: 1.2rem;
+      color: #ffd700;
+      margin-bottom: 24px;
+    }
+    #bonusTotal {
+      font-size: 2rem;
+      color: #4aff7a;
+      text-shadow: 0 0 15px rgba(74,255,122,0.6);
+      margin-bottom: 36px;
+      min-height: 2.5rem;
+    }
+    #bonusSpinBtn {
+      padding: 14px 48px;
+      font-size: 1.3rem;
+      font-family: Georgia, serif;
+      font-weight: bold;
+      letter-spacing: 3px;
+      background: linear-gradient(135deg,#6b00b3,#9d36f6);
+      color: #ffd700;
+      border: 2px solid #cc99ff;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(157,54,246,0.5);
+    }
+    #bonusSpinBtn:hover:not(:disabled) { background: linear-gradient(135deg,#8b10d3,#bf56ff); }
+    #bonusSpinBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+    #bonusDoneBtn {
+      display: none;
+      margin-top: 20px;
+      padding: 12px 40px;
+      font-size: 1.1rem;
+      font-family: Georgia, serif;
+      font-weight: bold;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg,#1a6b1a,#2a9b2a);
+      color: #ffd700;
+      border: 2px solid #4aff7a;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    @keyframes pulseGold {
+      0%,100% { text-shadow: 0 0 20px rgba(255,215,0,0.7); }
+      50%      { text-shadow: 0 0 40px rgba(255,215,0,1), 0 0 80px rgba(255,165,0,0.6); }
+    }
+    @keyframes bonusFlash {
+      0%,100% { box-shadow: 0 0 40px rgba(74,255,122,0.8); }
+      50%      { box-shadow: 0 0 80px rgba(74,255,122,1), 0 0 120px rgba(74,255,122,0.6); }
+    }
+  </style>
+</head>
+<body>
+  <div id="slot-machine"></div>
+
+  <!-- FIREWORKS CANVAS -->
+  <canvas id="fireworksCanvas"></canvas>
+
+  <!-- CHEST OVERLAY -->
+  <div id="chestOverlay">
+    <div id="chestTitle">✦ SCATTER BONUS ✦</div>
+    <div id="chestSubtitle">Click each chest — one may contain a Bonus Round!</div>
+    <div id="chestRow"></div>
+    <div id="chestMessage"></div>
+    <button id="chestContinueBtn" onclick="closeChestOverlay()">CONTINUE</button>
+  </div>
+
+  <!-- BONUS ROUND OVERLAY -->
+  <div id="bonusOverlay">
+    <img src="assets/bonus/chest-bonus-img.png" style="max-height:220px;object-fit:contain;margin-bottom:20px;filter:drop-shadow(0 0 30px rgba(255,215,0,0.8));">
+    <div id="bonusTitle">✦ BONUS ROUND ✦</div>
+    <div id="bonusSubtitle">FREE SPINS — 3x MULTIPLIER</div>
+    <div id="bonusSpinsLeft"></div>
+    <div id="bonusTotal"></div>
+    <button id="bonusSpinBtn" onclick="doBonusSpin()">SPIN FREE</button>
+    <button id="bonusDoneBtn" onclick="closeBonusOverlay()">COLLECT & CONTINUE</button>
+  </div>
+
+  <!-- AUDIO -->
+  <audio id="sndChestGold"      src="assets/bonus/chest-gold.mp3"  preload="auto"></audio>
+  <audio id="sndChestBonus"     src="assets/bonus/chest-bonus.mp3" preload="auto"></audio>
+  <audio id="sndFireworks"      src="assets/bonus/fireworks.mp3"   preload="auto"></audio>
+
+  <script>
+  (function() {
+    const BONUS_CHANCE    = 0.40;   // 40% per chest
+    const BONUS_SPINS     = 10;     // free spins in bonus round
+    const BONUS_MULTIPLIER= 3;      // 3x multiplier on wins
+
+    let _scatterCount   = 0;
+    let _chestsOpened   = 0;
+    let _bonusTriggered = false;
+    let _bonusWinnings  = 0;
+    let _bonusSpinsLeft = 0;
+    let _betPerLine     = 100;
+    let _lines          = 20;
+    let _lastWinScatters= 0;
+
+    // ---- Watch DOM for scatter wins ----
+    function watchForScatters() {
+      const observer = new MutationObserver(() => {
+        // Engine shows scatter count in element with class win_scatters or label_win
+        const scatterEl = document.querySelector('.win_scatters_ttl') ||
+                          document.querySelector('[class*="scatters_count"]') ||
+                          document.querySelector('[class*="win_scatters"]');
+
+        // Fallback: watch the win display and detect scatter symbol on reels
+        const reelSymbols = document.querySelectorAll('[class*="sym_ld"]');
+        let scatterCount = 0;
+        reelSymbols.forEach(el => {
+          if(el.style && el.style.backgroundImage && el.style.backgroundImage.includes('scatter')) {
+            scatterCount++;
+          }
+        });
+
+        if(scatterCount >= 3 && scatterCount !== _lastWinScatters) {
+          _lastWinScatters = scatterCount;
+          setTimeout(() => triggerChestOverlay(scatterCount), 800);
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style','class'] });
+    }
+
+    // Also poll for scatter image visibility as fallback
+    let _pollTimer = null;
+    function startScatterPoll() {
+      _pollTimer = setInterval(() => {
+        const imgs = document.querySelectorAll('img');
+        let count = 0;
+        imgs.forEach(img => { if(img.src && img.src.includes('scatter') && img.offsetParent !== null) count++; });
+        // Check canvas-rendered scatters via symbol containers
+        const symContainers = document.querySelectorAll('[class*="sym"]');
+        let canvasCount = 0;
+        symContainers.forEach(el => {
+          if(el.style.backgroundImage && el.style.backgroundImage.includes('scatter')) canvasCount++;
+        });
+      }, 500);
+    }
+
+    // Since engine uses canvas, we hook via the gameable event system
+    // Override the spin button to intercept after each spin
+    function hookSpinButton() {
+      const tryHook = setInterval(() => {
+        const spinBtn = document.querySelector('[class*="btn_spin"]') ||
+                        document.getElementById('btn_spin') ||
+                        document.querySelector('canvas');
+        if(spinBtn) {
+          clearInterval(tryHook);
+          hookGameResult();
+        }
+      }, 500);
+    }
+
+    function hookGameResult() {
+      // The engine renders to canvas. We intercept via the global game object.
+      // Try to find and wrap the internal spin-complete function
+      const tryWrap = setInterval(() => {
+        // Look for SlotMachine instance on window
+        const keys = Object.keys(window);
+        for(const k of keys) {
+          try {
+            const obj = window[k];
+            if(obj && typeof obj === 'object' && obj.game_result !== undefined) {
+              clearInterval(tryWrap);
+              wrapGameObject(obj);
+              return;
+            }
+          } catch(e) {}
+        }
+      }, 300);
+
+      // Fallback: watch for the scatter win text appearing in the DOM
+      const fallback = new MutationObserver((mutations) => {
+        for(const m of mutations) {
+          for(const node of m.addedNodes) {
+            if(node.textContent && node.textContent.includes('scatter') && node.textContent.includes('win')) {
+              // scatter win displayed
+            }
+          }
+        }
+        // Main fallback: check if scatter.png symbols visible in game area
+        checkScattersVisible();
+      });
+      fallback.observe(document.getElementById('slot-machine') || document.body,
+        { childList: true, subtree: true, characterData: true, attributes: true });
+    }
+
+    // Primary detection: watch the win display label for scatter payouts
+    let _spinInProgress = false;
+    let _lastBalance = -1;
+    let _scatterWinActive = false;
+
+    function checkScattersVisible() {
+      if(_scatterWinActive) return;
+      // Count scatter.png rendered on visible canvas children / img elements
+      const container = document.getElementById('slot-machine');
+      if(!container) return;
+      const imgs = container.querySelectorAll('img[src*="scatter"]');
+      if(imgs.length >= 3) {
+        _scatterWinActive = true;
+        setTimeout(() => {
+          _scatterWinActive = false;
+          triggerChestOverlay(imgs.length);
+        }, 1200);
+      }
+    }
+
+    // Best approach: override Image src setter to count scatters landing
+    // and intercept the win_scatters value from the engine's display update
+    function setupWinObserver() {
+      // Watch for scatter win label - engine creates a DOM text showing scatter wins
+      const obs = new MutationObserver(() => {
+        const allText = document.getElementById('slot-machine') ?
+          document.getElementById('slot-machine').innerText : '';
+
+        // Engine shows 'X scatter' or updates a win total
+        // Better: watch for canvas updates and check symbol visibility
+        const container = document.getElementById('slot-machine');
+        if(!container) return;
+
+        // Find all images with scatter src
+        const scatterImgs = Array.from(container.querySelectorAll('img')).filter(i => i.src.includes('scatter'));
+        const scatterDivs = Array.from(container.querySelectorAll('*')).filter(el => {
+          const bg = el.style ? el.style.backgroundImage : '';
+          return bg && bg.includes('scatter');
+        });
+        const total = Math.max(scatterImgs.length, scatterDivs.length);
+
+        if(total >= 3 && !_scatterWinActive) {
+          _scatterWinActive = true;
+          setTimeout(() => {
+            _scatterWinActive = false;
+            triggerChestOverlay(total);
+          }, 1400);
+        }
+      });
+
+      const sm = document.getElementById('slot-machine');
+      if(sm) {
+        obs.observe(sm, { childList: true, subtree: true, attributes: true, attributeFilter: ['src','style'] });
+      }
+    }
+
+    // ---- Sounds ----
+    const sndGold  = document.getElementById('sndChestGold');
+    const sndBonus = document.getElementById('sndChestBonus');
+    const sndFw    = document.getElementById('sndFireworks');
+
+    function playGoldSound() {
+      sndGold.currentTime = 0;
+      sndGold.loop = false;
+      sndGold.play().catch(()=>{});
+    }
+    function stopGoldSound() {
+      sndGold.pause();
+      sndGold.currentTime = 0;
+    }
+    function playBonusSound() {
+      sndBonus.currentTime = 0;
+      sndBonus.loop = false;
+      sndBonus.play().catch(()=>{});
+      // Stop after 3 seconds
+      setTimeout(() => stopBonusSound(), 3000);
+    }
+    function stopBonusSound() {
+      sndBonus.pause();
+      sndBonus.currentTime = 0;
+    }
+
+    // Stop gold sound and fireworks on any click
+    document.addEventListener('click', () => { stopGoldSound(); stopFireworks(); }, true);
+
+    // ---- Fireworks ----
+    const fwCanvas = document.getElementById('fireworksCanvas');
+    const fwCtx    = fwCanvas.getContext('2d');
+    let fwParticles = [];
+    let fwAnimId    = null;
+
+    function playFireworksSound() {
+      sndFw.currentTime = 0;
+      sndFw.play().catch(()=>{});
+    }
+    function stopFireworksSound() {
+      sndFw.pause();
+      sndFw.currentTime = 0;
+    }
+
+    function startFireworks() {
+      playFireworksSound();
+      fwCanvas.style.display = 'block';
+      fwCanvas.width  = window.innerWidth  || document.documentElement.clientWidth;
+      fwCanvas.height = window.innerHeight || document.documentElement.clientHeight;
+      fwParticles = [];
+      if(fwAnimId) { cancelAnimationFrame(fwAnimId); fwAnimId = null; }
+
+      // Launch first burst immediately so particles exist before animation starts
+      launchFirework(); launchFirework(); launchFirework();
+
+      // Keep launching more
+      let launches = 3;
+      const launchInterval = setInterval(() => {
+        launchFirework();
+        launches++;
+        if(launches >= 24) clearInterval(launchInterval);
+      }, 280);
+
+      // Start animation loop
+      animateFireworks();
+      setTimeout(stopFireworks, 8000);
+    }
+
+    function launchFirework() {
+      const x = Math.random() * fwCanvas.width;
+      const y = Math.random() * fwCanvas.height * 0.6;
+      const colors = ['#ffd700','#ff4444','#44ff88','#4488ff','#ff44ff','#ffaa00','#ffffff'];
+      const color  = colors[Math.floor(Math.random()*colors.length)];
+      for(let i=0;i<80;i++) {
+        const angle = (Math.PI*2/80)*i;
+        const speed = 2 + Math.random()*4;
+        fwParticles.push({
+          x, y,
+          vx: Math.cos(angle)*speed,
+          vy: Math.sin(angle)*speed,
+          alpha: 1,
+          color,
+          size: 2 + Math.random()*2
+        });
+      }
+    }
+
+    function animateFireworks() {
+      fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
+      fwParticles = fwParticles.filter(p => p.alpha > 0.02);
+      for(const p of fwParticles) {
+        p.x  += p.vx;
+        p.y  += p.vy;
+        p.vy += 0.06;
+        p.vx *= 0.98;
+        p.alpha -= 0.018;
+        fwCtx.globalAlpha = p.alpha;
+        fwCtx.fillStyle = p.color;
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+        fwCtx.fill();
+      }
+      fwCtx.globalAlpha = 1;
+      fwAnimId = requestAnimationFrame(animateFireworks);
+    }
+
+    function stopFireworks() {
+      if(fwAnimId) { cancelAnimationFrame(fwAnimId); fwAnimId=null; }
+      fwCanvas.style.display = 'none';
+      fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
+      stopFireworksSound();
+    }
+
+    // ---- Chest Overlay Logic ----
+    function triggerChestOverlay(scatterCount) {
+      _scatterCount   = scatterCount;
+      _chestsOpened   = 0;
+      _bonusTriggered = false;
+      _betPerLine = slotMachineConfig.defaultBet || 100;
+      _lines      = slotMachineConfig.lineCount  || 20;
+
+      const overlay = document.getElementById('chestOverlay');
+      const row     = document.getElementById('chestRow');
+      const msg     = document.getElementById('chestMessage');
+      const contBtn = document.getElementById('chestContinueBtn');
+
+      row.innerHTML      = '';
+      msg.textContent    = '';
+      contBtn.style.display = 'none';
+
+      for(let i = 0; i < scatterCount; i++) {
+        const wrap = document.createElement('div');
+        wrap.className = 'chest-wrap';
+
+        const btn = document.createElement('button');
+        btn.className = 'chest-btn';
+        btn.innerHTML = '<img src="assets/bonus/chest-closed.png" alt="chest">';
+        btn.onclick = () => openChest(btn, wrap, i);
+
+        const result = document.createElement('div');
+        result.className = 'chest-result';
+
+        wrap.appendChild(btn);
+        wrap.appendChild(result);
+        row.appendChild(wrap);
+      }
+
+      overlay.classList.add('active');
+    }
+
+    function openChest(btn, wrap, idx) {
+      if(btn.classList.contains('opened')) return;
+      btn.classList.add('opened');
+      _chestsOpened++;
+
+      const resultEl = wrap.querySelector('.chest-result');
+      const roll = Math.random();
+
+      if(roll < BONUS_CHANCE && !_bonusTriggered) {
+        _bonusTriggered = true;
+        btn.querySelector('img').src = 'assets/bonus/chest-bonus-img.png';
+        btn.classList.add('bonus-hit');
+        resultEl.textContent = '🌟 BONUS!';
+        resultEl.style.color = '#4aff7a';
+        stopGoldSound();
+        playBonusSound();
+        setTimeout(() => startFireworks(), 100);
+        document.getElementById('chestMessage').textContent = '🌟 BONUS ROUND TRIGGERED!';
+      } else {
+        btn.querySelector('img').src = 'assets/bonus/chest-open-gold.png';
+        const goldAmt = (_betPerLine * _lines) * (Math.floor(Math.random() * 3) + 1);
+        resultEl.textContent = '+' + goldAmt.toLocaleString() + 'g';
+        playGoldSound();
+      }
+
+      if(_chestsOpened >= _scatterCount) {
+        setTimeout(() => {
+          if(_bonusTriggered) {
+            closeChestAndStartBonus(); // fireworks keep playing into bonus overlay
+          } else {
+            document.getElementById('chestMessage').textContent = 'No bonus this time. Better luck next scatter!';
+            document.getElementById('chestContinueBtn').style.display = 'inline-block';
+          }
+        }, _bonusTriggered ? 2000 : 800);
+      }
+    }
+
+    function closeChestAndStartBonus() {
+      stopBonusSound();
+      document.getElementById('chestOverlay').classList.remove('active');
+      startBonusRound();
+    }
+
+    function closeChestOverlay() {
+      stopGoldSound();
+      stopBonusSound();
+      stopFireworks();
+      document.getElementById('chestOverlay').classList.remove('active');
+    }
+
+    // ---- Bonus Round Logic ----
+    function startBonusRound() {
+      _bonusWinnings  = 0;
+      _bonusSpinsLeft = BONUS_SPINS;
+
+      document.getElementById('bonusSpinsLeft').textContent = _bonusSpinsLeft + ' free spins remaining';
+      document.getElementById('bonusTotal').textContent = '';
+      document.getElementById('bonusSpinBtn').disabled = false;
+      document.getElementById('bonusSpinBtn').style.display = 'inline-block';
+      document.getElementById('bonusDoneBtn').style.display = 'none';
+      document.getElementById('bonusOverlay').classList.add('active');
+    }
+
+    window.doBonusSpin = function() {
+      if(_bonusSpinsLeft <= 0) return;
+      stopFireworks();
+
+      // Simulate a spin result using our reel/payout config
+      const spinWin = simulateSpin();
+      const boosted = Math.round(spinWin * BONUS_MULTIPLIER);
+      _bonusWinnings += boosted;
+      _bonusSpinsLeft--;
+
+      document.getElementById('bonusSpinsLeft').textContent = _bonusSpinsLeft + ' free spins remaining';
+      if(boosted > 0) {
+        document.getElementById('bonusTotal').textContent =
+          '🎰 +' + boosted.toLocaleString() + 'g  (Total: +' + _bonusWinnings.toLocaleString() + 'g)';
+      } else {
+        document.getElementById('bonusTotal').textContent =
+          'No win  (Total: +' + _bonusWinnings.toLocaleString() + 'g)';
+      }
+
+      if(_bonusSpinsLeft <= 0) {
+        document.getElementById('bonusSpinBtn').disabled = true;
+        setTimeout(() => {
+          document.getElementById('bonusTotal').textContent =
+            '✦ BONUS COMPLETE: +' + _bonusWinnings.toLocaleString() + 'g';
+          document.getElementById('bonusDoneBtn').style.display = 'inline-block';
+        }, 500);
+      }
+    };
+
+    window.closeBonusOverlay = function() {
+      document.getElementById('bonusOverlay').classList.remove('active');
+      // Add winnings to balance via the engine's balance element
+      awardBalance(_bonusWinnings);
+    };
+
+    function awardBalance(amount) {
+      // Try to find and update the balance display
+      const balEls = document.querySelectorAll('[class*="label_balance"], [class*="balance"]');
+      // Engine manages balance internally - we can't directly inject without accessing internals
+      // For now, show a notification
+      const note = document.createElement('div');
+      note.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:11000;background:rgba(0,0,0,0.85);border:2px solid #4aff7a;color:#4aff7a;font-family:Georgia,serif;font-size:1.3rem;padding:14px 32px;border-radius:8px;text-shadow:0 0 10px rgba(74,255,122,0.5);';
+      note.textContent = '✦ +' + amount.toLocaleString() + 'g Bonus Added!';
+      document.body.appendChild(note);
+      setTimeout(() => note.remove(), 3500);
+    }
+
+    // ---- Spin Simulator (mirrors Python sim) ----
+    const REELS_DATA = slotMachineConfig.reels;
+    const SYMS = slotMachineConfig.symbols;
+    const PAYLINES_DATA = [
+      [1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],
+      [1,1,0,1,2],[1,1,2,1,0],[1,0,1,2,1],
+      [1,0,1,2,2],[1,0,0,1,2],[1,2,1,0,1],
+      [1,2,2,1,0],[1,2,1,0,0],[0,1,2,1,0],
+      [0,1,1,1,2],[0,0,1,2,2],[0,0,1,2,1],
+      [0,0,0,1,2],[2,1,0,1,2],[2,1,1,1,0],
+      [2,2,1,0,0],[2,2,1,0,1],
+    ];
+
+    function simulateSpin() {
+      const bpl = _betPerLine;
+      const grid = REELS_DATA.map(reel => {
+        const pos = Math.floor(Math.random() * reel.length);
+        return [reel[pos % reel.length], reel[(pos+1) % reel.length], reel[(pos+2) % reel.length]];
+      });
+      let total = 0;
+      for(const line of PAYLINES_DATA) {
+        const syms = line.map((row, r) => grid[r][row]);
+        total += evalLine(syms) * bpl;
+      }
+      // scatter
+      let sc = 0;
+      for(let r=0;r<5;r++) for(let row=0;row<3;row++) { if(grid[r][row]===10) sc++; }
+      if(sc>=3) total += [0,0,13,31,100][sc] * bpl * _lines;
+      return total;
+    }
+
+    function evalLine(syms) {
+      let first = null;
+      for(const s of syms) {
+        if(!SYMS[s].wild && !SYMS[s].scatter) { first = s; break; }
+      }
+      if(first === null) first = 9;
+      let count = 0;
+      for(const s of syms) {
+        if(s === first || SYMS[s].wild) count++;
+        else break;
+      }
+      if(count < 3) return 0;
+      const w = SYMS[first];
+      return [0,0,w.w3,w.w4,w.w5][count] || 0;
+    }
+
+    // ---- Init ----
+    window.closeChestOverlay = closeChestOverlay;
+
+    // Test hotkey: press T to trigger chest overlay with 3 scatters
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 't' || e.key === 'T') triggerChestOverlay(3);
+      if(e.key === 'y' || e.key === 'Y') triggerChestOverlay(4);
+      if(e.key === 'u' || e.key === 'U') triggerChestOverlay(5);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        setupWinObserver();
+        hookSpinButton();
+      }, 2000);
+    });
+
+  })();
+  </script>
+</body>
+</html>
