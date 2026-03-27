@@ -248,15 +248,33 @@
 <body>
   <div id="slot-machine"></div>
 
-  <!-- SCATTER SOUND: fires exactly when stop.wav plays for a reel that will land on scatter.
-       At spin result time the engine fires 5 setTimeouts (delays 0,500,1000,1500,2000ms)
-       to call stopSpin(pos) on each reel. We intercept that burst, read the stop position,
-       check slotMachineConfig.reels to see if scatter lands there, then flag that reel.
-       When stop.wav fires for that reel: play immediately, no added delay. -->
+  <!-- SCATTER SOUND: hybrid approach.
+       Phase 1 (burst intercept): when the engine fires the 5 stopSpin setTimeouts, read each
+       stop position via parseInt hook and check slotMachineConfig -- builds scatterReels Set.
+       Phase 2 (visual snap): watches drawImage for scatter canvas at flagged reel columns.
+       Fires on the FIRST frame scatter draws at a known snap Y (row 0/1/2) -- 1 frame lag max. -->
   <script>
   (function() {
     window.__plGetScatterCount = function() { return 0; };
     window.__plResetScatterCount = function() {};
+
+    const origDraw  = CanvasRenderingContext2D.prototype.drawImage;
+    const scatterSet = new WeakSet();
+
+    const cfg         = window.slotMachineConfig;
+    const STOP_DELAYS = [0, 500, 1000, 1500, 2000];
+    const origSetTO   = window.setTimeout;
+    const REEL_X      = [145, 373, 601, 829, 1057];
+    const X_TOL       = 30;
+    // Known snap Y values for each row (internal 600px canvas): center of each 200px slot
+    // Row 0: y≈0, Row 1: y≈200, Row 2: y≈400  (top-left of drawn symbol)
+    const SNAP_Y      = [0, 200, 400];
+    const Y_TOL       = 6;
+
+    let spinActive   = false;
+    let scatterReels = new Set();
+    let firedReels   = new Set();
+    let burstTime    = -1;
 
     function playScatterSound() {
       const snd = document.getElementById('sndScatter');
@@ -265,32 +283,14 @@
       snd.play().catch(() => {});
     }
 
-    const cfg          = window.slotMachineConfig;
-    const STOP_DELAYS  = [0, 500, 1000, 1500, 2000];
-    const origSetTO    = window.setTimeout;
-
-    let spinActive   = false;
-    let reelCounter  = 0;
-    let scatterReels = new Set(); // reels confirmed to land on scatter this spin
-    let burstTime    = -1;        // timestamp of the setTimeout(fn,0) that starts the burst
-    let burstIdx     = 0;
-
-    // Hook setTimeout to intercept the 5 stopSpin calls fired at spin result time
+    // Phase 1: intercept setTimeout burst to identify scatter reels ahead of time
     window.setTimeout = function(fn, delay) {
       if (spinActive && typeof fn === 'function') {
         const now = Date.now();
-
-        if (delay === 0) {
-          // Potential start of burst -- reset
-          burstTime = now;
-          burstIdx  = 0;
-        }
-
-        const expectedIdx = STOP_DELAYS.indexOf(delay);
-        if (expectedIdx >= 0 && burstTime >= 0 && now - burstTime < 20) {
-          const reelIdx = expectedIdx;
+        if (delay === 0) { burstTime = now; }
+        const reelIdx = STOP_DELAYS.indexOf(delay);
+        if (reelIdx >= 0 && burstTime >= 0 && now - burstTime < 20) {
           const wrapped = function() {
-            // Intercept parseInt to capture the stop position arg
             const origPI = window.parseInt;
             let done = false;
             window.parseInt = function(val, radix) {
@@ -301,9 +301,8 @@
                 if (cfg && cfg.reels && cfg.symbols) {
                   const strip = cfg.reels[reelIdx];
                   if (strip) {
-                    const len = strip.length;
                     for (let row = 0; row < 3; row++) {
-                      const sym = cfg.symbols[strip[(r + row) % len]];
+                      const sym = cfg.symbols[strip[(r + row) % strip.length]];
                       if (sym && sym.scatter) { scatterReels.add(reelIdx); break; }
                     }
                   }
@@ -320,26 +319,43 @@
       return origSetTO.apply(window, arguments);
     };
 
-    // Hook createjs.Sound.play: reset on spin start, fire on stop.wav if reel flagged
+    // Phase 2: watch drawImage -- fire the instant scatter draws at a snapped Y on a flagged reel
+    CanvasRenderingContext2D.prototype.drawImage = function(img, x, y) {
+      if (img instanceof HTMLImageElement &&
+          typeof img.src === 'string' && img.src.includes('scatter.png')) {
+        scatterSet.add(this.canvas);
+      }
+
+      if (spinActive &&
+          img instanceof HTMLCanvasElement && scatterSet.has(img) &&
+          typeof x === 'number' && typeof y === 'number') {
+        for (let i = 0; i < 5; i++) {
+          if (scatterReels.has(i) && !firedReels.has(i) && Math.abs(x - REEL_X[i]) < X_TOL) {
+            const yr = Math.round(y);
+            for (const sy of SNAP_Y) {
+              if (Math.abs(yr - sy) <= Y_TOL) {
+                firedReels.add(i);
+                playScatterSound();
+                break;
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      return origDraw.apply(this, arguments);
+    };
+
     function hookCreateJS() {
       if (!window.createjs || !window.createjs.Sound) return false;
       const origPlay = createjs.Sound.play;
       createjs.Sound.play = function(id) {
-        if (typeof id === 'string') {
-          if (id.endsWith('spin.wav') || id.endsWith('start.wav')) {
-            spinActive   = true;
-            reelCounter  = 0;
-            scatterReels = new Set();
-            burstTime    = -1;
-          }
-          if (id.endsWith('stop.wav') && spinActive) {
-            const reelIdx = reelCounter % 5;
-            reelCounter++;
-            if (reelCounter >= 5) spinActive = false;
-            if (scatterReels.has(reelIdx)) {
-              playScatterSound();
-            }
-          }
+        if (typeof id === 'string' && (id.endsWith('spin.wav') || id.endsWith('start.wav'))) {
+          spinActive   = true;
+          scatterReels = new Set();
+          firedReels   = new Set();
+          burstTime    = -1;
         }
         return origPlay.apply(this, arguments);
       };
