@@ -791,53 +791,35 @@
     let _wheelAngle    = 0;
     let _wheelAnimId   = null;
 
+    // Preload wheel image
+    const _wheelImg = new Image();
+    _wheelImg.src = 'assets/bonus/wheel.png';
+
     function drawWheel(angle) {
       const canvas = document.getElementById('wheelCanvas');
       if (!canvas) return;
-      const ctx  = canvas.getContext('2d');
-      const cx   = canvas.width  / 2;
-      const cy   = canvas.height / 2;
-      const r    = cx - 10;
-      const n    = WHEEL_PRIZES.length;
-      const arc  = (2 * Math.PI) / n;
+      const ctx = canvas.getContext('2d');
+      const cx  = canvas.width  / 2;
+      const cy  = canvas.height / 2;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Outer ring
-      ctx.beginPath();
-      ctx.arc(cx, cy, r + 8, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffd700';
-      ctx.fill();
-
-      for (let i = 0; i < n; i++) {
-        const start = angle + i * arc;
-        const end   = start + arc;
-
-        // Slice
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, r, start, end);
-        ctx.closePath();
-        ctx.fillStyle = WHEEL_PRIZES[i].color;
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // Label
+      if (_wheelImg.complete && _wheelImg.naturalWidth > 0) {
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.rotate(start + arc / 2);
-        ctx.textAlign = 'right';
-        ctx.fillStyle = '#fff';
-        ctx.shadowColor = 'rgba(0,0,0,0.8)';
-        ctx.shadowBlur  = 4;
-        ctx.font = 'bold 15px Georgia';
-        ctx.fillText(WHEEL_PRIZES[i].label, r - 14, 5);
+        ctx.rotate(angle);
+        ctx.drawImage(_wheelImg, -cx, -cy, canvas.width, canvas.height);
         ctx.restore();
+      } else {
+        // Fallback: plain gold circle while image loads
+        ctx.beginPath();
+        ctx.arc(cx, cy, cx - 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffd700';
+        ctx.fill();
+        _wheelImg.onload = () => drawWheel(angle);
       }
 
-      // Center cap
+      // Center cap on top
       ctx.beginPath();
       ctx.arc(cx, cy, 28, 0, Math.PI * 2);
       ctx.fillStyle = '#ffd700';
