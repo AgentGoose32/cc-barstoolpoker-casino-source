@@ -176,23 +176,25 @@
       background: radial-gradient(ellipse at center, #1a0a3a 0%, #05020f 100%);
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+      overflow-y: auto;
+      padding: 20px 0 30px;
       font-family: Georgia, serif;
     }
     #bonusOverlay.active { display: flex; }
     #bonusTitle {
-      font-size: 3rem;
+      font-size: 2.2rem;
       color: #ffd700;
       text-shadow: 0 0 30px rgba(255,215,0,0.9), 0 0 60px rgba(255,165,0,0.5);
       letter-spacing: 5px;
-      margin-bottom: 12px;
+      margin-bottom: 6px;
       animation: pulseGold 1s ease-in-out infinite;
     }
     #bonusSubtitle {
-      font-size: 1.1rem;
+      font-size: 1rem;
       color: #cc99ff;
       letter-spacing: 2px;
-      margin-bottom: 50px;
+      margin-bottom: 6px;
     }
     #bonusSpinsLeft {
       font-size: 1.2rem;
@@ -502,13 +504,15 @@
   <style>
     #wheelWrap {
       position: relative;
-      width: 500px;
-      height: 500px;
-      margin: 16px auto 0;
+      width: min(500px, 90vw);
+      height: min(500px, 90vw);
+      margin: 10px auto 0;
     }
     #wheelCanvas {
       border-radius: 50%;
       box-shadow: 0 0 40px rgba(255,215,0,0.6), 0 0 80px rgba(255,165,0,0.3);
+      width: 100%;
+      height: 100%;
     }
     #wheelPointer {
       position: absolute;
