@@ -248,6 +248,63 @@
 <body>
   <div id="slot-machine"></div>
 
+  <!-- SCATTER DETECTION: watch the win label for "scatter" text after spin completes -->
+  <script>
+  (function() {
+    // Stubs kept for compatibility with the win observer below
+    window.__plGetScatterCount = function() { return 0; };
+    window.__plResetScatterCount = function() {};
+
+    function playScatterSound() {
+      const snd = document.getElementById('sndScatter');
+      if (!snd) return;
+      snd.currentTime = 0;
+      snd.play().catch(() => {});
+    }
+
+    // Wait for the engine to build the DOM, then watch label_win for scatter results
+    function setupScatterLabelObserver() {
+      const poll = setInterval(() => {
+        const container = document.getElementById('slot-machine');
+        if (!container) return;
+        // Engine uses class prefix "smg-label_win"
+        const labelWin = container.querySelector('[class*="label_win"]');
+        if (!labelWin) return;
+        clearInterval(poll);
+
+        let _lastScatterTrigger = 0;
+
+        const obs = new MutationObserver(() => {
+          const text = (labelWin.textContent || labelWin.innerHTML || '').toLowerCase();
+          if (!text.includes('scatter')) return;
+
+          // Debounce: only fire once per spin result
+          const now = Date.now();
+          if (now - _lastScatterTrigger < 2000) return;
+          _lastScatterTrigger = now;
+
+          const match = text.match(/(\d+)\s*scatter/i);
+          const count = match ? parseInt(match[1]) : 3;
+          if (count >= 3) {
+            playScatterSound();
+            // Expose count for the chest overlay trigger below
+            window.__scatterCountForChests = count;
+          }
+        });
+
+        obs.observe(labelWin, { childList: true, subtree: true, characterData: true, attributes: true });
+      }, 400);
+    }
+
+    // Run after DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupScatterLabelObserver);
+    } else {
+      setupScatterLabelObserver();
+    }
+  })();
+  </script>
+
   <!-- FIREWORKS CANVAS -->
   <canvas id="fireworksCanvas"></canvas>
 
@@ -275,10 +332,14 @@
   <audio id="sndChestGold"      src="assets/bonus/chest-gold.mp3"  preload="auto"></audio>
   <audio id="sndChestBonus"     src="assets/bonus/chest-bonus.mp3" preload="auto"></audio>
   <audio id="sndFireworks"      src="assets/bonus/fireworks.mp3"   preload="auto"></audio>
+  <audio id="sndScatter"        src="assets/bonus/scatter.mp3"     preload="auto"></audio>
 
   <script>
   (function() {
-    const BONUS_CHANCE    = 0.40;   // 40% per chest
+    // Slow reels by 20% (engine default speed_max is 5000)
+    slotMachineConfig.speed_max = 4000;
+
+    const BONUS_CHANCE    = 0.05;   // 5% per chest (prod)
     const BONUS_SPINS     = 10;     // free spins in bonus round
     const BONUS_MULTIPLIER= 3;      // 3x multiplier on wins
 
@@ -291,149 +352,80 @@
     let _lines          = 20;
     let _lastWinScatters= 0;
 
-    // ---- Watch DOM for scatter wins ----
-    function watchForScatters() {
-      const observer = new MutationObserver(() => {
-        // Engine shows scatter count in element with class win_scatters or label_win
-        const scatterEl = document.querySelector('.win_scatters_ttl') ||
-                          document.querySelector('[class*="scatters_count"]') ||
-                          document.querySelector('[class*="win_scatters"]');
-
-        // Fallback: watch the win display and detect scatter symbol on reels
-        const reelSymbols = document.querySelectorAll('[class*="sym_ld"]');
-        let scatterCount = 0;
-        reelSymbols.forEach(el => {
-          if(el.style && el.style.backgroundImage && el.style.backgroundImage.includes('scatter')) {
-            scatterCount++;
-          }
-        });
-
-        if(scatterCount >= 3 && scatterCount !== _lastWinScatters) {
-          _lastWinScatters = scatterCount;
-          setTimeout(() => triggerChestOverlay(scatterCount), 800);
-        }
-      });
-      observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style','class'] });
-    }
-
-    // Also poll for scatter image visibility as fallback
-    let _pollTimer = null;
-    function startScatterPoll() {
-      _pollTimer = setInterval(() => {
-        const imgs = document.querySelectorAll('img');
-        let count = 0;
-        imgs.forEach(img => { if(img.src && img.src.includes('scatter') && img.offsetParent !== null) count++; });
-        // Check canvas-rendered scatters via symbol containers
-        const symContainers = document.querySelectorAll('[class*="sym"]');
-        let canvasCount = 0;
-        symContainers.forEach(el => {
-          if(el.style.backgroundImage && el.style.backgroundImage.includes('scatter')) canvasCount++;
-        });
-      }, 500);
-    }
-
-    // Since engine uses canvas, we hook via the gameable event system
-    // Override the spin button to intercept after each spin
-    function hookSpinButton() {
-      const tryHook = setInterval(() => {
-        const spinBtn = document.querySelector('[class*="btn_spin"]') ||
-                        document.getElementById('btn_spin') ||
-                        document.querySelector('canvas');
-        if(spinBtn) {
-          clearInterval(tryHook);
-          hookGameResult();
-        }
-      }, 500);
-    }
-
-    function hookGameResult() {
-      // The engine renders to canvas. We intercept via the global game object.
-      // Try to find and wrap the internal spin-complete function
-      const tryWrap = setInterval(() => {
-        // Look for SlotMachine instance on window
-        const keys = Object.keys(window);
-        for(const k of keys) {
-          try {
-            const obj = window[k];
-            if(obj && typeof obj === 'object' && obj.game_result !== undefined) {
-              clearInterval(tryWrap);
-              wrapGameObject(obj);
-              return;
-            }
-          } catch(e) {}
-        }
-      }, 300);
-
-      // Fallback: watch for the scatter win text appearing in the DOM
-      const fallback = new MutationObserver((mutations) => {
-        for(const m of mutations) {
-          for(const node of m.addedNodes) {
-            if(node.textContent && node.textContent.includes('scatter') && node.textContent.includes('win')) {
-              // scatter win displayed
-            }
-          }
-        }
-        // Main fallback: check if scatter.png symbols visible in game area
-        checkScattersVisible();
-      });
-      fallback.observe(document.getElementById('slot-machine') || document.body,
-        { childList: true, subtree: true, characterData: true, attributes: true });
-    }
-
-    // Primary detection: watch the win display label for scatter payouts
-    let _spinInProgress = false;
-    let _lastBalance = -1;
+    // ---- Scatter Detection (single clean hook) ----
+    // The engine sets label_win.innerHTML = "X scatter(s)" after a completed spin.
+    // We watch only that element for text changes. No polling, no reel-image scanning.
     let _scatterWinActive = false;
 
-    function checkScattersVisible() {
-      if(_scatterWinActive) return;
-      // Count scatter.png rendered on visible canvas children / img elements
-      const container = document.getElementById('slot-machine');
-      if(!container) return;
-      const imgs = container.querySelectorAll('img[src*="scatter"]');
-      if(imgs.length >= 3) {
-        _scatterWinActive = true;
-        setTimeout(() => {
-          _scatterWinActive = false;
-          triggerChestOverlay(imgs.length);
-        }, 1200);
-      }
+    function playScatterSound() {
+      // Grab element at call time (DOM is ready by then)
+      const snd = document.getElementById('sndScatter');
+      if (!snd) return;
+      snd.currentTime = 0;
+      snd.play().catch(() => {});
     }
 
-    // Best approach: override Image src setter to count scatters landing
-    // and intercept the win_scatters value from the engine's display update
-    function setupWinObserver() {
-      // Watch for scatter win label - engine creates a DOM text showing scatter wins
-      const obs = new MutationObserver(() => {
-        const allText = document.getElementById('slot-machine') ?
-          document.getElementById('slot-machine').innerText : '';
-
-        // Engine shows 'X scatter' or updates a win total
-        // Better: watch for canvas updates and check symbol visibility
-        const container = document.getElementById('slot-machine');
-        if(!container) return;
-
-        // Find all images with scatter src
-        const scatterImgs = Array.from(container.querySelectorAll('img')).filter(i => i.src.includes('scatter'));
-        const scatterDivs = Array.from(container.querySelectorAll('*')).filter(el => {
-          const bg = el.style ? el.style.backgroundImage : '';
-          return bg && bg.includes('scatter');
-        });
-        const total = Math.max(scatterImgs.length, scatterDivs.length);
-
-        if(total >= 3 && !_scatterWinActive) {
-          _scatterWinActive = true;
-          setTimeout(() => {
-            _scatterWinActive = false;
-            triggerChestOverlay(total);
-          }, 1400);
-        }
+    function countVisibleScatters() {
+      const container = document.getElementById('slot-machine');
+      if (!container) return 0;
+      // Count scatter.png images visible in the reel area
+      const imgs = Array.from(container.querySelectorAll('img')).filter(i =>
+        i.src && i.src.includes('scatter') && i.offsetParent !== null
+      );
+      // Also count background-image based symbols
+      const divs = Array.from(container.querySelectorAll('[class*="sym"]')).filter(el => {
+        const bg = el.style ? el.style.backgroundImage : '';
+        return bg && bg.includes('scatter');
       });
+      return Math.max(imgs.length, divs.length);
+    }
 
-      const sm = document.getElementById('slot-machine');
-      if(sm) {
-        obs.observe(sm, { childList: true, subtree: true, attributes: true, attributeFilter: ['src','style'] });
-      }
+    function setupWinObserver() {
+      // The proto-level drawImage hook fires scatter sound as each reel locks.
+      // Here we just watch for spin end to trigger chests if 3+ scatters landed.
+      const trySetup = setInterval(() => {
+        const container = document.getElementById('slot-machine');
+        if (!container) return;
+        const spinBtn = container.querySelector('.smg-spin');
+        if (!spinBtn) return;
+        clearInterval(trySetup);
+
+        let wasActive = false;
+        const checkActive = () => {
+          const btnImg = spinBtn.querySelector('img');
+          return !!(spinBtn.disabled ||
+            (btnImg && btnImg.src && (btnImg.src.includes('active'))));
+        };
+
+        const obs = new MutationObserver(() => {
+          const isActive = checkActive();
+          if (!wasActive && isActive) {
+            wasActive = true;
+            if (window.__plResetScatterCount) window.__plResetScatterCount();
+          } else if (wasActive && !isActive) {
+            wasActive = false;
+            setTimeout(() => {
+              if (_scatterWinActive) return;
+              // Read scatter count from label observer; fallback: parse label_win text directly
+              let count = window.__scatterCountForChests || 0;
+              if (!count) {
+                const container = document.getElementById('slot-machine');
+                const lbl = container && container.querySelector('[class*="label_win"]');
+                const text = lbl ? (lbl.textContent || '').toLowerCase() : '';
+                const m = text.match(/(\d+)\s*scatter/i);
+                count = m ? parseInt(m[1]) : 0;
+              }
+              window.__scatterCountForChests = 0; // reset
+              if (count >= 3) {
+                _scatterWinActive = true;
+                setTimeout(() => { _scatterWinActive = false; triggerChestOverlay(count); }, 800);
+              }
+            }, 500);
+          }
+        });
+
+        obs.observe(spinBtn, { attributes: true, subtree: true, attributeFilter: ['disabled', 'class', 'src'] });
+      }, 300);
     }
 
     // ---- Sounds ----
@@ -614,12 +606,17 @@
       if(_chestsOpened >= _scatterCount) {
         setTimeout(() => {
           if(_bonusTriggered) {
-            closeChestAndStartBonus(); // fireworks keep playing into bonus overlay
+            // Show CONTINUE button -- let player see all open chests before proceeding
+            document.getElementById('chestContinueBtn').style.display = 'inline-block';
+            document.getElementById('chestContinueBtn').textContent = '▶ START BONUS ROUND';
+            document.getElementById('chestContinueBtn').onclick = () => closeChestAndStartBonus();
           } else {
             document.getElementById('chestMessage').textContent = 'No bonus this time. Better luck next scatter!';
             document.getElementById('chestContinueBtn').style.display = 'inline-block';
+            document.getElementById('chestContinueBtn').textContent = 'CONTINUE';
+            document.getElementById('chestContinueBtn').onclick = () => closeChestOverlay();
           }
-        }, _bonusTriggered ? 2000 : 800);
+        }, 800);
       }
     }
 
@@ -746,7 +743,7 @@
     // ---- Init ----
     window.closeChestOverlay = closeChestOverlay;
 
-    // Test hotkey: press T to trigger chest overlay with 3 scatters
+    // Test hotkey: press T/Y/U to trigger chest overlay with 3/4/5 scatters
     document.addEventListener('keydown', (e) => {
       if(e.key === 't' || e.key === 'T') triggerChestOverlay(3);
       if(e.key === 'y' || e.key === 'Y') triggerChestOverlay(4);
@@ -756,7 +753,6 @@
     document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         setupWinObserver();
-        hookSpinButton();
       }, 2000);
     });
 
