@@ -248,10 +248,9 @@
 <body>
   <div id="slot-machine"></div>
 
-  <!-- SCATTER SOUND: fires when a reel STOPS and that reel has a scatter in its final position.
-       Phase 1: marks scatter pre-rendered canvases via WeakSet during engine load.
-       Phase 2: on stop.wav, waits 2 frames (~33ms) for the stopped frame to render,
-       then does a ONE-SHOT check for scatter canvas at that exact reel column. -->
+  <!-- SCATTER SOUND: fires the instant scatter's Y position stabilizes on a reel.
+       Tracks Y of scatter canvas draws per column each frame.
+       When 3 consecutive draws land within 2px of each other = reel snapped = play sound. -->
   <script>
   (function() {
     window.__plGetScatterCount = function() { return 0; };
@@ -260,16 +259,12 @@
     const origDraw   = CanvasRenderingContext2D.prototype.drawImage;
     const scatterSet = new WeakSet();
 
-    // Internal canvas coords: x = 245 + 228*reelIdx - Math.round(img.width/2)
-    // For 200px-wide frames: x = 145 + 228*idx
     const REEL_X = [145, 373, 601, 829, 1057];
-    const X_TOL  = 30;  // tight: only exact reel position, not neighbours
+    const X_TOL  = 30;
 
-    // Per-reel check: after stop, did scatter draw here in one frame?
-    let checkReel   = -1;   // reel index we're currently checking (-1 = idle)
-    let reelCounter = 0;
-    let spinActive  = false;
-    let firedReels  = new Set(); // reels that already played sound this spin
+    let firedReels = new Set();
+    let spinActive = false;
+    const yBuf     = [[], [], [], [], []];
 
     function playScatterSound() {
       const snd = document.getElementById('sndScatter');
@@ -278,23 +273,30 @@
       snd.play().catch(() => {});
     }
 
-    CanvasRenderingContext2D.prototype.drawImage = function(img, x) {
+    CanvasRenderingContext2D.prototype.drawImage = function(img, x, y) {
       // Phase 1: tag scatter canvases when scatter.png is composited during load
       if (img instanceof HTMLImageElement &&
           typeof img.src === 'string' && img.src.includes('scatter.png')) {
         scatterSet.add(this.canvas);
       }
 
-      // Phase 2: one-shot check after reel stop
-      if (checkReel >= 0 &&
+      // Phase 2: track scatter draws per reel and fire when Y stabilizes (reel snapped)
+      if (spinActive &&
           img instanceof HTMLCanvasElement &&
           scatterSet.has(img) &&
-          typeof x === 'number' &&
-          Math.abs(x - REEL_X[checkReel]) < X_TOL &&
-          !firedReels.has(checkReel)) {
-        firedReels.add(checkReel);
-        checkReel = -1;
-        playScatterSound();
+          typeof x === 'number' && typeof y === 'number') {
+        for (let i = 0; i < 5; i++) {
+          if (Math.abs(x - REEL_X[i]) < X_TOL && !firedReels.has(i)) {
+            const buf = yBuf[i];
+            buf.push(Math.round(y));
+            if (buf.length > 3) buf.shift();
+            if (buf.length === 3 && (Math.max(...buf) - Math.min(...buf)) <= 2) {
+              firedReels.add(i);
+              playScatterSound();
+            }
+            break;
+          }
+        }
       }
 
       return origDraw.apply(this, arguments);
@@ -302,26 +304,12 @@
 
     function hookCreateJS() {
       if (!window.createjs || !window.createjs.Sound) return false;
-
       const origPlay = createjs.Sound.play;
-      createjs.Sound.play = function(id, props) {
-        if (typeof id === 'string') {
-          // New spin starting -- reset reel counter
-          if (id.endsWith('spin.wav') || id.endsWith('start.wav')) {
-            reelCounter = 0;
-            spinActive  = true;
-            firedReels  = new Set();
-          }
-          // Each reel stop fires stop.wav exactly once, in order 0-4
-          if (id.endsWith('stop.wav') && spinActive) {
-            const reelIdx = reelCounter % 5;
-            reelCounter++;
-            if (reelCounter >= 5) spinActive = false;
-
-            // Open check window immediately on stop.wav -- no delay
-            checkReel = reelIdx;
-            setTimeout(() => { if (checkReel === reelIdx) checkReel = -1; }, 80);
-          }
+      createjs.Sound.play = function(id) {
+        if (typeof id === 'string' && (id.endsWith('spin.wav') || id.endsWith('start.wav'))) {
+          firedReels = new Set();
+          spinActive = true;
+          for (let i = 0; i < 5; i++) yBuf[i].length = 0;
         }
         return origPlay.apply(this, arguments);
       };
