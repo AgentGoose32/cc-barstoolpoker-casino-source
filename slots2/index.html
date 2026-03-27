@@ -1131,11 +1131,18 @@
     // T/Y/U = chest overlay with 3/4/5 scatters
     // W     = go straight to the prize wheel
     document.addEventListener('keydown', (e) => {
-      if(e.key === 't' || e.key === 'T') showOpenChestsBanner(3, () => startBonusRound());
-      if(e.key === 'y' || e.key === 'Y') showOpenChestsBanner(4, () => startBonusRound());
-      if(e.key === 'u' || e.key === 'U') showOpenChestsBanner(5, () => startBonusRound());
-      if(e.key === 'w' || e.key === 'W') startBonusRound();
-    });
+      if(e.key === 't' || e.key === 'T') { _lastWinScatters=3; showOpenChestsBanner(3, () => startBonusRound(3)); }
+      if(e.key === 'y' || e.key === 'Y') { _lastWinScatters=4; showOpenChestsBanner(4, () => startBonusRound(4)); }
+      if(e.key === 'u' || e.key === 'U') { _lastWinScatters=5; showOpenChestsBanner(5, () => startBonusRound(5)); }
+      if(e.key === 'w' || e.key === 'W') startBonusRound(3);
+      if(e.key === 'd' || e.key === 'D') {
+        window._forceScatter = !window._forceScatter;
+        const _toast = document.createElement('div');
+        _toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.9);color:#ffd700;padding:10px 24px;border-radius:8px;font-family:monospace;font-size:15px;z-index:99999;pointer-events:none;border:1px solid #ffd700;';
+        _toast.textContent = window._forceScatter ? 'DEBUG ON: 3 wheels forced every spin' : 'DEBUG OFF: normal mode';
+        document.body.appendChild(_toast);
+        setTimeout(() => _toast.remove(), 2500);
+      }
 
     document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
