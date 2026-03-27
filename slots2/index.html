@@ -993,11 +993,14 @@
     // ---- Init ----
     window.closeChestOverlay = closeChestOverlay;
 
-    // Test hotkey: press T/Y/U to trigger chest overlay with 3/4/5 scatters
+    // Test hotkeys:
+    // T/Y/U = chest overlay with 3/4/5 scatters
+    // W     = go straight to the prize wheel
     document.addEventListener('keydown', (e) => {
       if(e.key === 't' || e.key === 'T') triggerChestOverlay(3);
       if(e.key === 'y' || e.key === 'Y') triggerChestOverlay(4);
       if(e.key === 'u' || e.key === 'U') triggerChestOverlay(5);
+      if(e.key === 'w' || e.key === 'W') startBonusRound();
     });
 
     document.addEventListener('DOMContentLoaded', () => {
