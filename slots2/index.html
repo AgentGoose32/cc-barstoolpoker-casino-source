@@ -556,38 +556,42 @@
           }
         };
       });
+      // Hide scatter row entirely — we replace it with custom images below
       symbols.forEach(function(sym) {
+        const txt = sym.textContent || '';
         const img = sym.querySelector('img');
-        if (img && img.src && img.src.includes('scatter')) {
-          if (sym.querySelector('.scatter-spin-rules')) return;
-
-          sym.style.cssText = 'display:flex;flex-direction:column;align-items:center;' +
-            'justify-content:center;width:100%;margin:0 auto;padding:22px 0;margin-top:-459px;';
-
-          img.style.cssText = 'width:338px;height:338px;display:block;margin:0 auto 14px;';
-
-          const title = sym.querySelector('.smg-paytable-title, [class*="title"], [class*="name"]');
-          if (title) { title.textContent = 'Bonus Wheel'; title.style.cssText = 'font-size:1.2rem;font-weight:bold;text-align:center;color:#ffd700;margin-bottom:8px;'; }
-          sym.querySelectorAll('span,div').forEach(function(el) {
-            if (el.children.length === 0 && el.textContent.trim() === 'Scatter') {
-              el.textContent = 'Bonus Wheel';
-              el.style.cssText = 'font-size:1.2rem;font-weight:bold;color:#ffd700;text-align:center;display:block;';
-            }
-          });
-
-          sym.querySelectorAll('.smg-lines,[class*="lines"],[class*="line-count"]').forEach(function(l) {
-            l.style.display = 'none';
-          });
-
-          const note = document.createElement('div');
-          note.className = 'scatter-spin-rules';
-          note.style.cssText = 'margin-top:10px;text-align:center;';
-          note.innerHTML = '<img src="assets/images/symbols/wheel-rules.png" ' +
-            'style="max-width:100%;width:320px;border-radius:10px;display:block;margin:0 auto;" ' +
-            'alt="Bonus Wheel Rules">';
-          sym.appendChild(note);
+        const hasScatter = (img && img.src && img.src.toLowerCase().includes('scatter')) ||
+                           txt.toLowerCase().includes('scatter');
+        if (hasScatter) {
+          sym.style.display = 'none';
         }
       });
+
+      // Also nuke any engine-rendered scatter entry via brute-force text scan
+      ptInner.querySelectorAll('*').forEach(function(el) {
+        if (el.children.length === 0 && el.textContent.trim() === 'Scatter') {
+          let row = el;
+          for (let i = 0; i < 6; i++) { if (row.parentElement && row.parentElement !== ptInner) row = row.parentElement; else break; }
+          row.style.display = 'none';
+        }
+      });
+
+      // Inject the two bonus images in the center of the paytable
+      if (!document.getElementById('bonusWheelImages')) {
+        const block = document.createElement('div');
+        block.id = 'bonusWheelImages';
+        block.style.cssText = 'width:100%;text-align:center;padding:20px 0;';
+        block.innerHTML =
+          '<img src="assets/bonus/wheel.png" style="width:320px;max-width:90%;border-radius:12px;display:block;margin:0 auto 16px;" alt="Bonus Wheel">' +
+          '<img src="assets/images/symbols/wheel-rules.png" style="width:320px;max-width:90%;border-radius:12px;display:block;margin:0 auto;" alt="Bonus Wheel Rules">';
+        // Insert after the howToWinBanner (first child), before the symbol rows
+        const banner = document.getElementById('howToWinBanner');
+        if (banner && banner.nextSibling) {
+          ptInner.insertBefore(block, banner.nextSibling);
+        } else {
+          ptInner.appendChild(block);
+        }
+      }
     }, 1500);
 
 
