@@ -572,10 +572,70 @@
       if (!document.getElementById('bonusWheelImages')) {
         const block = document.createElement('div');
         block.id = 'bonusWheelImages';
-        block.style.cssText = 'width:100%;text-align:center;padding:20px 0;';
+        // Starting positions (tweak with debugger, then lock here)
+        const PT_IMG1 = { x: 0, y: 0, w: 320 };
+        const PT_IMG2 = { x: 0, y: 16, w: 320 };
+
+        block.style.cssText = 'width:100%;position:relative;text-align:center;padding:20px 0;';
         block.innerHTML =
-          '<img src="assets/bonus/wheel.png" style="width:320px;max-width:90%;border-radius:12px;display:block;margin:0 auto 16px;" alt="Bonus Wheel">' +
-          '<img src="assets/images/symbols/wheel-rules.png" style="width:320px;max-width:90%;border-radius:12px;display:block;margin:0 auto;" alt="Bonus Wheel Rules">';
+          '<div id="ptImg1Wrap" style="display:inline-block;position:relative;margin-bottom:' + PT_IMG2.y + 'px;margin-left:' + PT_IMG1.x + 'px;">' +
+            '<img id="ptImg1" src="assets/bonus/pt-image1.png" style="width:' + PT_IMG1.w + 'px;max-width:90%;border-radius:12px;display:block;" alt="Paytable Image 1">' +
+          '</div>' +
+          '<div id="ptImg2Wrap" style="display:block;position:relative;margin-left:' + PT_IMG2.x + 'px;">' +
+            '<img id="ptImg2" src="assets/bonus/pt-image2.png" style="width:' + PT_IMG2.w + 'px;max-width:90%;border-radius:12px;display:block;margin:0 auto;" alt="Paytable Image 2">' +
+          '</div>' +
+          // Debugger panel
+          '<div id="ptImgDebug" style="position:fixed;bottom:10px;right:10px;background:rgba(0,0,0,0.85);border:1px solid #ffd700;border-radius:10px;padding:12px 16px;z-index:99999;font-family:monospace;font-size:12px;color:#fff;min-width:240px;">' +
+            '<div style="color:#ffd700;font-weight:bold;margin-bottom:8px;text-align:center;">📐 Paytable Image Debugger</div>' +
+            '<div style="margin-bottom:6px;"><b>Image 1</b></div>' +
+            'X: <input id="dbg1x" type="range" min="-300" max="300" value="' + PT_IMG1.x + '" style="width:120px"> <span id="dbg1xv">' + PT_IMG1.x + '</span><br>' +
+            'Y: <input id="dbg1y" type="range" min="-200" max="200" value="' + PT_IMG1.y + '" style="width:120px"> <span id="dbg1yv">' + PT_IMG1.y + '</span><br>' +
+            'W: <input id="dbg1w" type="range" min="50" max="600" value="' + PT_IMG1.w + '" style="width:120px"> <span id="dbg1wv">' + PT_IMG1.w + '</span><br>' +
+            '<div style="margin-top:8px;margin-bottom:6px;"><b>Image 2</b></div>' +
+            'X: <input id="dbg2x" type="range" min="-300" max="300" value="' + PT_IMG2.x + '" style="width:120px"> <span id="dbg2xv">' + PT_IMG2.x + '</span><br>' +
+            'Y: <input id="dbg2y" type="range" min="-200" max="200" value="' + PT_IMG2.y + '" style="width:120px"> <span id="dbg2yv">' + PT_IMG2.y + '</span><br>' +
+            'W: <input id="dbg2w" type="range" min="50" max="600" value="' + PT_IMG2.w + '" style="width:120px"> <span id="dbg2wv">' + PT_IMG2.w + '</span><br>' +
+            '<div style="margin-top:10px;text-align:center;font-size:10px;color:#aaa;">Press <b>C</b> to copy locked values</div>' +
+          '</div>';
+
+        // Wire up debugger sliders
+        setTimeout(function() {
+          function syncPtImgs() {
+            var x1 = +document.getElementById('dbg1x').value;
+            var y1 = +document.getElementById('dbg1y').value;
+            var w1 = +document.getElementById('dbg1w').value;
+            var x2 = +document.getElementById('dbg2x').value;
+            var y2 = +document.getElementById('dbg2y').value;
+            var w2 = +document.getElementById('dbg2w').value;
+            document.getElementById('dbg1xv').textContent = x1;
+            document.getElementById('dbg1yv').textContent = y1;
+            document.getElementById('dbg1wv').textContent = w1;
+            document.getElementById('dbg2xv').textContent = x2;
+            document.getElementById('dbg2yv').textContent = y2;
+            document.getElementById('dbg2wv').textContent = w2;
+            var w1el = document.getElementById('ptImg1Wrap');
+            var w2el = document.getElementById('ptImg2Wrap');
+            var i1   = document.getElementById('ptImg1');
+            var i2   = document.getElementById('ptImg2');
+            if (w1el) { w1el.style.marginLeft = x1 + 'px'; w1el.style.marginTop = y1 + 'px'; }
+            if (w2el) { w2el.style.marginLeft = x2 + 'px'; w2el.style.marginTop = y2 + 'px'; }
+            if (i1)   { i1.style.width = w1 + 'px'; }
+            if (i2)   { i2.style.width = w2 + 'px'; i2.style.margin = '0 auto'; }
+          }
+          ['dbg1x','dbg1y','dbg1w','dbg2x','dbg2y','dbg2w'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.addEventListener('input', syncPtImgs);
+          });
+          document.addEventListener('keydown', function(e) {
+            if (e.key === 'C' || e.key === 'c') {
+              var x1=document.getElementById('dbg1x').value, y1=document.getElementById('dbg1y').value, w1=document.getElementById('dbg1w').value;
+              var x2=document.getElementById('dbg2x').value, y2=document.getElementById('dbg2y').value, w2=document.getElementById('dbg2w').value;
+              var txt = 'PT_IMG1: { x:'+x1+', y:'+y1+', w:'+w1+' }\nPT_IMG2: { x:'+x2+', y:'+y2+', w:'+w2+' }';
+              navigator.clipboard.writeText(txt).then(function(){ alert('Copied!\n\n'+txt); });
+            }
+          });
+        }, 200);
+
         // Insert after the howToWinBanner (first child), before the symbol rows
         const banner = document.getElementById('howToWinBanner');
         if (banner && banner.nextSibling) {
