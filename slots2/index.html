@@ -626,7 +626,13 @@
             'W: <input id="dbg2w" type="range" min="50" max="700" value="320" style="width:110px"> <span id="dbg2wv">320</span><br>' +
             '<div style="margin-top:8px;text-align:center;font-size:10px;color:#aaa;">Press <b>C</b> to copy values</div>' +
           '</div>';
-        ptInner.appendChild(block);
+        // Insert in the middle of the symbol list (after 4th symbol row)
+        const symRows = ptInner.querySelectorAll('[class*="paytable-symbol"]');
+        if (symRows.length >= 4 && symRows[3].nextSibling) {
+          ptInner.insertBefore(block, symRows[3].nextSibling);
+        } else {
+          ptInner.appendChild(block);
+        }
 
         setTimeout(function() {
           function syncPtImgs() {
