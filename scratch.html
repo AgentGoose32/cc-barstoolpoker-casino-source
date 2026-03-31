@@ -93,9 +93,8 @@
       font-family: Georgia, serif;
       font-weight: bold;
       line-height: 1;
-      /* fluid size: scales with the cell width, capped so it never overflows */
-      font-size: clamp(10px, 9cqw, 48px);
       white-space: nowrap;
+      /* size set dynamically by fitPrizeText() */
     }
 
     /* DEBUG MODE */
@@ -564,6 +563,7 @@
       cell.appendChild(canvas);
 
       layer.appendChild(cell);
+      fitPrizeText(cell);
 
       initCanvas(canvas, def, r, i);
     });
@@ -596,6 +596,22 @@
     canvas.addEventListener('touchstart', (e) => { e.preventDefault(); if (!ticketActive || cellRevealed[i]) return; isScratching = true; activeCellIdx = i; scratch(e.touches[0], canvas, i); }, { passive: false });
     canvas.addEventListener('touchmove',  (e) => { e.preventDefault(); if (!isScratching || activeCellIdx !== i || !ticketActive || cellRevealed[i]) return; scratch(e.touches[0], canvas, i); }, { passive: false });
     canvas.addEventListener('touchend',   () => { isScratching = false; activeCellIdx = -1; });
+  }
+
+  // Fit prize text to fill the cell as large as possible
+  function fitPrizeText(cell) {
+    const span = cell.querySelector('.prize-pct-text');
+    if (!span) return;
+    const maxW = cell.offsetWidth  * 0.92;
+    const maxH = cell.offsetHeight * 0.88;
+    let lo = 8, hi = 300, mid;
+    for (let i = 0; i < 16; i++) {
+      mid = (lo + hi) / 2;
+      span.style.fontSize = mid + 'px';
+      if (span.offsetWidth <= maxW && span.offsetHeight <= maxH) lo = mid;
+      else hi = mid;
+    }
+    span.style.fontSize = lo + 'px';
   }
 
   // Preload cursor image for use as scratch brush
