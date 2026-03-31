@@ -80,6 +80,15 @@ const ZONES = [
     type: 'game',
     url: './craps.html'
   },
+  // Slots - needs placement on new background
+  {
+    id: 'slots',
+    label: 'Slots',
+    x: 450, y: 700,
+    w: 80, h: 60,
+    type: 'game',
+    url: './slots2/'
+  },
   // Bar - full top width
   {
     id: 'bar',
@@ -454,7 +463,8 @@ class CasinoScene extends Phaser.Scene {
       uth:        { fill: 0x0088ff, alpha: 0.25, stroke: 0x0088ff },  // blue
       kong:       { fill: 0xff8800, alpha: 0.25, stroke: 0xff8800 },  // orange
       bar:        { fill: 0xffff00, alpha: 0.15, stroke: 0xffff00 },  // yellow
-      craps:      { fill: 0xff00ff, alpha: 0.25, stroke: 0xff00ff }   // magenta
+      craps:      { fill: 0xff00ff, alpha: 0.25, stroke: 0xff00ff },  // magenta
+      slots:      { fill: 0x00ffff, alpha: 0.25, stroke: 0x00ffff }   // cyan
     };
 
     this.debugGraphics = [];
@@ -708,49 +718,74 @@ class CasinoScene extends Phaser.Scene {
   }
 
   createDebugPanel() {
-    const panelW = 280;
-    const panelH = 380;
-    const panelX = VIEW_W - panelW - 8;
+    const panelW = 320;
+    const panelH = 420;
+    const panelX = 8;
     const panelY = VIEW_H - panelH - 8;
 
     // Panel background
-    this.debugPanelBg = this.add.rectangle(panelX + panelW / 2, panelY + panelH / 2, panelW, panelH, 0x000000, 0.85);
-    this.debugPanelBg.setStrokeStyle(1, 0x00ff00, 0.6);
+    this.debugPanelBg = this.add.rectangle(panelX + panelW / 2, panelY + panelH / 2, panelW, panelH, 0x000000, 0.9);
+    this.debugPanelBg.setStrokeStyle(2, 0x00ff00, 0.8);
     this.debugPanelBg.setDepth(55);
     this.debugPanelBg.setScrollFactor(0);
     this.debugPanelBg.setVisible(false);
 
-    // Panel text
-    this.debugPanelText = this.add.text(panelX + 8, panelY + 6, '', {
-      fontSize: '10px',
+    // Header
+    this.debugPanelHeader = this.add.text(panelX + panelW / 2, panelY + 8, '⬛ HITBOX DEBUGGER', {
+      fontSize: '11px',
       fontFamily: 'monospace',
       color: '#00ff00',
-      lineSpacing: 4
+      align: 'center'
+    }).setOrigin(0.5, 0).setDepth(56).setScrollFactor(0).setVisible(false);
+
+    // Panel text
+    this.debugPanelText = this.add.text(panelX + 8, panelY + 26, '', {
+      fontSize: '10px',
+      fontFamily: 'monospace',
+      color: '#ffffff',
+      lineSpacing: 5
     }).setDepth(56).setScrollFactor(0).setVisible(false);
 
-    // COPY button
-    this.debugCopyBtn = this.add.text(panelX + panelW - 54, panelY + panelH - 22, ' COPY ', {
-      fontSize: '10px',
+    // COPY ZONES button
+    this.debugCopyBtn = this.add.text(panelX + 8, panelY + panelH - 26, ' COPY ZONES ', {
+      fontSize: '11px',
       fontFamily: 'monospace',
       color: '#000000',
       backgroundColor: '#00ff00',
-      padding: { x: 4, y: 2 }
+      padding: { x: 6, y: 3 }
     }).setDepth(56).setScrollFactor(0).setVisible(false);
     this.debugCopyBtn.setInteractive({ cursor: 'pointer' });
     this.debugCopyBtn.on('pointerdown', () => {
+      const lines = [];
+      lines.push('// ZONE POSITIONS - paste into casino.js ZONES array');
+      for (const zone of ZONES) {
+        lines.push(`  { id:'${zone.id}', x:${zone.x}, y:${zone.y}, w:${zone.w}, h:${zone.h} },`);
+      }
+      navigator.clipboard.writeText(lines.join('\n')).then(() => {
+        this.debugCopyBtn.setText(' COPIED! ');
+        this.time.delayedCall(1500, () => this.debugCopyBtn.setText(' COPY ZONES '));
+      });
+    });
+
+    // COPY ALL button (zones + torches + candles)
+    this.debugCopyAllBtn = this.add.text(panelX + 130, panelY + panelH - 26, ' COPY ALL ', {
+      fontSize: '11px',
+      fontFamily: 'monospace',
+      color: '#000000',
+      backgroundColor: '#ffff00',
+      padding: { x: 6, y: 3 }
+    }).setDepth(56).setScrollFactor(0).setVisible(false);
+    this.debugCopyAllBtn.setInteractive({ cursor: 'pointer' });
+    this.debugCopyAllBtn.on('pointerdown', () => {
       const data = {};
       for (const zone of ZONES) {
         data[zone.id] = { x: zone.x, y: zone.y, w: zone.w, h: zone.h };
       }
-      data.torches = TORCH_POSITIONS.map((p, i) => ({
-        id: `torch${i}`, x: p.x, y: p.y, scale: p.scale
-      }));
-      data.candles = CANDLE_POSITIONS.map((p, i) => ({
-        id: `candle${i}`, x: p.x, y: p.y, scale: p.scale
-      }));
+      data.torches = TORCH_POSITIONS.map((p, i) => ({ id: `torch${i}`, x: p.x, y: p.y, scale: p.scale }));
+      data.candles = CANDLE_POSITIONS.map((p, i) => ({ id: `candle${i}`, x: p.x, y: p.y, scale: p.scale }));
       navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
-        this.debugCopyBtn.setText('COPIED');
-        this.time.delayedCall(1000, () => this.debugCopyBtn.setText(' COPY '));
+        this.debugCopyAllBtn.setText(' COPIED! ');
+        this.time.delayedCall(1500, () => this.debugCopyAllBtn.setText(' COPY ALL '));
       });
     });
 
@@ -759,21 +794,21 @@ class CasinoScene extends Phaser.Scene {
 
   updateDebugPanelText() {
     if (!this.debugPanelText) return;
-    const maxIdLen = Math.max(...ZONES.map(z => z.id.length));
-    const lines = ZONES.map(z => {
-      const padded = z.id.padEnd(maxIdLen);
-      return `${padded}: x=${String(z.x).padStart(3)} y=${String(z.y).padStart(3)} w=${String(z.w).padStart(3)} h=${String(z.h).padStart(3)}`;
-    });
-    lines.push('--- TORCHES ---');
-    for (let i = 0; i < TORCH_POSITIONS.length; i++) {
-      const p = TORCH_POSITIONS[i];
-      lines.push(`torch${i}: x=${String(p.x).padStart(3)} y=${String(p.y).padStart(3)} scale=${p.scale}`);
+
+    const zoneColors = {
+      roulette:   '🟩', blackjack1: '🟥', uth: '🟦',
+      kong:       '🟧', craps:      '🟪', slots: '🟦',
+      bar:        '🟨'
+    };
+
+    const lines = [];
+    lines.push('GAME ZONES (drag box to move, drag corner to resize):');
+    lines.push('');
+    for (const z of ZONES) {
+      const icon = zoneColors[z.id] || '⬜';
+      lines.push(`${icon} ${z.id.padEnd(10)} x:${String(z.x).padStart(3)} y:${String(z.y).padStart(3)}  w:${String(z.w).padStart(3)} h:${String(z.h).padStart(3)}`);
     }
-    lines.push('--- CANDLES ---');
-    for (let i = 0; i < CANDLE_POSITIONS.length; i++) {
-      const p = CANDLE_POSITIONS[i];
-      lines.push(`candle${i}: x=${String(p.x).padStart(3)} y=${String(p.y).padStart(3)} scale=${p.scale}`);
-    }
+
     this.debugPanelText.setText(lines.join('\n'));
   }
 
@@ -790,8 +825,10 @@ class CasinoScene extends Phaser.Scene {
     }
     this.debugIndicator.setVisible(debugMode);
     this.debugPanelBg.setVisible(debugMode);
+    this.debugPanelHeader.setVisible(debugMode);
     this.debugPanelText.setVisible(debugMode);
     this.debugCopyBtn.setVisible(debugMode);
+    this.debugCopyAllBtn.setVisible(debugMode);
 
     // Toggle torch debug: interactive/draggable + labels
     for (let i = 0; i < this.torches.length; i++) {
