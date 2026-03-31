@@ -89,6 +89,15 @@ const ZONES = [
     type: 'game',
     url: './slots2/'
   },
+  // Scratch tickets - needs placement
+  {
+    id: 'scratch',
+    label: 'Lucky Scratch',
+    x: 450, y: 750,
+    w: 80, h: 60,
+    type: 'game',
+    url: './scratch.html'
+  },
   // Bar - full top width
   {
     id: 'bar',
@@ -464,7 +473,8 @@ class CasinoScene extends Phaser.Scene {
       kong:       { fill: 0xff8800, alpha: 0.25, stroke: 0xff8800 },  // orange
       bar:        { fill: 0xffff00, alpha: 0.15, stroke: 0xffff00 },  // yellow
       craps:      { fill: 0xff00ff, alpha: 0.25, stroke: 0xff00ff },  // magenta
-      slots:      { fill: 0x00ffff, alpha: 0.25, stroke: 0x00ffff }   // cyan
+      slots:      { fill: 0x00ffff, alpha: 0.25, stroke: 0x00ffff },  // cyan
+      scratch:    { fill: 0xff66ff, alpha: 0.25, stroke: 0xff66ff }   // pink
     };
 
     this.debugGraphics = [];

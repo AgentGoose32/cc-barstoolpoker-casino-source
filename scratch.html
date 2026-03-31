@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scratch Tickets - HoH Casino</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a0a00;
+      color: #ffd700;
+      font-family: Georgia, serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      user-select: none;
+    }
+
+    h1 {
+      font-size: 22px;
+      letter-spacing: 3px;
+      color: #c9a84c;
+      text-shadow: 0 0 12px #c9a84c88;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: #888;
+      letter-spacing: 2px;
+      margin-bottom: 18px;
+    }
+
+    .hud {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid #c9a84c44;
+      border-radius: 8px;
+      padding: 10px 24px;
+      margin-bottom: 18px;
+      font-size: 14px;
+    }
+
+    .hud-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .hud-label { font-size: 10px; color: #888; letter-spacing: 1px; }
+    .hud-value { font-size: 18px; color: #ffd700; font-weight: bold; }
+    .hud-value.green { color: #00ff88; }
+    .hud-value.red { color: #ff4444; }
+
+    /* Ticket container */
+    .ticket {
+      background: linear-gradient(135deg, #2a1500 0%, #1a0a00 50%, #2a1500 100%);
+      border: 3px solid #c9a84c;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 0 30px #c9a84c44, inset 0 0 20px rgba(0,0,0,0.5);
+      position: relative;
+      max-width: 420px;
+      width: 100%;
+    }
+
+    .ticket-header {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .ticket-title {
+      font-size: 16px;
+      letter-spacing: 4px;
+      color: #c9a84c;
+    }
+
+    .ticket-cost {
+      font-size: 11px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .cell {
+      position: relative;
+      aspect-ratio: 1 / 0.7;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: crosshair;
+      border: 1px solid #c9a84c44;
+    }
+
+    .cell-prize {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0d0600;
+      font-size: 15px;
+      font-weight: bold;
+      gap: 2px;
+      transition: background 0.3s;
+    }
+
+    .cell-prize.winner {
+      background: #1a1200;
+      box-shadow: inset 0 0 12px #ffd70066;
+    }
+
+    .cell-prize .prize-label {
+      font-size: 9px;
+      color: #888;
+      letter-spacing: 1px;
+    }
+
+    .cell canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    .cell.revealed canvas {
+      display: none;
+    }
+
+    /* Result banner */
+    .result-banner {
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      transition: all 0.4s;
+    }
+
+    .result-banner.win {
+      background: rgba(0,255,100,0.15);
+      border: 1px solid #00ff88;
+      color: #00ff88;
+      text-shadow: 0 0 12px #00ff8888;
+    }
+
+    .result-banner.lose {
+      background: rgba(255,50,50,0.1);
+      border: 1px solid #ff444488;
+      color: #ff6666;
+    }
+
+    .result-banner.idle {
+      background: transparent;
+      border: 1px solid #c9a84c22;
+      color: #c9a84c66;
+      font-size: 12px;
+      letter-spacing: 3px;
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-family: Georgia, serif;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+
+    .btn-buy {
+      background: linear-gradient(135deg, #c9a84c, #ffd700);
+      color: #1a0a00;
+    }
+
+    .btn-buy:hover { transform: scale(1.04); box-shadow: 0 0 14px #ffd70066; }
+    .btn-buy:disabled { background: #444; color: #888; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-reveal {
+      background: rgba(255,255,255,0.08);
+      color: #ffd700;
+      border: 1px solid #c9a84c44;
+    }
+
+    .btn-reveal:hover { background: rgba(255,255,255,0.14); }
+    .btn-reveal:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* Win particles */
+    @keyframes floatUp {
+      0%   { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-80px) scale(1.4); opacity: 0; }
+    }
+
+    .particle {
+      position: fixed;
+      pointer-events: none;
+      font-size: 20px;
+      animation: floatUp 1.2s ease-out forwards;
+      z-index: 999;
+    }
+
+    /* Win highlight pulse */
+    @keyframes pulse {
+      0%,100% { box-shadow: inset 0 0 12px #ffd70066; }
+      50%      { box-shadow: inset 0 0 24px #ffd700cc; }
+    }
+    .cell-prize.winner.pulse { animation: pulse 0.8s ease-in-out infinite; }
+
+    .paytable {
+      margin-top: 16px;
+      font-size: 10px;
+      color: #888;
+      text-align: center;
+      line-height: 1.8;
+      letter-spacing: 1px;
+    }
+
+    .paytable span { color: #c9a84c; }
+  </style>
+</head>
+<body>
+
+<h1>LUCKY SCRATCH</h1>
+<div class="subtitle">SCRATCH TO REVEAL YOUR PRIZES</div>
+
+<div class="hud">
+  <div class="hud-item">
+    <div class="hud-label">BALANCE</div>
+    <div class="hud-value" id="balanceDisplay">100,000g</div>
+  </div>
+  <div class="hud-item">
+    <div class="hud-label">TICKET COST</div>
+    <div class="hud-value" style="color:#c9a84c">500g</div>
+  </div>
+  <div class="hud-item">
+    <div class="hud-label">LAST WIN</div>
+    <div class="hud-value green" id="lastWinDisplay">---</div>
+  </div>
+</div>
+
+<div class="ticket">
+  <div class="ticket-header">
+    <div class="ticket-title">⚜ HEROES OF HOLDEM ⚜</div>
+    <div class="ticket-cost">Match 3 identical prizes to win • Ticket: 500g</div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="result-banner idle" id="resultBanner">SCRATCH YOUR TICKET</div>
+
+  <div class="btn-row">
+    <button class="btn btn-reveal" id="revealAllBtn" onclick="revealAll()" disabled>Reveal All</button>
+    <button class="btn btn-buy" id="buyBtn" onclick="buyTicket()">Buy Ticket (500g)</button>
+  </div>
+
+  <div class="paytable">
+    Match 3 of: <span>100g</span> · <span>250g</span> · <span>500g</span> · <span>1,000g</span> ·
+    <span>2,500g</span> · <span>5,000g</span> · <span>10,000g</span> · <span>JACKPOT 50,000g</span>
+  </div>
+</div>
+
+<script>
+  const ROWS = 4;
+  const COLS = 3;
+  const CELLS = ROWS * COLS; // 12
+  const TICKET_COST = 500;
+  const SCRATCH_THRESHOLD = 0.45; // auto-reveal when 45% scratched
+
+  // Prize table: [value, label, weight, color]
+  const PRIZES = [
+    { value: 100,    label: '100g',       weight: 30, color: '#aaaaaa' },
+    { value: 250,    label: '250g',       weight: 25, color: '#cccccc' },
+    { value: 500,    label: '500g',       weight: 18, color: '#ffd700' },
+    { value: 1000,   label: '1,000g',     weight: 12, color: '#ffd700' },
+    { value: 2500,   label: '2,500g',     weight:  8, color: '#00ccff' },
+    { value: 5000,   label: '5,000g',     weight:  4, color: '#00ccff' },
+    { value: 10000,  label: '10,000g',    weight:  2, color: '#ff8800' },
+    { value: 50000,  label: 'JACKPOT',    weight:  1, color: '#ff0066' },
+  ];
+
+  // House edge: guarantee win rate ~30%, average payout ~0.85x
+  // One guaranteed matching triple per ~3.3 tickets on average
+
+  let balance = 100000;
+  let ticketActive = false;
+  let ticketValues = [];
+  let cellRevealed = [];
+  let allRevealed = false;
+  let isScratching = false;
+  let activeCellIndex = -1;
+
+  function fmt(n) {
+    return n.toLocaleString() + 'g';
+  }
+
+  function updateHUD() {
+    document.getElementById('balanceDisplay').textContent = fmt(balance);
+  }
+
+  function weightedRandom() {
+    const total = PRIZES.reduce((s, p) => s + p.weight, 0);
+    let r = Math.random() * total;
+    for (const p of PRIZES) {
+      r -= p.weight;
+      if (r <= 0) return p;
+    }
+    return PRIZES[0];
+  }
+
+  function generateTicket() {
+    // ~30% chance: force a winning triple
+    const hasWin = Math.random() < 0.30;
+    const values = [];
+
+    if (hasWin) {
+      // Pick a winning prize (weighted toward lower values)
+      const winPrize = weightedRandom();
+      // Place 3 copies at random positions
+      const positions = [];
+      while (positions.length < 3) {
+        const p = Math.floor(Math.random() * CELLS);
+        if (!positions.includes(p)) positions.push(p);
+      }
+      for (let i = 0; i < CELLS; i++) {
+        if (positions.includes(i)) {
+          values.push(winPrize);
+        } else {
+          // Fill rest - avoid accidentally creating another triple
+          let pick;
+          let attempts = 0;
+          do {
+            pick = weightedRandom();
+            attempts++;
+          } while (attempts < 10 && pick.value === winPrize.value);
+          values.push(pick);
+        }
+      }
+    } else {
+      // Losing ticket - no triple (allow pairs)
+      for (let i = 0; i < CELLS; i++) {
+        values.push(weightedRandom());
+      }
+      // Verify no triple sneaked in; if so, swap one
+      const counts = {};
+      for (const v of values) counts[v.value] = (counts[v.value] || 0) + 1;
+      for (const [val, cnt] of Object.entries(counts)) {
+        if (cnt >= 3) {
+          // Find a different prize not forming a triple and replace one instance
+          for (let i = 0; i < values.length; i++) {
+            if (values[i].value == val) {
+              let replacement;
+              do { replacement = weightedRandom(); } while (replacement.value == val);
+              values[i] = replacement;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    return values;
+  }
+
+  function findWins(values) {
+    const counts = {};
+    for (const v of values) {
+      counts[v.value] = (counts[v.value] || 0) + 1;
+    }
+    const winners = [];
+    for (const [val, cnt] of Object.entries(counts)) {
+      if (cnt >= 3) winners.push(parseInt(val));
+    }
+    return winners;
+  }
+
+  function buildGrid() {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+
+    for (let i = 0; i < CELLS; i++) {
+      const prize = ticketValues[i];
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.id = `cell-${i}`;
+
+      // Prize layer (behind scratch)
+      const prizeDiv = document.createElement('div');
+      prizeDiv.className = 'cell-prize';
+      prizeDiv.id = `prize-${i}`;
+      prizeDiv.innerHTML = `
+        <div style="color:${prize.color}; font-size:16px; font-weight:bold;">${prize.label}</div>
+        <div class="prize-label">PRIZE</div>
+      `;
+      cell.appendChild(prizeDiv);
+
+      // Scratch canvas
+      const canvas = document.createElement('canvas');
+      cell.appendChild(canvas);
+      initScratchCanvas(canvas, i);
+
+      grid.appendChild(cell);
+    }
+  }
+
+  function initScratchCanvas(canvas, cellIndex) {
+    // Size canvas to match cell after layout
+    requestAnimationFrame(() => {
+      const cell = document.getElementById(`cell-${cellIndex}`);
+      const w = cell.offsetWidth;
+      const h = cell.offsetHeight;
+      canvas.width = w;
+      canvas.height = h;
+
+      const ctx = canvas.getContext('2d');
+      // Scratch layer - dark gold with texture
+      ctx.fillStyle = '#3a2800';
+      ctx.fillRect(0, 0, w, h);
+
+      // Add a subtle pattern
+      ctx.fillStyle = 'rgba(201,168,76,0.15)';
+      for (let y = 0; y < h; y += 6) {
+        for (let x = (y % 12 === 0 ? 0 : 3); x < w; x += 6) {
+          ctx.fillRect(x, y, 2, 2);
+        }
+      }
+
+      // Label
+      ctx.fillStyle = 'rgba(201,168,76,0.6)';
+      ctx.font = `bold ${Math.floor(h * 0.2)}px Georgia`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('SCRATCH', w / 2, h / 2);
+
+      canvas._scratched = 0;
+      canvas._totalPixels = w * h;
+
+      // Events
+      canvas.addEventListener('mousedown', (e) => startScratch(e, cellIndex));
+      canvas.addEventListener('mousemove', (e) => doScratch(e, cellIndex));
+      canvas.addEventListener('mouseup', () => { isScratching = false; activeCellIndex = -1; });
+      canvas.addEventListener('mouseleave', () => { isScratching = false; activeCellIndex = -1; });
+
+      canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startScratch(e.touches[0], cellIndex); }, { passive: false });
+      canvas.addEventListener('touchmove', (e) => { e.preventDefault(); doScratch(e.touches[0], cellIndex); }, { passive: false });
+      canvas.addEventListener('touchend', () => { isScratching = false; activeCellIndex = -1; });
+    });
+  }
+
+  function getCanvasPos(e, canvas) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (canvas.width / rect.width),
+      y: (e.clientY - rect.top) * (canvas.height / rect.height)
+    };
+  }
+
+  function startScratch(e, cellIndex) {
+    if (!ticketActive || cellRevealed[cellIndex]) return;
+    isScratching = true;
+    activeCellIndex = cellIndex;
+    const canvas = document.querySelector(`#cell-${cellIndex} canvas`);
+    if (!canvas) return;
+    const pos = getCanvasPos(e, canvas);
+    scratchAt(canvas, pos.x, pos.y, cellIndex);
+  }
+
+  function doScratch(e, cellIndex) {
+    if (!isScratching || activeCellIndex !== cellIndex) return;
+    if (!ticketActive || cellRevealed[cellIndex]) return;
+    const canvas = document.querySelector(`#cell-${cellIndex} canvas`);
+    if (!canvas) return;
+    const pos = getCanvasPos(e, canvas);
+    scratchAt(canvas, pos.x, pos.y, cellIndex);
+  }
+
+  function scratchAt(canvas, x, y, cellIndex) {
+    const ctx = canvas.getContext('2d');
+    const radius = Math.max(canvas.width, canvas.height) * 0.18;
+
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+
+    // Check coverage
+    checkCoverage(canvas, cellIndex);
+  }
+
+  function checkCoverage(canvas, cellIndex) {
+    if (cellRevealed[cellIndex]) return;
+    const ctx = canvas.getContext('2d');
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let transparent = 0;
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] < 128) transparent++;
+    }
+    const ratio = transparent / (canvas.width * canvas.height);
+    if (ratio >= SCRATCH_THRESHOLD) {
+      revealCell(cellIndex);
+    }
+  }
+
+  function revealCell(cellIndex) {
+    if (cellRevealed[cellIndex]) return;
+    cellRevealed[cellIndex] = true;
+
+    const cell = document.getElementById(`cell-${cellIndex}`);
+    cell.classList.add('revealed');
+
+    // Check if all done
+    if (cellRevealed.every(r => r)) {
+      finishTicket();
+    }
+  }
+
+  function revealAll() {
+    if (!ticketActive) return;
+    for (let i = 0; i < CELLS; i++) {
+      revealCell(i);
+    }
+  }
+
+  function finishTicket() {
+    allRevealed = true;
+    ticketActive = false;
+    document.getElementById('revealAllBtn').disabled = true;
+
+    const wins = findWins(ticketValues);
+    const totalWin = wins.reduce((s, v) => s + v, 0);
+
+    // Highlight winning cells
+    if (wins.length > 0) {
+      for (let i = 0; i < CELLS; i++) {
+        if (wins.includes(ticketValues[i].value)) {
+          const prizeDiv = document.getElementById(`prize-${i}`);
+          prizeDiv.classList.add('winner', 'pulse');
+        }
+      }
+
+      balance += totalWin;
+      updateHUD();
+      document.getElementById('lastWinDisplay').textContent = fmt(totalWin);
+      document.getElementById('lastWinDisplay').className = 'hud-value green';
+
+      const banner = document.getElementById('resultBanner');
+      banner.className = 'result-banner win';
+      if (totalWin >= 50000) {
+        banner.textContent = `🎰 JACKPOT! YOU WIN ${fmt(totalWin)}! 🎰`;
+        spawnParticles('💰', 20);
+      } else if (totalWin >= 5000) {
+        banner.textContent = `🏆 BIG WIN! +${fmt(totalWin)}`;
+        spawnParticles('⭐', 12);
+      } else {
+        banner.textContent = `✨ WINNER! +${fmt(totalWin)}`;
+        spawnParticles('✨', 8);
+      }
+    } else {
+      const banner = document.getElementById('resultBanner');
+      banner.className = 'result-banner lose';
+      banner.textContent = 'Better luck next time...';
+      document.getElementById('lastWinDisplay').textContent = '---';
+      document.getElementById('lastWinDisplay').className = 'hud-value red';
+    }
+
+    document.getElementById('buyBtn').disabled = balance < TICKET_COST;
+  }
+
+  function buyTicket() {
+    if (balance < TICKET_COST) return;
+    balance -= TICKET_COST;
+    updateHUD();
+
+    ticketValues = generateTicket();
+    cellRevealed = new Array(CELLS).fill(false);
+    allRevealed = false;
+    ticketActive = true;
+
+    document.getElementById('resultBanner').className = 'result-banner idle';
+    document.getElementById('resultBanner').textContent = 'SCRATCH YOUR TICKET';
+    document.getElementById('revealAllBtn').disabled = false;
+    document.getElementById('buyBtn').disabled = false;
+
+    buildGrid();
+  }
+
+  function spawnParticles(emoji, count) {
+    const ticket = document.querySelector('.ticket');
+    const rect = ticket.getBoundingClientRect();
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.textContent = emoji;
+        p.style.left = (rect.left + Math.random() * rect.width) + 'px';
+        p.style.top = (rect.top + Math.random() * rect.height * 0.5 + rect.height * 0.3) + 'px';
+        p.style.animationDelay = (Math.random() * 0.4) + 's';
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 2000);
+      }, i * 60);
+    }
+  }
+
+  // Auto-buy on load
+  buyTicket();
+</script>
+</body>
+</html>
