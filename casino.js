@@ -35,77 +35,14 @@ function angleTo8Dir(angleRad) {
 
 // Casino table/zone definitions - positioned to match 900x900 casino-floor.png
 const ZONES = [
-  // Roulette table - upper-left
-  {
-    id: 'roulette',
-    label: 'Roulette',
-    x: 224, y: 295,
-    w: 146, h: 53,
-    type: 'game',
-    url: './roulette.html'
-  },
-  // Blackjack table - middle-left semi-circular
-  {
-    id: 'blackjack1',
-    label: 'Blackjack',
-    x: 214, y: 455,
-    w: 105, h: 41,
-    type: 'game',
-    url: './blackjack.html'
-  },
-  // UTH table - middle-right semi-circular
-  {
-    id: 'uth',
-    label: 'Ultimate Texas\nHold\'em',
-    x: 669, y: 471,
-    w: 94, h: 58,
-    type: 'game',
-    url: './uth-test.html'
-  },
-  // Dragon's Lair slot machine - lower-right
-  {
-    id: 'kong',
-    label: "Dragon's Lair",
-    x: 673, y: 654,
-    w: 51, h: 96,
-    type: 'game',
-    url: './kong.html'
-  },
-  // Craps table - upper-right
-  {
-    id: 'craps',
-    label: 'Craps',
-    x: 679, y: 299,
-    w: 132, h: 58,
-    type: 'game',
-    url: './craps.html'
-  },
-  // Slots - lower-left
-  {
-    id: 'slots',
-    label: 'Slots',
-    x: 203, y: 643,
-    w: 59, h: 108,
-    type: 'game',
-    url: './slots2/'
-  },
-  // Scratch tickets - needs placement
-  {
-    id: 'scratch',
-    label: 'Lucky Scratch',
-    x: 450, y: 750,
-    w: 80, h: 60,
-    type: 'game',
-    url: './scratch.html'
-  },
-  // Bar - full top width
-  {
-    id: 'bar',
-    label: 'Bar',
-    x: 450, y: 108,
-    w: 720, h: 180,
-    type: 'coming_soon'
-  }
+  { id: 'roulette',  label: 'Roulette',             x: 224, y: 295, w: 146, h:  53, type: 'game',        url: './roulette.html' },
+  { id: 'blackjack1',label: 'Blackjack',            x: 214, y: 455, w: 105, h:  41, type: 'game',        url: './blackjack.html' },
+  { id: 'uth',       label: "Ultimate Texas\nHold'em", x: 669, y: 471, w: 94, h: 58, type: 'game',       url: './uth-test.html' },
+  { id: 'kong',      label: "Dragon's Lair",        x: 673, y: 654, w:  51, h:  96, type: 'game',        url: './kong.html' },
+  { id: 'craps',     label: 'Craps',                x: 679, y: 299, w: 132, h:  58, type: 'game',        url: './craps.html' },
+  { id: 'slots',     label: 'Slots',                x: 203, y: 643, w:  59, h: 108, type: 'game',        url: './slots2/' },
+  { id: 'scratch',   label: 'Lucky Scratch',        x: 445, y: 127, w:  85, h:  65, type: 'game',        url: './scratch.html' },
+  { id: 'bar',       label: 'Bar',                  x: 456, y:  92, w: 705, h: 140, type: 'coming_soon' }
 ];
 
 // Interaction zones (slightly larger than tables for "walk near" detection)
@@ -228,7 +165,7 @@ class CasinoScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('casino-floor', 'casino-floor.png');
+    this.load.image('casino-floor', 'casino-floor-new.png');
 
     // Load torch/sconce spritesheet
     this.load.spritesheet(TORCH_SPRITE.key, TORCH_SPRITE.file, {
