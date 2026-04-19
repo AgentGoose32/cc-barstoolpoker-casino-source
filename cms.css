@@ -146,6 +146,67 @@ body.cms-body {
   text-align: left;
 }
 
+.expandable-row {
+  cursor: pointer;
+}
+
+.expandable-row:hover td {
+  background: rgba(255,255,255,0.03);
+}
+
+.expand-hint {
+  margin-top: 4px;
+  color: #8fa1b4;
+  font-size: 12px;
+}
+
+.detail-row td {
+  padding-top: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.detail-panel {
+  display: none;
+  padding: 12px 0 16px;
+}
+
+.detail-panel.open,
+.detail-row.open .detail-panel {
+  display: block;
+}
+
+.player-breakdown-title {
+  color: #9fb0c3;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.player-list {
+  display: grid;
+  gap: 10px;
+}
+
+.player-card {
+  background: #0f141b;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.player-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.player-card-meta,
+.event-detail-empty {
+  margin-top: 4px;
+  color: #8fa1b4;
+  font-size: 13px;
+}
+
 @media (max-width: 900px) {
   .cms-grid {
     grid-template-columns: 1fr;

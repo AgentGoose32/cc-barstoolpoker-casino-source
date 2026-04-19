@@ -7,6 +7,7 @@
   const clearAllBtn = document.getElementById('clearAllBtn');
 
   let selectedGameId = null;
+  let expandedEventIds = new Set();
 
   function fmt(value) {
     const num = Number(value || 0);
@@ -28,7 +29,8 @@
     const events = (game.events || []).map((event) => ({
       ...event,
       houseDelta: houseValue(event.delta),
-      houseNet: event.net == null ? null : houseValue(event.net)
+      houseNet: event.net == null ? null : houseValue(event.net),
+      details: event.details || null
     }));
 
     return {
@@ -37,6 +39,46 @@
       lastHouseNet: game.totals.lastNet == null ? null : houseValue(game.totals.lastNet),
       events
     };
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderPlayerBreakdown(event) {
+    const players = event.details && Array.isArray(event.details.players) ? event.details.players : [];
+    if (!players.length) {
+      return '<div class="event-detail-empty">No individual player breakdown stored for this event.</div>';
+    }
+
+    return `
+      <div class="player-breakdown">
+        <div class="player-breakdown-title">Players in this event</div>
+        <div class="player-list">
+          ${players.map((player) => {
+            const amount = player.amountText || '—';
+            const amountClass = amount.trim().startsWith('-') ? 'metric-negative' : 'metric-positive';
+            return `
+              <div class="player-card">
+                <div class="player-card-top">
+                  <strong>${escapeHtml(player.name || 'Unknown')}</strong>
+                  <span class="${amountClass}">${escapeHtml(amount)}</span>
+                </div>
+                <div class="player-card-meta">
+                  ${escapeHtml(player.detailText || '')}
+                  ${player.multiplierText ? `, ${escapeHtml(player.multiplierText)}` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
   }
 
   function renderDeepDive(game) {
@@ -53,16 +95,29 @@
       ? events.map((event) => {
           const time = new Date(event.ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
           const deltaClass = metricClass(event.houseDelta || 0);
+          const canExpand = !!(event.details && Array.isArray(event.details.players) && event.details.players.length);
+          const isExpanded = expandedEventIds.has(event.id);
+          const mainRowClass = canExpand ? 'expandable-row' : '';
+          const detailRow = canExpand ? `
+            <tr class="detail-row ${isExpanded ? 'open' : ''}">
+              <td colspan="7">
+                <div class="detail-panel ${isExpanded ? 'open' : ''}">
+                  ${renderPlayerBreakdown(event)}
+                </div>
+              </td>
+            </tr>
+          ` : '';
           return `
-            <tr>
+            <tr class="${mainRowClass}" data-event-id="${event.id}">
               <td>${time}</td>
               <td>${event.type || 'event'}</td>
               <td class="${deltaClass}">${fmt(event.houseDelta || 0)}</td>
               <td>${event.balance == null ? '—' : fmt(event.balance)}</td>
               <td>${event.houseNet == null ? '—' : fmt(event.houseNet)}</td>
               <td>${event.round == null ? '—' : event.round}</td>
-              <td>${event.note || '—'}</td>
+              <td>${event.note || '—'}${canExpand ? '<div class="expand-hint">Click to view players</div>' : ''}</td>
             </tr>
+            ${detailRow}
           `;
         }).join('')
       : '<tr><td colspan="7" class="empty-state">No tracked events yet for this game today.</td></tr>';
@@ -93,6 +148,16 @@
         <tbody>${rows}</tbody>
       </table>
     `;
+
+    deepDiveBodyEl.querySelectorAll('tr.expandable-row').forEach((row) => {
+      row.addEventListener('click', function () {
+        const eventId = this.getAttribute('data-event-id');
+        if (!eventId) return;
+        if (expandedEventIds.has(eventId)) expandedEventIds.delete(eventId);
+        else expandedEventIds.add(eventId);
+        renderDeepDive(game);
+      });
+    });
   }
 
   function render() {

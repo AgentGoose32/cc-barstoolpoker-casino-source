@@ -61,7 +61,8 @@
       balance: roundNumber(event.balance),
       net: roundNumber(event.net),
       round: Number.isFinite(Number(event.round)) ? Number(event.round) : null,
-      note: event.note || ''
+      note: event.note || '',
+      details: event.details && typeof event.details === 'object' ? event.details : null
     };
 
     bucket.events.push(stored);
@@ -131,6 +132,16 @@
     const getBalance = makeGetter(config.balanceGetter, config.balanceSelector);
     const getNet = makeGetter(config.netGetter, config.netSelector);
     const getRound = makeGetter(config.roundGetter, config.roundSelector);
+    const getDetails = typeof config.detailGetter === 'function'
+      ? () => {
+          try {
+            const details = config.detailGetter();
+            return details && typeof details === 'object' ? details : null;
+          } catch (_err) {
+            return null;
+          }
+        }
+      : () => null;
     const pollMs = Number(config.pollMs) || 800;
     const preferRoundEvents = config.preferRoundEvents !== false && (config.roundGetter || config.roundSelector);
 
@@ -147,6 +158,7 @@
       const balance = roundNumber(getBalance());
       const net = roundNumber(getNet());
       const round = roundNumber(getRound());
+      const details = getDetails();
 
       if (!state.started) {
         state.lastBalance = balance;
@@ -169,7 +181,8 @@
             balance,
             net,
             round,
-            note: `${gameLabel} round ${round}`
+            note: `${gameLabel} round ${round}`,
+            details
           });
         }
       } else if (netChanged) {
@@ -179,7 +192,8 @@
           balance,
           net,
           round,
-          note: `${gameLabel} net changed`
+          note: `${gameLabel} net changed`,
+          details
         });
       } else if (balanceChanged) {
         appendEvent(gameId, gameLabel, {
@@ -188,7 +202,8 @@
           balance,
           net,
           round,
-          note: `${gameLabel} balance changed`
+          note: `${gameLabel} balance changed`,
+          details
         });
       }
 

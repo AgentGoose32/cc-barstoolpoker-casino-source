@@ -1939,13 +1939,30 @@ window._bgDebugScale = 1.00;
 })();
 </script>
 
-<script src="./casino-stats.js?v=20260419cms1"></script>
+<script src="./casino-stats.js?v=20260419cms3"></script>
 <script>
 if (window.CasinoStats) {
   window.CasinoStats.init({
     gameId: 'dragon-crash',
     gameLabel: 'Dragon Crash',
     balanceGetter: () => gameState.balance,
+    detailGetter: () => {
+      const players = Array.from(document.querySelectorAll('#playersFeed .player-action')).slice(0, 15).map((row) => {
+        const name = row.querySelector('.name')?.textContent?.trim() || 'Unknown';
+        const amountText = row.querySelector('.amount')?.textContent?.trim() || '';
+        const multiplierText = row.querySelector('.mult')?.textContent?.trim() || '';
+        const lossText = row.querySelector('.loss-text')?.textContent?.trim() || '';
+        const isLoss = row.classList.contains('player-action-loss') || amountText.startsWith('-');
+        return {
+          name,
+          result: isLoss ? 'loss' : 'cashout',
+          amountText,
+          multiplierText,
+          detailText: isLoss ? lossText : 'cashed out'
+        };
+      });
+      return players.length ? { players } : null;
+    },
     pollMs: 700
   });
 }
