@@ -232,7 +232,7 @@ class CasinoScene extends Phaser.Scene {
     // Auto-enable debugger from ?debug=1 after the scene is fully created
     if (window.__hitboxDebugAutostart && !debugMode) {
       this.time.delayedCall(0, () => {
-        if (!debugMode) this.toggleDebug();
+        if (!debugMode && window.toggleHitboxDebug) window.toggleHitboxDebug();
         window.__hitboxDebugAutostart = false;
       });
     }
@@ -672,65 +672,42 @@ class CasinoScene extends Phaser.Scene {
   }
 
   createDebugPanel() {
-    const panelW = 320;
-    const panelH = 420;
-    const panelX = VIEW_W - panelW - 8;
-    const panelY = VIEW_H - panelH - 8;
+    let panel = document.getElementById('hitboxDebugPanel');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'hitboxDebugPanel';
+      panel.innerHTML = `
+        <div id="hitboxDebugPanelHeader">⬛ HITBOX DEBUGGER</div>
+        <pre id="hitboxDebugPanelText"></pre>
+        <div id="hitboxDebugPanelActions">
+          <button id="hitboxDebugCopyBtn" type="button">COPY ZONES</button>
+          <button id="hitboxDebugCopyAllBtn" type="button">COPY ALL</button>
+        </div>
+      `;
+      document.body.appendChild(panel);
+    }
 
-    // Panel background
-    this.debugPanelBg = this.add.rectangle(panelX + panelW / 2, panelY + panelH / 2, panelW, panelH, 0x000000, 0.9);
-    this.debugPanelBg.setStrokeStyle(2, 0x00ff00, 0.8);
-    this.debugPanelBg.setDepth(55);
-    this.debugPanelBg.setScrollFactor(0);
-    this.debugPanelBg.setVisible(false);
+    this.debugPanelEl = panel;
+    this.debugPanelHeaderEl = document.getElementById('hitboxDebugPanelHeader');
+    this.debugPanelTextEl = document.getElementById('hitboxDebugPanelText');
+    this.debugCopyBtnEl = document.getElementById('hitboxDebugCopyBtn');
+    this.debugCopyAllBtnEl = document.getElementById('hitboxDebugCopyAllBtn');
 
-    // Header
-    this.debugPanelHeader = this.add.text(panelX + panelW / 2, panelY + 8, '⬛ HITBOX DEBUGGER', {
-      fontSize: '11px',
-      fontFamily: 'monospace',
-      color: '#00ff00',
-      align: 'center'
-    }).setOrigin(0.5, 0).setDepth(56).setScrollFactor(0).setVisible(false);
+    this.debugPanelEl.style.display = 'none';
 
-    // Panel text
-    this.debugPanelText = this.add.text(panelX + 8, panelY + 26, '', {
-      fontSize: '10px',
-      fontFamily: 'monospace',
-      color: '#ffffff',
-      lineSpacing: 5
-    }).setDepth(56).setScrollFactor(0).setVisible(false);
-
-    // COPY ZONES button
-    this.debugCopyBtn = this.add.text(panelX + 8, panelY + panelH - 26, ' COPY ZONES ', {
-      fontSize: '11px',
-      fontFamily: 'monospace',
-      color: '#000000',
-      backgroundColor: '#00ff00',
-      padding: { x: 6, y: 3 }
-    }).setDepth(56).setScrollFactor(0).setVisible(false);
-    this.debugCopyBtn.setInteractive({ cursor: 'pointer' });
-    this.debugCopyBtn.on('pointerdown', () => {
+    this.debugCopyBtnEl.onclick = () => {
       const lines = [];
-      lines.push('// ZONE POSITIONS v202604182150 - paste into casino.js ZONES array');
+      lines.push('// ZONE POSITIONS v202604191025 - paste into casino.js ZONES array');
       for (const zone of ZONES) {
         lines.push(`  { id:'${zone.id}', x:${zone.x}, y:${zone.y}, w:${zone.w}, h:${zone.h} },`);
       }
       navigator.clipboard.writeText(lines.join('\n')).then(() => {
-        this.debugCopyBtn.setText(' COPIED! ');
-        this.time.delayedCall(1500, () => this.debugCopyBtn.setText(' COPY ZONES '));
+        this.debugCopyBtnEl.textContent = 'COPIED!';
+        this.time.delayedCall(1500, () => { this.debugCopyBtnEl.textContent = 'COPY ZONES'; });
       });
-    });
+    };
 
-    // COPY ALL button (zones + torches + candles)
-    this.debugCopyAllBtn = this.add.text(panelX + 130, panelY + panelH - 26, ' COPY ALL ', {
-      fontSize: '11px',
-      fontFamily: 'monospace',
-      color: '#000000',
-      backgroundColor: '#ffff00',
-      padding: { x: 6, y: 3 }
-    }).setDepth(56).setScrollFactor(0).setVisible(false);
-    this.debugCopyAllBtn.setInteractive({ cursor: 'pointer' });
-    this.debugCopyAllBtn.on('pointerdown', () => {
+    this.debugCopyAllBtnEl.onclick = () => {
       const data = {};
       for (const zone of ZONES) {
         data[zone.id] = { x: zone.x, y: zone.y, w: zone.w, h: zone.h };
@@ -738,16 +715,16 @@ class CasinoScene extends Phaser.Scene {
       data.torches = TORCH_POSITIONS.map((p, i) => ({ id: `torch${i}`, x: p.x, y: p.y, scale: p.scale }));
       data.candles = CANDLE_POSITIONS.map((p, i) => ({ id: `candle${i}`, x: p.x, y: p.y, scale: p.scale }));
       navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
-        this.debugCopyAllBtn.setText(' COPIED! ');
-        this.time.delayedCall(1500, () => this.debugCopyAllBtn.setText(' COPY ALL '));
+        this.debugCopyAllBtnEl.textContent = 'COPIED!';
+        this.time.delayedCall(1500, () => { this.debugCopyAllBtnEl.textContent = 'COPY ALL'; });
       });
-    });
+    };
 
     this.updateDebugPanelText();
   }
 
   updateDebugPanelText() {
-    if (!this.debugPanelText) return;
+    if (!this.debugPanelTextEl) return;
 
     const zoneColors = {
       roulette:   '🟩', blackjack1: '🟥', uth: '🟦',
@@ -763,7 +740,7 @@ class CasinoScene extends Phaser.Scene {
       lines.push(`${icon} ${z.id.padEnd(10)} x:${String(z.x).padStart(3)} y:${String(z.y).padStart(3)}  w:${String(z.w).padStart(3)} h:${String(z.h).padStart(3)}`);
     }
 
-    this.debugPanelText.setText(lines.join('\n'));
+    this.debugPanelTextEl.textContent = lines.join('\n');
   }
 
   toggleCandleDebug() {
@@ -835,11 +812,7 @@ class CasinoScene extends Phaser.Scene {
       for (const h of handles) h.setVisible(debugMode);
     }
     this.debugIndicator.setVisible(debugMode);
-    this.debugPanelBg.setVisible(debugMode);
-    this.debugPanelHeader.setVisible(debugMode);
-    this.debugPanelText.setVisible(debugMode);
-    this.debugCopyBtn.setVisible(debugMode);
-    this.debugCopyAllBtn.setVisible(debugMode);
+    if (this.debugPanelEl) this.debugPanelEl.style.display = debugMode ? 'block' : 'none';
 
     // Toggle torch debug: interactive/draggable + labels
     for (let i = 0; i < this.torches.length; i++) {
@@ -1037,6 +1010,8 @@ class CasinoScene extends Phaser.Scene {
   }
 
   update() {
+    if (this.debugPanelEl) this.debugPanelEl.style.display = debugMode ? 'block' : 'none';
+
     if (modalOpen) {
       if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
         this.closeModal();
@@ -1201,7 +1176,10 @@ async function startGame() {
   // Expose a global toggle so the DOM button and external scripts can drive the debugger
   window.toggleHitboxDebug = function () {
     const scene = game.scene.getScene('CasinoScene') || game.scene.scenes[0];
-    if (scene && scene.toggleDebug) scene.toggleDebug();
+    if (scene && scene.toggleDebug) {
+      scene.toggleDebug();
+      if (scene.debugPanelEl) scene.debugPanelEl.style.display = debugMode ? 'block' : 'none';
+    }
   };
 }
 
