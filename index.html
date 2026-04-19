@@ -27,6 +27,14 @@
   </script>
   <!-- Casino mute button -->
   <button id="casinoMuteBtn" onclick="toggleCasinoMute()" title="Toggle music" style="position:fixed;top:10px;right:12px;z-index:999;background:rgba(0,0,0,0.6);border:1px solid #c9a84c44;color:#ffd700;font-size:18px;padding:4px 9px;border-radius:6px;cursor:pointer;line-height:1;">🔊</button>
+  <!-- Hitbox debug toggle button -->
+  <button id="hitboxDebugBtn" onclick="window.toggleHitboxDebug && window.toggleHitboxDebug()" title="Toggle hitbox debugger (D key)" style="position:fixed;top:10px;right:58px;z-index:999;background:rgba(0,0,0,0.6);border:1px solid #c9a84c44;color:#aaa;font-size:12px;padding:4px 8px;border-radius:6px;cursor:pointer;line-height:1;font-family:monospace;">Debug</button>
+  <!-- Debug hint badge — shown only when debug mode is on -->
+  <div id="hitboxDebugHint" style="display:none;position:fixed;top:44px;right:8px;z-index:999;background:rgba(0,0,0,0.82);border:1px solid #ff880088;border-radius:6px;color:#fff;font-size:11px;font-family:monospace;padding:6px 10px;max-width:240px;line-height:1.5;">
+    <b style="color:#ff8800">🟧 Dragon Crash</b> = orange box (id: kong)<br>
+    Drag boxes to reposition &bull; right-drag to pan<br>
+    <span style="color:#aaa">COPY ZONES button saves coords</span>
+  </div>
 
   <div id="game-container">
     <div id="game-modal">
@@ -41,6 +49,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-  <script src="casino.js?v=20260418crash3"></script>
+  <script src="casino.js?v=20260419hitbox1"></script>
 </body>
 </html>

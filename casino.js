@@ -228,6 +228,14 @@ class CasinoScene extends Phaser.Scene {
 
     // Disable right-click context menu on the canvas
     this.game.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Auto-enable debugger from ?debug=1 after the scene is fully created
+    if (window.__hitboxDebugAutostart && !debugMode) {
+      this.time.delayedCall(0, () => {
+        if (!debugMode) this.toggleDebug();
+        window.__hitboxDebugAutostart = false;
+      });
+    }
   }
 
   createFloor() {
@@ -878,6 +886,16 @@ class CasinoScene extends Phaser.Scene {
     for (const readout of this.debugCoordReadouts) {
       readout.setVisible(false);
     }
+
+    // Sync DOM button appearance and hint badge
+    const btn = document.getElementById('hitboxDebugBtn');
+    const hint = document.getElementById('hitboxDebugHint');
+    if (btn) {
+      btn.style.color = debugMode ? '#ff8800' : '#aaa';
+      btn.style.borderColor = debugMode ? '#ff8800' : '#c9a84c44';
+      btn.textContent = debugMode ? 'Debug ON' : 'Debug';
+    }
+    if (hint) hint.style.display = debugMode ? 'block' : 'none';
   }
 
   setupInput() {
@@ -1177,6 +1195,14 @@ async function startGame() {
   };
 
   const game = new Phaser.Game(config);
+  window.__casinoGame = game;
+  window.__hitboxDebugAutostart = new URLSearchParams(window.location.search).get('debug') === '1';
+
+  // Expose a global toggle so the DOM button and external scripts can drive the debugger
+  window.toggleHitboxDebug = function () {
+    const scene = game.scene.getScene('CasinoScene') || game.scene.scenes[0];
+    if (scene && scene.toggleDebug) scene.toggleDebug();
+  };
 }
 
 startGame();
