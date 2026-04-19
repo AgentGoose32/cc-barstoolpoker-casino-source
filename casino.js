@@ -215,7 +215,6 @@ class CasinoScene extends Phaser.Scene {
     this.createTables();
     this.createPlayer();
     this.createUI();
-    this.createDebugOverlay();
     this.setupInput();
     this.setupModal();
 
@@ -230,13 +229,6 @@ class CasinoScene extends Phaser.Scene {
     // Disable right-click context menu on the canvas
     this.game.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // Auto-enable debugger from ?debug=1 after the scene is fully created
-    if (window.__hitboxDebugAutostart && !debugMode) {
-      this.time.delayedCall(0, () => {
-        if (!debugMode && window.toggleHitboxDebug) window.toggleHitboxDebug();
-        window.__hitboxDebugAutostart = false;
-      });
-    }
   }
 
   createFloor() {
@@ -874,7 +866,6 @@ class CasinoScene extends Phaser.Scene {
   setupInput() {
     this.escKey = this.input.keyboard.addKey('ESC');
     this.eKey = this.input.keyboard.addKey('E');
-    this.dKey = this.input.keyboard.addKey('D');
     this.cKey = this.input.keyboard.addKey('C');
     this._candleDebug = false;
     this._candleDrag  = null;
@@ -1010,8 +1001,6 @@ class CasinoScene extends Phaser.Scene {
   }
 
   update() {
-    if (this.debugPanelEl) this.debugPanelEl.style.display = debugMode ? 'block' : 'none';
-
     if (modalOpen) {
       if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
         this.closeModal();
@@ -1019,11 +1008,6 @@ class CasinoScene extends Phaser.Scene {
       }
       this.player.body.setVelocity(0, 0);
       return;
-    }
-
-    // D key to toggle debug overlay
-    if (Phaser.Input.Keyboard.JustDown(this.dKey)) {
-      this.toggleDebug();
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.cKey)) {
@@ -1171,16 +1155,6 @@ async function startGame() {
 
   const game = new Phaser.Game(config);
   window.__casinoGame = game;
-  window.__hitboxDebugAutostart = new URLSearchParams(window.location.search).get('debug') === '1';
-
-  // Expose a global toggle so the DOM button and external scripts can drive the debugger
-  window.toggleHitboxDebug = function () {
-    const scene = game.scene.getScene('CasinoScene') || game.scene.scenes[0];
-    if (scene && scene.toggleDebug) {
-      scene.toggleDebug();
-      if (scene.debugPanelEl) scene.debugPanelEl.style.display = debugMode ? 'block' : 'none';
-    }
-  };
 }
 
 startGame();
